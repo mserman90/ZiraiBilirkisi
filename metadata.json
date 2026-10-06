@@ -1,0 +1,6 @@
+{
+  "name": "Zirai Bilirkişi (01 Tarım) Portalı",
+  "description": "Meta AI destekli, Yargıtay içtihatları ve 351 sayfalık rehbere dayalı Zirai Bilirkişi (01 Tarım) Eğitim, Uydu Parsel & Asistan Portalı.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
