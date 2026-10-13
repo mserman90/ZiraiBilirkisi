@@ -1,6 +1,7 @@
 import React, { useState, useRef, useEffect } from "react";
 import {
   Leaf,
+  Home,
   LayoutDashboard,
   BookOpen,
   Monitor,
@@ -86,6 +87,7 @@ import UyapSimulatorView from "./components/UyapSimulatorView";
 import NdviPanel from "./components/NdviPanel";
 import HayvancilikView from "./components/HayvancilikView";
 import YemlerBeslemeView from "./components/YemlerBeslemeView";
+import HeroView from "./components/HeroView";
 import {
   UFE_RATES,
   ICTIHAT_DB,
@@ -97,7 +99,7 @@ import {
   getAIAnswer,
 } from "./data/mockData";
 export default function App() {
-  const [activeTab, setActiveTab] = useState<TabId>("dashboard");
+  const [activeTab, setActiveTab] = useState<TabId>("hero");
   const [mobileOpen, setMobileOpen] = useState(false);
   const [toast, setToast] = useState<string | null>(null);
 
@@ -917,9 +919,6 @@ export default function App() {
   };
 
   const navItems = [
-    // Panel
-    { id: "dashboard" as TabId, label: "Gösterge Paneli", icon: <LayoutDashboard size={18} />, group: "panel" },
-
     // 01 Tarım
     { id: "sihirbaz" as TabId, label: "01.05 Zirai Değerleme (Sihirbaz)", icon: <Wand2 size={18} />, group: "tarim", badge: "KFO / ODA" },
     { id: "veriarsivi" as TabId, label: "Tarım Veri Arşivi", icon: <Database size={18} />, group: "tarim" },
@@ -958,34 +957,20 @@ export default function App() {
         </div>
 
         <nav className="flex-1 overflow-y-auto py-4 px-3 space-y-3">
-          {/* PANEL AKORDEON */}
-          <div className="border-b border-white/5 pb-2">
-            <button
-              onClick={() => toggleSection("panel")}
-              className="w-full flex items-center justify-between px-3 py-1.5 text-[11px] font-bold text-slate-400 hover:text-white uppercase tracking-wider transition"
-            >
-              <span className="flex items-center gap-2">
-                <LayoutDashboard size={13} className="text-slate-400" />
-                PANEL
-              </span>
-              {openSections.panel ? <ChevronDown size={14} /> : <ChevronRight size={14} />}
-            </button>
-            {openSections.panel && (
-              <div className="mt-1 space-y-1">
-                {navItems.filter((i) => i.group === "panel").map((item) => (
-                  <button
-                    key={item.id}
-                    onClick={() => setActiveTab(item.id)}
-                    className={`w-full flex items-center gap-3 px-3 py-2 rounded-xl text-[13px] font-medium transition ${
-                      activeTab === item.id ? "bg-white/10 text-white font-semibold" : "text-slate-400 hover:bg-white/5 hover:text-white"
-                    }`}
-                  >
-                    {item.icon} {item.label}
-                  </button>
-                ))}
-              </div>
-            )}
-          </div>
+          {/* ANA SAYFA / HERO BUTONU */}
+          <button
+            onClick={() => setActiveTab("hero")}
+            className={`w-full flex items-center justify-between px-3 py-2.5 rounded-xl text-[13px] font-medium transition border ${
+              activeTab === "hero"
+                ? "bg-emerald-500/20 border-emerald-500/40 text-emerald-300 font-bold shadow-sm"
+                : "border-transparent text-slate-300 hover:bg-white/5 hover:text-white"
+            }`}
+          >
+            <span className="flex items-center gap-3">
+              <Home size={18} className={activeTab === "hero" ? "text-emerald-400" : "text-slate-400"} />
+              <span>Ana Sayfa (Platform Tanıtımı)</span>
+            </span>
+          </button>
 
           {/* 01 TARIM AKORDEON */}
           <div className="border-b border-white/5 pb-2">
@@ -1148,71 +1133,9 @@ export default function App() {
 
         <div className="flex-1 overflow-y-auto p-4 md:p-8">
           <div className="max-w-[1200px] mx-auto">
-            {/* DASHBOARD */}
-            {activeTab === "dashboard" && (
-              <div className="space-y-6">
-                <div>
-                  <h2 className="text-3xl font-extrabold text-slate-900 tracking-tight">Hoş geldiniz, Bilirkişi.</h2>
-                  <p className="text-slate-500 mt-2">Yargıtay standartlarında bilirkişi raporları, AI asistanı ve uydu parsel analizi.</p>
-                </div>
-
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                  {[
-                    { id: "aiAsistan" as TabId, title: "AI Saha Asistanı", desc: "KFO, HMK 279, TARSİM mevzuatı", icon: <MessageSquare size={20} /> },
-                    { id: "uyduParsel" as TabId, title: "Uydu Parsel AI", desc: "Esri 0.5m & NDVI verim modeli", icon: <Satellite size={20} /> },
-                    { id: "sihirbaz" as TabId, title: "Rapor Sihirbazı", desc: "Kamulaştırma & Ecrimisil hesabı", icon: <Wand2 size={20} /> },
-                  ].map((c) => (
-                    <button
-                      key={c.id}
-                      onClick={() => setActiveTab(c.id)}
-                      className="text-left bg-white p-5 rounded-2xl border border-slate-200 shadow-sm hover:shadow-md transition"
-                    >
-                      <div className="w-10 h-10 rounded-xl bg-emerald-50 text-emerald-600 grid place-items-center mb-3">
-                        {c.icon}
-                      </div>
-                      <p className="font-bold text-slate-900">{c.title}</p>
-                      <p className="text-xs text-slate-500 mt-1">{c.desc}</p>
-                    </button>
-                  ))}
-                </div>
-
-                {/* Akıllı Dosya Özetleyici */}
-                <div className="bg-slate-900 rounded-2xl p-6 text-white border border-slate-800">
-                  <h3 className="font-bold flex items-center gap-2"><FileScan size={18} className="text-emerald-400" /> Akıllı Müzekkere Özetleyici</h3>
-                  <textarea
-                    value={davaMetni}
-                    onChange={(e) => setDavaMetni(e.target.value)}
-                    rows={4}
-                    className="w-full mt-3 p-3 rounded-xl bg-white/5 border border-white/10 text-xs text-slate-200 outline-none"
-                  />
-                  <button
-                    onClick={() => {
-                      setOzetLoading(true);
-                      setTimeout(() => {
-                        setOzetResult({
-                          tur: "Kamulaştırma Bedel Tespiti",
-                          kesif: "15.06.2025",
-                          parsel: "125 ada 8 parsel",
-                          istenen: "Net Gelir + ODA",
-                          yil: "2024",
-                          alan: "12.500 m2",
-                        });
-                        setOzetLoading(false);
-                        showToast("Özetlendi, Sihirbaz dolduruldu");
-                      }, 600);
-                    }}
-                    className="mt-3 px-4 py-2 rounded-xl bg-emerald-500 text-slate-950 font-bold text-xs"
-                  >
-                    {ozetLoading ? "Analiz ediliyor..." : "AI ile Özetle"}
-                  </button>
-                  {ozetResult && (
-                    <div className="mt-3 p-3 bg-white/10 rounded-xl text-xs space-y-1">
-                      <p><b>Dava Türü:</b> {ozetResult.tur}</p>
-                      <p><b>Parsel:</b> {ozetResult.parsel} • {ozetResult.alan}</p>
-                    </div>
-                  )}
-                </div>
-              </div>
+            {/* HERO / TANITIM EKRANI */}
+            {activeTab === "hero" && (
+              <HeroView onSelectTab={setActiveTab} />
             )}
 
             {/* İLKELER VE STANDARTLAR */}

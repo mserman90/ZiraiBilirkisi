@@ -1,5 +1,5 @@
 export type TabId = 
-  | "dashboard" 
+  | "hero" 
   | "ilkeler"
   | "teorik" 
   | "uyap" 
