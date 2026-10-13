@@ -9,7 +9,8 @@ export type TabId =
   | "veriarsivi" 
   | "aiAsistan" 
   | "fotoAnaliz" 
-  | "uyduParsel";
+  | "uyduParsel"
+  | "hayvancilik";
 
 export type IlkeMadde = {
   id: string;

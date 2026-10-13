@@ -60,6 +60,7 @@ import {
   Target,
   Map,
   FileBarChart,
+  Beef,
 } from "lucide-react";
 import {
   LineChart,
@@ -79,6 +80,7 @@ import IlkelerView from "./components/IlkelerView";
 import TemelEgitimView from "./components/TemelEgitimView";
 import UyapSimulatorView from "./components/UyapSimulatorView";
 import NdviPanel from "./components/NdviPanel";
+import HayvancilikView from "./components/HayvancilikView";
 import {
   UFE_RATES,
   ICTIHAT_DB,
@@ -909,6 +911,7 @@ export default function App() {
     { id: "tarayici" as TabId, label: "HMK 279 Tarayıcı", icon: <Microscope size={18} />, group: "saas" },
     { id: "ictihat" as TabId, label: "İçtihat Arama", icon: <Scale size={18} />, group: "saas" },
     { id: "veriarsivi" as TabId, label: "Tarım Veri Arşivi", icon: <Database size={18} />, group: "saas" },
+    { id: "hayvancilik" as TabId, label: "02.01 Hayvancılık", icon: <Beef size={18} />, group: "hayvancilik", badge: "YENİ" },
   ];
 
   return (
@@ -922,7 +925,7 @@ export default function App() {
             </div>
             <div>
               <h1 className="text-[17px] font-bold tracking-tight">Ziraat Asistan</h1>
-              <p className="text-[11px] text-emerald-400 font-medium">01 TARIM • Meta AI</p>
+              <p className="text-[11px] text-emerald-400 font-medium">01 TARIM • 02 HAYVANCILIK</p>
             </div>
           </div>
         </div>
@@ -970,6 +973,22 @@ export default function App() {
                 }`}
               >
                 {item.icon} {item.label}
+              </button>
+            ))}
+          </div>
+
+          <div>
+            <p className="px-3 pb-1 text-[11px] font-bold text-amber-400/80 tracking-wider flex items-center gap-1.5"><Beef size={12}/> 02 HAYVANCILIK</p>
+            {navItems.filter((i) => i.group === "hayvancilik").map((item) => (
+              <button
+                key={item.id}
+                onClick={() => setActiveTab(item.id)}
+                className={`w-full flex items-center justify-between px-3 py-2.5 rounded-xl text-[13.5px] font-medium transition border ${
+                  activeTab === item.id ? "bg-amber-500/15 border-amber-500/30 text-white" : "border-transparent text-slate-300 hover:bg-white/5"
+                }`}
+              >
+                <span className="flex items-center gap-3 text-amber-400">{item.icon} <span className="text-white">{item.label}</span></span>
+                {item.badge && <span className="text-[9px] px-1.5 py-0.5 rounded-full bg-amber-500/20 text-amber-300 border border-amber-500/30">{item.badge}</span>}
               </button>
             ))}
           </div>
@@ -1459,6 +1478,14 @@ export default function App() {
             {/* UYAP */}
             {activeTab === "uyap" && (
               <UyapSimulatorView
+                showToast={showToast}
+                onGoToWizard={() => setActiveTab("sihirbaz")}
+              />
+            )}
+
+            {/* 02.01 HAYVANCILIK */}
+            {activeTab === "hayvancilik" && (
+              <HayvancilikView
                 showToast={showToast}
                 onGoToWizard={() => setActiveTab("sihirbaz")}
               />
