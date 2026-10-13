@@ -61,6 +61,10 @@ import {
   Map,
   FileBarChart,
   Beef,
+  ChevronDown,
+  ChevronRight,
+  GraduationCap,
+  Wrench,
 } from "lucide-react";
 import {
   LineChart,
@@ -92,11 +96,23 @@ import {
   RESMI_ILKELER_STANDARTLAR,
   getAIAnswer,
 } from "./data/mockData";
-
 export default function App() {
   const [activeTab, setActiveTab] = useState<TabId>("dashboard");
   const [mobileOpen, setMobileOpen] = useState(false);
   const [toast, setToast] = useState<string | null>(null);
+
+  // Akordeon menü durumları
+  const [openSections, setOpenSections] = useState<Record<string, boolean>>({
+    panel: true,
+    tarim: true,
+    hayvancilik: true,
+    araclar: true,
+    egitim: true,
+  });
+
+  const toggleSection = (section: string) => {
+    setOpenSections((prev) => ({ ...prev, [section]: !prev[section] }));
+  };
 
   // Wizard states
   const [wizType, setWizType] = useState<"kamulastirma" | "ecrimisil" | "agac" | "irtifak">("kamulastirma");
@@ -901,19 +917,28 @@ export default function App() {
   };
 
   const navItems = [
+    // Panel
     { id: "dashboard" as TabId, label: "Gösterge Paneli", icon: <LayoutDashboard size={18} />, group: "panel" },
-    { id: "ilkeler" as TabId, label: "İlkeler & Standartlar", icon: <ShieldCheck size={18} />, group: "panel", badge: "RESMİ" },
-    { id: "aiAsistan" as TabId, label: "AI Saha Asistanı", icon: <MessageSquare size={18} />, group: "ai", badge: "Meta AI" },
-    { id: "fotoAnaliz" as TabId, label: "Fotoğraf Analiz AI", icon: <Camera size={18} />, group: "ai", badge: "Vision" },
-    { id: "uyduParsel" as TabId, label: "Uydu Parsel AI", icon: <Satellite size={18} />, group: "ai", badge: "PREMIUM" },
-    { id: "teorik" as TabId, label: "Teorik Eğitimler", icon: <BookOpen size={18} />, group: "egitim" },
-    { id: "uyap" as TabId, label: "UYAP Simülasyonu", icon: <Monitor size={18} />, group: "egitim" },
-    { id: "sihirbaz" as TabId, label: "Rapor Sihirbazı", icon: <Wand2 size={18} />, group: "saas" },
-    { id: "tarayici" as TabId, label: "HMK 279 Tarayıcı", icon: <Microscope size={18} />, group: "saas" },
-    { id: "ictihat" as TabId, label: "İçtihat Arama", icon: <Scale size={18} />, group: "saas" },
-    { id: "veriarsivi" as TabId, label: "Tarım Veri Arşivi", icon: <Database size={18} />, group: "saas" },
+
+    // 01 Tarım
+    { id: "sihirbaz" as TabId, label: "01.05 Zirai Değerleme (Sihirbaz)", icon: <Wand2 size={18} />, group: "tarim", badge: "KFO / ODA" },
+    { id: "veriarsivi" as TabId, label: "Tarım Veri Arşivi", icon: <Database size={18} />, group: "tarim" },
+
+    // 02 Hayvancılık
     { id: "hayvancilik" as TabId, label: "02.01 Hayvancılık", icon: <Beef size={18} />, group: "hayvancilik", badge: "YENİ" },
     { id: "yemlerBesleme" as TabId, label: "02.05 Yemler & Besleme", icon: <Wheat size={18} />, group: "hayvancilik", badge: "YENİ" },
+
+    // Araçlar
+    { id: "aiAsistan" as TabId, label: "AI Saha Asistanı", icon: <MessageSquare size={18} />, group: "araclar", badge: "Meta AI" },
+    { id: "fotoAnaliz" as TabId, label: "Fotoğraf Analiz AI", icon: <Camera size={18} />, group: "araclar", badge: "Vision" },
+    { id: "uyduParsel" as TabId, label: "Uydu Parsel AI", icon: <Satellite size={18} />, group: "araclar", badge: "PREMIUM" },
+    { id: "tarayici" as TabId, label: "HMK 279 Tarayıcı", icon: <Microscope size={18} />, group: "araclar" },
+    { id: "ictihat" as TabId, label: "İçtihat Arama", icon: <Scale size={18} />, group: "araclar" },
+
+    // Aday Bilirkişi Eğitimleri (En altta)
+    { id: "ilkeler" as TabId, label: "İlkeler & Standartlar", icon: <ShieldCheck size={18} />, group: "egitim", badge: "RESMİ" },
+    { id: "teorik" as TabId, label: "Teorik Eğitimler", icon: <BookOpen size={18} />, group: "egitim" },
+    { id: "uyap" as TabId, label: "UYAP Simülasyonu", icon: <Monitor size={18} />, group: "egitim" },
   ];
 
   return (
@@ -932,67 +957,154 @@ export default function App() {
           </div>
         </div>
 
-        <nav className="flex-1 overflow-y-auto py-4 px-3 space-y-4">
-          <div>
-            <p className="px-3 pb-1 text-[11px] font-bold text-slate-500 tracking-wider">PANEL</p>
-            {navItems.filter((i) => i.group === "panel").map((item) => (
-              <button
-                key={item.id}
-                onClick={() => setActiveTab(item.id)}
-                className={`w-full flex items-center gap-3 px-3 py-2 rounded-xl text-[13.5px] font-medium transition ${
-                  activeTab === item.id ? "bg-white/10 text-white" : "text-slate-400 hover:bg-white/5 hover:text-white"
-                }`}
-              >
-                {item.icon} {item.label}
-              </button>
-            ))}
+        <nav className="flex-1 overflow-y-auto py-4 px-3 space-y-3">
+          {/* PANEL AKORDEON */}
+          <div className="border-b border-white/5 pb-2">
+            <button
+              onClick={() => toggleSection("panel")}
+              className="w-full flex items-center justify-between px-3 py-1.5 text-[11px] font-bold text-slate-400 hover:text-white uppercase tracking-wider transition"
+            >
+              <span className="flex items-center gap-2">
+                <LayoutDashboard size={13} className="text-slate-400" />
+                PANEL
+              </span>
+              {openSections.panel ? <ChevronDown size={14} /> : <ChevronRight size={14} />}
+            </button>
+            {openSections.panel && (
+              <div className="mt-1 space-y-1">
+                {navItems.filter((i) => i.group === "panel").map((item) => (
+                  <button
+                    key={item.id}
+                    onClick={() => setActiveTab(item.id)}
+                    className={`w-full flex items-center gap-3 px-3 py-2 rounded-xl text-[13px] font-medium transition ${
+                      activeTab === item.id ? "bg-white/10 text-white font-semibold" : "text-slate-400 hover:bg-white/5 hover:text-white"
+                    }`}
+                  >
+                    {item.icon} {item.label}
+                  </button>
+                ))}
+              </div>
+            )}
           </div>
 
-          <div>
-            <p className="px-3 pb-1 text-[11px] font-bold text-emerald-400/80 tracking-wider flex items-center gap-1.5"><Stars size={12}/> AI ARAÇLARI</p>
-            {navItems.filter((i) => i.group === "ai").map((item) => (
-              <button
-                key={item.id}
-                onClick={() => setActiveTab(item.id)}
-                className={`w-full flex items-center justify-between px-3 py-2.5 rounded-xl text-[13.5px] font-medium transition border ${
-                  activeTab === item.id ? "bg-emerald-500/15 border-emerald-500/30 text-white" : "border-transparent text-slate-300 hover:bg-white/5"
-                }`}
-              >
-                <span className="flex items-center gap-3 text-emerald-400">{item.icon} <span className="text-white">{item.label}</span></span>
-                {item.badge && <span className="text-[9px] px-1.5 py-0.5 rounded-full bg-emerald-500/20 text-emerald-300 border border-emerald-500/30">{item.badge}</span>}
-              </button>
-            ))}
+          {/* 01 TARIM AKORDEON */}
+          <div className="border-b border-white/5 pb-2">
+            <button
+              onClick={() => toggleSection("tarim")}
+              className="w-full flex items-center justify-between px-3 py-1.5 text-[11px] font-bold text-emerald-400 hover:text-emerald-300 uppercase tracking-wider transition"
+            >
+              <span className="flex items-center gap-2">
+                <Sprout size={13} className="text-emerald-400" />
+                01 TARIM
+              </span>
+              {openSections.tarim ? <ChevronDown size={14} /> : <ChevronRight size={14} />}
+            </button>
+            {openSections.tarim && (
+              <div className="mt-1 space-y-1">
+                {navItems.filter((i) => i.group === "tarim").map((item) => (
+                  <button
+                    key={item.id}
+                    onClick={() => setActiveTab(item.id)}
+                    className={`w-full flex items-center justify-between px-3 py-2 rounded-xl text-[13px] font-medium transition ${
+                      activeTab === item.id ? "bg-emerald-500/15 border border-emerald-500/30 text-white font-semibold" : "text-slate-400 hover:bg-white/5 hover:text-white"
+                    }`}
+                  >
+                    <span className="flex items-center gap-3">{item.icon} <span>{item.label}</span></span>
+                    {item.badge && <span className="text-[9px] px-1.5 py-0.5 rounded-full bg-emerald-500/20 text-emerald-300 border border-emerald-500/30">{item.badge}</span>}
+                  </button>
+                ))}
+              </div>
+            )}
           </div>
 
-          <div>
-            <p className="px-3 pb-1 text-[11px] font-bold text-slate-500 tracking-wider">MODÜLLER</p>
-            {navItems.filter((i) => i.group === "egitim" || i.group === "saas").map((item) => (
-              <button
-                key={item.id}
-                onClick={() => setActiveTab(item.id)}
-                className={`w-full flex items-center gap-3 px-3 py-2 rounded-xl text-[13.5px] font-medium transition ${
-                  activeTab === item.id ? "bg-white/10 text-white" : "text-slate-400 hover:bg-white/5 hover:text-white"
-                }`}
-              >
-                {item.icon} {item.label}
-              </button>
-            ))}
+          {/* 02 HAYVANCILIK AKORDEON */}
+          <div className="border-b border-white/5 pb-2">
+            <button
+              onClick={() => toggleSection("hayvancilik")}
+              className="w-full flex items-center justify-between px-3 py-1.5 text-[11px] font-bold text-amber-400 hover:text-amber-300 uppercase tracking-wider transition"
+            >
+              <span className="flex items-center gap-2">
+                <Beef size={13} className="text-amber-400" />
+                02 HAYVANCILIK
+              </span>
+              {openSections.hayvancilik ? <ChevronDown size={14} /> : <ChevronRight size={14} />}
+            </button>
+            {openSections.hayvancilik && (
+              <div className="mt-1 space-y-1">
+                {navItems.filter((i) => i.group === "hayvancilik").map((item) => (
+                  <button
+                    key={item.id}
+                    onClick={() => setActiveTab(item.id)}
+                    className={`w-full flex items-center justify-between px-3 py-2 rounded-xl text-[13px] font-medium transition ${
+                      activeTab === item.id ? "bg-amber-500/15 border border-amber-500/30 text-white font-semibold" : "text-slate-400 hover:bg-white/5 hover:text-white"
+                    }`}
+                  >
+                    <span className="flex items-center gap-3 text-amber-400">{item.icon} <span className="text-white">{item.label}</span></span>
+                    {item.badge && <span className="text-[9px] px-1.5 py-0.5 rounded-full bg-amber-500/20 text-amber-300 border border-amber-500/30">{item.badge}</span>}
+                  </button>
+                ))}
+              </div>
+            )}
           </div>
 
-          <div>
-            <p className="px-3 pb-1 text-[11px] font-bold text-amber-400/80 tracking-wider flex items-center gap-1.5"><Beef size={12}/> 02 HAYVANCILIK</p>
-            {navItems.filter((i) => i.group === "hayvancilik").map((item) => (
-              <button
-                key={item.id}
-                onClick={() => setActiveTab(item.id)}
-                className={`w-full flex items-center justify-between px-3 py-2.5 rounded-xl text-[13.5px] font-medium transition border ${
-                  activeTab === item.id ? "bg-amber-500/15 border-amber-500/30 text-white" : "border-transparent text-slate-300 hover:bg-white/5"
-                }`}
-              >
-                <span className="flex items-center gap-3 text-amber-400">{item.icon} <span className="text-white">{item.label}</span></span>
-                {item.badge && <span className="text-[9px] px-1.5 py-0.5 rounded-full bg-amber-500/20 text-amber-300 border border-amber-500/30">{item.badge}</span>}
-              </button>
-            ))}
+          {/* ARAÇLAR AKORDEON */}
+          <div className="border-b border-white/5 pb-2">
+            <button
+              onClick={() => toggleSection("araclar")}
+              className="w-full flex items-center justify-between px-3 py-1.5 text-[11px] font-bold text-sky-400 hover:text-sky-300 uppercase tracking-wider transition"
+            >
+              <span className="flex items-center gap-2">
+                <Wrench size={13} className="text-sky-400" />
+                ARAÇLAR
+              </span>
+              {openSections.araclar ? <ChevronDown size={14} /> : <ChevronRight size={14} />}
+            </button>
+            {openSections.araclar && (
+              <div className="mt-1 space-y-1">
+                {navItems.filter((i) => i.group === "araclar").map((item) => (
+                  <button
+                    key={item.id}
+                    onClick={() => setActiveTab(item.id)}
+                    className={`w-full flex items-center justify-between px-3 py-2 rounded-xl text-[13px] font-medium transition border ${
+                      activeTab === item.id ? "bg-sky-500/15 border-sky-500/30 text-white font-semibold" : "border-transparent text-slate-300 hover:bg-white/5"
+                    }`}
+                  >
+                    <span className="flex items-center gap-3 text-sky-400">{item.icon} <span className="text-white">{item.label}</span></span>
+                    {item.badge && <span className="text-[9px] px-1.5 py-0.5 rounded-full bg-sky-500/20 text-sky-300 border border-sky-500/30">{item.badge}</span>}
+                  </button>
+                ))}
+              </div>
+            )}
+          </div>
+
+          {/* ADAY BİLİRKİŞİ EĞİTİMLERİ AKORDEON (EN ALTA ALINDI) */}
+          <div className="pb-2">
+            <button
+              onClick={() => toggleSection("egitim")}
+              className="w-full flex items-center justify-between px-3 py-1.5 text-[11px] font-bold text-indigo-400 hover:text-indigo-300 uppercase tracking-wider transition"
+            >
+              <span className="flex items-center gap-2">
+                <GraduationCap size={13} className="text-indigo-400" />
+                ADAY BİLİRKİŞİ EĞİTİMLERİ
+              </span>
+              {openSections.egitim ? <ChevronDown size={14} /> : <ChevronRight size={14} />}
+            </button>
+            {openSections.egitim && (
+              <div className="mt-1 space-y-1">
+                {navItems.filter((i) => i.group === "egitim").map((item) => (
+                  <button
+                    key={item.id}
+                    onClick={() => setActiveTab(item.id)}
+                    className={`w-full flex items-center justify-between px-3 py-2 rounded-xl text-[13px] font-medium transition ${
+                      activeTab === item.id ? "bg-indigo-500/15 border border-indigo-500/30 text-white font-semibold" : "text-slate-400 hover:bg-white/5 hover:text-white"
+                    }`}
+                  >
+                    <span className="flex items-center gap-3 text-indigo-300">{item.icon} <span className="text-white">{item.label}</span></span>
+                    {item.badge && <span className="text-[9px] px-1.5 py-0.5 rounded-full bg-indigo-500/20 text-indigo-300 border border-indigo-500/30">{item.badge}</span>}
+                  </button>
+                ))}
+              </div>
+            )}
           </div>
         </nav>
 
