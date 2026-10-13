@@ -60,9 +60,9 @@ export const TARIM_UZMANLIK_ALANLARI: UzmanlikAlani[] = [
         arananNitelik: "Zootekni veya ilgili ziraat mühendisliği lisans mezuniyeti, arı kolonisi, bal verimi ve pestisit zehirlenmesi hasar tespitinde 5 yıl kıdem."
       },
       {
-        kod: "02.03",
+        kod: "02.05",
         ad: "Yemler ve Hayvan Besleme",
-        arananNitelik: "Hayvan besleme, kaba/kesif yem analizi ve rasyon kaynaklı verim kayıplarında 5 yıl kıdem."
+        arananNitelik: "Ziraat Mühendisliği (Zootekni veya Yemler ve Hayvan Besleme) mezuniyeti; kaba/kesif yem analizleri, rasyon formülasyonu, metabolik ve mikotoksin kaynaklı hasarlar ile yem ayıp tespitinde en az 5 yıl mesleki kıdem."
       }
     ]
   },

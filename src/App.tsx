@@ -81,6 +81,7 @@ import TemelEgitimView from "./components/TemelEgitimView";
 import UyapSimulatorView from "./components/UyapSimulatorView";
 import NdviPanel from "./components/NdviPanel";
 import HayvancilikView from "./components/HayvancilikView";
+import YemlerBeslemeView from "./components/YemlerBeslemeView";
 import {
   UFE_RATES,
   ICTIHAT_DB,
@@ -912,6 +913,7 @@ export default function App() {
     { id: "ictihat" as TabId, label: "İçtihat Arama", icon: <Scale size={18} />, group: "saas" },
     { id: "veriarsivi" as TabId, label: "Tarım Veri Arşivi", icon: <Database size={18} />, group: "saas" },
     { id: "hayvancilik" as TabId, label: "02.01 Hayvancılık", icon: <Beef size={18} />, group: "hayvancilik", badge: "YENİ" },
+    { id: "yemlerBesleme" as TabId, label: "02.05 Yemler & Besleme", icon: <Wheat size={18} />, group: "hayvancilik", badge: "YENİ" },
   ];
 
   return (
@@ -1486,6 +1488,14 @@ export default function App() {
             {/* 02.01 HAYVANCILIK */}
             {activeTab === "hayvancilik" && (
               <HayvancilikView
+                showToast={showToast}
+                onGoToWizard={() => setActiveTab("sihirbaz")}
+              />
+            )}
+
+            {/* 02.05 YEMLER VE HAYVAN BESLEME */}
+            {activeTab === "yemlerBesleme" && (
+              <YemlerBeslemeView
                 showToast={showToast}
                 onGoToWizard={() => setActiveTab("sihirbaz")}
               />
