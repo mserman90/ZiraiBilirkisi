@@ -1,0 +1,64 @@
+{
+  "name": "Zirai ve Hayvancılık Bilirkişi Portalı",
+  "short_name": "ZiraiBilirkişi",
+  "description": "01 Tarım ve 02 Hayvancılık bilirkişiliği için Yargıtay standartlarında kamulaştırma, telefat tazminatı, rasyon formülasyonu ve uydu parsel analiz portalı.",
+  "start_url": "/ZiraiBilirkisi/",
+  "scope": "/ZiraiBilirkisi/",
+  "display": "standalone",
+  "orientation": "portrait-primary",
+  "background_color": "#0f172a",
+  "theme_color": "#0f172a",
+  "categories": ["business", "productivity", "utilities", "education"],
+  "lang": "tr",
+  "dir": "ltr",
+  "icons": [
+    {
+      "src": "/ZiraiBilirkisi/icon.svg",
+      "sizes": "192x192 512x512",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/ZiraiBilirkisi/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/ZiraiBilirkisi/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ],
+  "shortcuts": [
+    {
+      "name": "Uydu Parsel AI",
+      "short_name": "Uydu Parsel",
+      "description": "Sentinel ve Esri 0.5m uydu parsel analizi",
+      "url": "/ZiraiBilirkisi/?tab=uyduParsel",
+      "icons": [{ "src": "/ZiraiBilirkisi/icon.svg", "sizes": "96x96" }]
+    },
+    {
+      "name": "Zirai Değerleme",
+      "short_name": "Kamulaştırma",
+      "description": "2942 SK m.11 Net Gelir & KFO Sihirbazı",
+      "url": "/ZiraiBilirkisi/?tab=sihirbaz",
+      "icons": [{ "src": "/ZiraiBilirkisi/icon.svg", "sizes": "96x96" }]
+    },
+    {
+      "name": "02.01 Hayvancılık",
+      "short_name": "Hayvancılık",
+      "description": "Hayvan değerleme ve telef tazminatı hesabı",
+      "url": "/ZiraiBilirkisi/?tab=hayvancilik",
+      "icons": [{ "src": "/ZiraiBilirkisi/icon.svg", "sizes": "96x96" }]
+    },
+    {
+      "name": "02.05 Yemler & Besleme",
+      "short_name": "Rasyon",
+      "description": "TMR rasyon hesabı ve yem analiz kontrolü",
+      "url": "/ZiraiBilirkisi/?tab=yemlerBesleme",
+      "icons": [{ "src": "/ZiraiBilirkisi/icon.svg", "sizes": "96x96" }]
+    }
+  ]
+}

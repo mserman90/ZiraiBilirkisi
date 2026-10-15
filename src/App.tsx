@@ -66,6 +66,8 @@ import {
   ChevronRight,
   GraduationCap,
   Wrench,
+  WifiOff,
+  Smartphone,
 } from "lucide-react";
 import {
   LineChart,
@@ -112,8 +114,42 @@ export default function App() {
     egitim: true,
   });
 
-  const toggleSection = (section: string) => {
-    setOpenSections((prev) => ({ ...prev, [section]: !prev[section] }));
+  // PWA & Çevrimdışı Durumları
+  const [isOnline, setIsOnline] = useState<boolean>(navigator.onLine);
+  const [deferredPrompt, setDeferredPrompt] = useState<any>(null);
+  const [showInstallBanner, setShowInstallBanner] = useState<boolean>(false);
+
+  useEffect(() => {
+    const handleOnline = () => setIsOnline(true);
+    const handleOffline = () => setIsOnline(false);
+
+    window.addEventListener("online", handleOnline);
+    window.addEventListener("offline", handleOffline);
+
+    const handleBeforeInstallPrompt = (e: Event) => {
+      e.preventDefault();
+      setDeferredPrompt(e);
+      setShowInstallBanner(true);
+    };
+
+    window.addEventListener("beforeinstallprompt", handleBeforeInstallPrompt);
+
+    return () => {
+      window.removeEventListener("online", handleOnline);
+      window.removeEventListener("offline", handleOffline);
+      window.removeEventListener("beforeinstallprompt", handleBeforeInstallPrompt);
+    };
+  }, []);
+
+  const handleInstallClick = async () => {
+    if (!deferredPrompt) return;
+    deferredPrompt.prompt();
+    const { outcome } = await deferredPrompt.userChoice;
+    if (outcome === "accepted") {
+      setShowInstallBanner(false);
+      showToast("Uygulama başarıyla yüklendi");
+    }
+    setDeferredPrompt(null);
   };
 
   // Wizard states
@@ -1106,28 +1142,156 @@ export default function App() {
 
       {/* Main Content */}
       <main className="flex-1 flex flex-col min-w-0 h-screen overflow-hidden">
-        {/* Mobile Header */}
-        <header className="md:hidden bg-[#0f172a] text-white px-4 py-3 flex items-center justify-between">
-          <div className="flex items-center gap-2">
-            <Leaf size={18} className="text-emerald-400" />
-            <span className="font-bold text-sm">Ziraat Asistan</span>
+        {/* Mobile Header with PWA & Connection status */}
+        <header className="md:hidden bg-[#0f172a] text-white px-4 py-3 flex items-center justify-between border-b border-white/10 shrink-0 sticky top-0 z-30 shadow-md">
+          <div className="flex items-center gap-2.5">
+            <button
+              onClick={() => setActiveTab("hero")}
+              className="w-8 h-8 rounded-lg bg-emerald-500/20 border border-emerald-500/30 flex items-center justify-center text-emerald-400"
+            >
+              <Leaf size={16} />
+            </button>
+            <div>
+              <span className="font-bold text-sm block leading-none">Ziraat Asistan</span>
+              <span className="text-[10px] text-emerald-400 font-medium">01 Tarım • 02 Hayvancılık</span>
+            </div>
           </div>
-          <button onClick={() => setMobileOpen(!mobileOpen)} className="p-1.5 rounded-lg bg-white/10">
-            {mobileOpen ? <X size={20} /> : <Menu size={20} />}
-          </button>
+
+          <div className="flex items-center gap-2">
+            {!isOnline && (
+              <span className="flex items-center gap-1 text-[10px] bg-rose-500/20 text-rose-300 border border-rose-500/40 px-2 py-0.5 rounded-full">
+                <WifiOff size={10} /> Çevrimdışı
+              </span>
+            )}
+            {showInstallBanner && (
+              <button
+                onClick={handleInstallClick}
+                className="flex items-center gap-1 text-[11px] bg-emerald-500 text-slate-950 font-bold px-2.5 py-1 rounded-lg shadow-sm"
+              >
+                <Smartphone size={12} /> Yükle
+              </button>
+            )}
+            <button
+              onClick={() => setMobileOpen(!mobileOpen)}
+              className="p-1.5 rounded-lg bg-white/10 hover:bg-white/15 text-slate-200"
+              aria-label="Menü"
+            >
+              {mobileOpen ? <X size={20} /> : <Menu size={20} />}
+            </button>
+          </div>
         </header>
 
+        {/* Offline notification banner if network is disconnected */}
+        {!isOnline && (
+          <div className="bg-amber-500/15 border-b border-amber-500/30 px-4 py-1.5 text-xs text-amber-200 flex items-center justify-center gap-2">
+            <WifiOff size={13} className="text-amber-400" />
+            <span>İnternet bağlantısı kesildi. Çevrimdışı yerel bilgi bankası ve rasyon motoru aktif.</span>
+          </div>
+        )}
+
+        {/* Rich Mobile Drawer / Accordion Navigation */}
         {mobileOpen && (
-          <div className="md:hidden absolute inset-0 z-40 bg-[#0f172a] pt-14 p-4 space-y-1">
-            {navItems.map((item) => (
+          <div className="md:hidden fixed inset-0 z-50 bg-[#0f172a]/95 backdrop-blur-md pt-16 p-4 overflow-y-auto space-y-4 flex flex-col">
+            <div className="flex justify-between items-center pb-2 border-b border-white/10">
+              <span className="text-xs font-bold text-slate-400 tracking-wider">NAVİGASYON</span>
               <button
-                key={item.id}
-                onClick={() => { setActiveTab(item.id); setMobileOpen(false); }}
-                className="w-full flex items-center gap-3 px-4 py-3 rounded-xl text-left text-slate-200"
+                onClick={() => setMobileOpen(false)}
+                className="p-1.5 rounded-lg bg-white/10 text-slate-300"
               >
-                {item.icon} {item.label}
+                <X size={18} />
               </button>
-            ))}
+            </div>
+
+            <button
+              onClick={() => { setActiveTab("hero"); setMobileOpen(false); }}
+              className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl text-left text-sm font-semibold transition ${
+                activeTab === "hero" ? "bg-emerald-500/20 text-emerald-300 border border-emerald-500/40" : "text-slate-200 bg-white/5"
+              }`}
+            >
+              <Home size={18} className="text-emerald-400" />
+              <span>Ana Sayfa (Platform Tanıtımı)</span>
+            </button>
+
+            {/* 01 TARIM */}
+            <div className="space-y-1">
+              <p className="text-[11px] font-bold text-emerald-400 px-2 tracking-wider">01 TARIM</p>
+              {navItems.filter(i => i.group === "tarim").map((item) => (
+                <button
+                  key={item.id}
+                  onClick={() => { setActiveTab(item.id); setMobileOpen(false); }}
+                  className={`w-full flex items-center justify-between px-4 py-2.5 rounded-xl text-left text-xs font-medium transition ${
+                    activeTab === item.id ? "bg-emerald-500/20 text-emerald-300 border border-emerald-500/30 font-bold" : "text-slate-300 bg-white/5"
+                  }`}
+                >
+                  <span className="flex items-center gap-3">{item.icon} {item.label}</span>
+                  {item.badge && <span className="text-[9px] px-1.5 py-0.5 rounded-full bg-emerald-500/20 text-emerald-300">{item.badge}</span>}
+                </button>
+              ))}
+            </div>
+
+            {/* 02 HAYVANCILIK */}
+            <div className="space-y-1">
+              <p className="text-[11px] font-bold text-amber-400 px-2 tracking-wider">02 HAYVANCILIK</p>
+              {navItems.filter(i => i.group === "hayvancilik").map((item) => (
+                <button
+                  key={item.id}
+                  onClick={() => { setActiveTab(item.id); setMobileOpen(false); }}
+                  className={`w-full flex items-center justify-between px-4 py-2.5 rounded-xl text-left text-xs font-medium transition ${
+                    activeTab === item.id ? "bg-amber-500/20 text-amber-300 border border-amber-500/30 font-bold" : "text-slate-300 bg-white/5"
+                  }`}
+                >
+                  <span className="flex items-center gap-3 text-amber-400">{item.icon} <span className="text-white">{item.label}</span></span>
+                  {item.badge && <span className="text-[9px] px-1.5 py-0.5 rounded-full bg-amber-500/20 text-amber-300">{item.badge}</span>}
+                </button>
+              ))}
+            </div>
+
+            {/* ARAÇLAR */}
+            <div className="space-y-1">
+              <p className="text-[11px] font-bold text-sky-400 px-2 tracking-wider">ARAÇLAR</p>
+              {navItems.filter(i => i.group === "araclar").map((item) => (
+                <button
+                  key={item.id}
+                  onClick={() => { setActiveTab(item.id); setMobileOpen(false); }}
+                  className={`w-full flex items-center justify-between px-4 py-2.5 rounded-xl text-left text-xs font-medium transition ${
+                    activeTab === item.id ? "bg-sky-500/20 text-sky-300 border border-sky-500/30 font-bold" : "text-slate-300 bg-white/5"
+                  }`}
+                >
+                  <span className="flex items-center gap-3 text-sky-400">{item.icon} <span className="text-white">{item.label}</span></span>
+                  {item.badge && <span className="text-[9px] px-1.5 py-0.5 rounded-full bg-sky-500/20 text-sky-300">{item.badge}</span>}
+                </button>
+              ))}
+            </div>
+
+            {/* EĞİTİMLER */}
+            <div className="space-y-1">
+              <p className="text-[11px] font-bold text-indigo-400 px-2 tracking-wider">ADAY BİLİRKİŞİ EĞİTİMLERİ</p>
+              {navItems.filter(i => i.group === "egitim").map((item) => (
+                <button
+                  key={item.id}
+                  onClick={() => { setActiveTab(item.id); setMobileOpen(false); }}
+                  className={`w-full flex items-center justify-between px-4 py-2.5 rounded-xl text-left text-xs font-medium transition ${
+                    activeTab === item.id ? "bg-indigo-500/20 text-indigo-300 border border-indigo-500/30 font-bold" : "text-slate-300 bg-white/5"
+                  }`}
+                >
+                  <span className="flex items-center gap-3 text-indigo-300">{item.icon} <span className="text-white">{item.label}</span></span>
+                  {item.badge && <span className="text-[9px] px-1.5 py-0.5 rounded-full bg-indigo-500/20 text-indigo-300">{item.badge}</span>}
+                </button>
+              ))}
+            </div>
+
+            {/* PWA Install Button inside menu if available */}
+            {showInstallBanner && (
+              <div className="pt-3 border-t border-white/10">
+                <button
+                  onClick={handleInstallClick}
+                  className="w-full flex items-center justify-center gap-2 py-3 bg-gradient-to-r from-emerald-500 to-teal-500 text-slate-950 font-bold rounded-xl shadow-lg text-sm"
+                >
+                  <Smartphone size={16} />
+                  <span>Uygulamayı Telefona Yükle</span>
+                </button>
+              </div>
+            )}
           </div>
         )}
 
@@ -1537,6 +1701,59 @@ export default function App() {
             )}
           </div>
         </div>
+
+        {/* Mobile Bottom Navigation Bar (Sahada Tek Elle Kolay Kullanım) */}
+        <nav className="md:hidden bg-[#0f172a] border-t border-white/10 px-2 py-1.5 flex items-center justify-around shrink-0 z-30 shadow-2xl safe-area-bottom">
+          <button
+            onClick={() => setActiveTab("hero")}
+            className={`flex flex-col items-center justify-center py-1 px-2 rounded-lg text-[10px] font-medium transition ${
+              activeTab === "hero" ? "text-emerald-400 font-bold" : "text-slate-400 hover:text-slate-200"
+            }`}
+          >
+            <Home size={17} className={activeTab === "hero" ? "text-emerald-400" : "text-slate-400"} />
+            <span className="mt-0.5">Ana Sayfa</span>
+          </button>
+
+          <button
+            onClick={() => setActiveTab("sihirbaz")}
+            className={`flex flex-col items-center justify-center py-1 px-2 rounded-lg text-[10px] font-medium transition ${
+              activeTab === "sihirbaz" || activeTab === "veriarsivi" ? "text-emerald-400 font-bold" : "text-slate-400 hover:text-slate-200"
+            }`}
+          >
+            <Sprout size={17} className={activeTab === "sihirbaz" ? "text-emerald-400" : "text-slate-400"} />
+            <span className="mt-0.5">01 Tarım</span>
+          </button>
+
+          <button
+            onClick={() => setActiveTab("hayvancilik")}
+            className={`flex flex-col items-center justify-center py-1 px-2 rounded-lg text-[10px] font-medium transition ${
+              activeTab === "hayvancilik" || activeTab === "yemlerBesleme" ? "text-amber-400 font-bold" : "text-slate-400 hover:text-slate-200"
+            }`}
+          >
+            <Beef size={17} className={activeTab === "hayvancilik" || activeTab === "yemlerBesleme" ? "text-amber-400" : "text-slate-400"} />
+            <span className="mt-0.5">02 Hayvan</span>
+          </button>
+
+          <button
+            onClick={() => setActiveTab("uyduParsel")}
+            className={`flex flex-col items-center justify-center py-1 px-2 rounded-lg text-[10px] font-medium transition ${
+              activeTab === "uyduParsel" || activeTab === "aiAsistan" || activeTab === "fotoAnaliz" || activeTab === "tarayici" || activeTab === "ictihat"
+                ? "text-sky-400 font-bold"
+                : "text-slate-400 hover:text-slate-200"
+            }`}
+          >
+            <Satellite size={17} className={activeTab === "uyduParsel" ? "text-sky-400" : "text-slate-400"} />
+            <span className="mt-0.5">Uydu / AI</span>
+          </button>
+
+          <button
+            onClick={() => setMobileOpen(true)}
+            className="flex flex-col items-center justify-center py-1 px-2 rounded-lg text-[10px] font-medium text-slate-400 hover:text-slate-200"
+          >
+            <Menu size={17} />
+            <span className="mt-0.5">Tüm Menü</span>
+          </button>
+        </nav>
       </main>
 
       {/* PDF Modal */}

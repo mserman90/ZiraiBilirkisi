@@ -8,15 +8,30 @@
     <meta property="og:title" content="Zirai Bilirkişi (01 Tarım) Portalı" />
     <meta property="og:description" content="Meta AI destekli, Yargıtay içtihatları ve 351 sayfalık rehbere dayalı Zirai Bilirkişi (01 Tarım) Eğitim, Uydu Parsel & Asistan Portalı." />
     <meta property="og:type" content="website" />
-    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="theme-color" content="#0f172a" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+    <meta name="apple-mobile-web-app-title" content="ZiraiBilirkişi" />
+    <link rel="manifest" href="/ZiraiBilirkisi/manifest.json" />
+    <link rel="icon" type="image/svg+xml" href="/ZiraiBilirkisi/icon.svg" />
+    <link rel="apple-touch-icon" href="/ZiraiBilirkisi/apple-touch-icon.png" />
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
   </head>
-  <body class="bg-slate-50 antialiased">
+  <body class="bg-slate-50 antialiased select-none md:select-auto">
     <div id="root"></div>
     <script type="module" src="/src/main.tsx"></script>
+    <script>
+      if ('serviceWorker' in navigator) {
+        window.addEventListener('load', () => {
+          navigator.serviceWorker.register('/ZiraiBilirkisi/sw.js')
+            .then(reg => console.log('PWA ServiceWorker registered with scope:', reg.scope))
+            .catch(err => console.log('ServiceWorker registration skipped or failed:', err));
+        });
+      }
+    </script>
   </body>
 </html>
 
