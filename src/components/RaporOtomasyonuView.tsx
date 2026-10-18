@@ -41,6 +41,8 @@ import {
   TreePine,
   Building2,
   Scissors,
+  Users,
+  UserCheck,
 } from "lucide-react";
 import {
   DAVA_TURLERI_DB,
@@ -95,9 +97,53 @@ export default function RaporOtomasyonuView({
   const [davali, setDavali] = useState(selectedDava.ornekVeriler.davali);
   const [davaliVekili, setDavaliVekili] = useState(selectedDava.ornekVeriler.davaliVekili);
   const [davaKonusu, setDavaKonusu] = useState(selectedDava.ornekVeriler.konu);
+  // Rapor Görevlendirme Biçimi: "tek" (Münferit Bilirkişi) | "heyet_3" (3 Kişilik Bilirkişi Kurulu)
+  const [raporTuru, setRaporTuru] = useState<"tek" | "heyet_3">("heyet_3");
+
+  // 1. Bilirkişi (Heyet Başkanı / Ziraat Mühendisi)
   const [bilirkisiAdi, setBilirkisiAdi] = useState("Zir. Yük. Müh. Ahmet YILMAZ");
   const [bilirkisiUnvan, setBilirkisiUnvan] = useState("Ziraat Yüksek Mühendisi / Tarım Ekonomisti");
   const [bilirkisiSicilNo, setBilirkisiSicilNo] = useState("06-2024-1184");
+  const [bilirkisiGorev, setBilirkisiGorev] = useState("Heyet Başkanı - Zirai Gelir ve Münavebe Değerlemesi");
+
+  // 2. Bilirkişi (Fen / Harita ve Kadastro Mühendisi)
+  const [bilirkisi2Adi, setBilirkisi2Adi] = useState("Harita Müh. Mustafa KAYA");
+  const [bilirkisi2Unvan, setBilirkisi2Unvan] = useState("Harita ve Kadastro Yüksek Mühendisi (LİHKAB Lisanslı)");
+  const [bilirkisi2SicilNo, setBilirkisi2SicilNo] = useState("06-2023-0892");
+  const [bilirkisi2Gorev, setBilirkisi2Gorev] = useState("Fen Bilirkişisi - Kadastro Sınırları, Aplikasyon ve İrtifak Güzergahı");
+  const [bilirkisi2TeknikNot, setBilirkisi2TeknikNot] = useState(
+    "Dava konusu parselin kadastro çapı ve paftası ile zemindeki fiili sınırları çakıştırılmış; elektronik takeometre ve RTK-GPS cihazı ile yapılan ölçümlerde komşu parsellere sınır tecavüzü bulunmadığı, yüzölçümünün tapu kaydı ile birebir uyumlu olduğu (ITRF96 koordinatlı) ve irtifak güzergahının fen krokisinde kırmızı hatla gösterildiği saptanmıştır."
+  );
+
+  // 3. Bilirkişi (Mülk Bilirkişisi / Gayrimenkul Değerleme Uzmanı)
+  const [bilirkisi3Adi, setBilirkisi3Adi] = useState("Değ. Uzm. Selin ERDEM");
+  const [bilirkisi3Unvan, setBilirkisi3Unvan] = useState("SPK Lisanslı Gayrimenkul Değerleme Uzmanı / İnşaat Müh.");
+  const [bilirkisi3SicilNo, setBilirkisi3SicilNo] = useState("06-2022-0451");
+  const [bilirkisi3Gorev, setBilirkisi3Gorev] = useState("Mülk Bilirkişisi - İmar Durumu, Ulaşım, ODA ve Arsa/Arazi Ayrımı");
+  const [bilirkisi3TeknikNot, setBilirkisi3TeknikNot] = useState(
+    "Taşınmazın 1983/6122 sayılı Bakanlar Kurulu Kararı kriterleri ve Yargıtay İçtihadı Birleştirme Kararları uyarınca imar ve yerleşim durumu incelenmiş; belediye mücavir alanında bulunmakla birlikte nazım imar planı bulunmadığı ve tarımsal vasfını koruduğu, anayola 250 m cephesi ve lojistik üstünlükleri sebebiyle %20 oranında objektif değer artırıcı (ODA) unsura sahip olduğu tespit edilmiştir."
+  );
+
+  // Kurul Karar Niteliği & Muhalefet Şerhi (Karşı Oy)
+  const [kararTuru, setKararTuru] = useState<"oybirligi" | "oycoklugu">("oybirligi");
+  const [muhalifBilirkisi, setMuhalifBilirkisi] = useState<"bilirkisi_1" | "bilirkisi_2" | "bilirkisi_3">("bilirkisi_3");
+  const [karsiOyMetni, setKarsiOyMetni] = useState(
+    "Sayın Çoğunluğun kapitalizasyon faiz oranını (KFO) %5 olarak kabul etmesine ve ODA oranını %20 olarak takdir etmesine karşın; parselin DSİ sulama kanalına 10 metre mesafede olması, yılda iki ürün (buğday + 2. ürün mısır) ekilerek yüksek katma değer üretmesi ve ilçe merkezine çok yakın konumu nazara alındığında, KFO oranının %4.5 olarak uygulanması ve nihai metrekare birim değerinin buna göre hesaplanması gerektiği kanaatiyle çoğunluk görüşüne muhalifim."
+  );
+  const [karsiOyTutari, setKarsiOyTutari] = useState<number>(0);
+
+  const muhalifBilirkisiAdi = useMemo(() => {
+    if (muhalifBilirkisi === "bilirkisi_1") return bilirkisiAdi;
+    if (muhalifBilirkisi === "bilirkisi_2") return bilirkisi2Adi;
+    return bilirkisi3Adi;
+  }, [muhalifBilirkisi, bilirkisiAdi, bilirkisi2Adi, bilirkisi3Adi]);
+
+  const muhalifBilirkisiUnvani = useMemo(() => {
+    if (muhalifBilirkisi === "bilirkisi_1") return bilirkisiUnvan;
+    if (muhalifBilirkisi === "bilirkisi_2") return bilirkisi2Unvan;
+    return bilirkisi3Unvan;
+  }, [muhalifBilirkisi, bilirkisiUnvan, bilirkisi2Unvan, bilirkisi3Unvan]);
+
   const [kesifTarihi, setKesifTarihi] = useState(new Date().toISOString().split("T")[0]);
   const [raporTarihi, setRaporTarihi] = useState(new Date().toISOString().split("T")[0]);
 
@@ -238,6 +284,12 @@ export default function RaporOtomasyonuView({
     if (d.ornekVeriler.gidaAnalizDegeri) setGidaAnalizDegeri(d.ornekVeriler.gidaAnalizDegeri);
     if (d.ornekVeriler.gidaStandartDeger) setGidaStandartDeger(d.ornekVeriler.gidaStandartDeger);
 
+    if (davaId === "kamulastirma_tarla" || davaId === "irtifak_hakki") {
+      setRaporTuru("heyet_3");
+    } else {
+      setRaporTuru("tek");
+    }
+
     setActiveSubTab("kokRapor");
     setCurrentStep(1);
     showToast(`✅ ${d.ad} şablonu ve resmi soru kalıpları yüklendi`);
@@ -353,6 +405,10 @@ export default function RaporOtomasyonuView({
 
 <div class="header-box">
   <h1>T.C.<br>${mahkemeAdi.toUpperCase()}<br>SAYIN HAKİMLİĞİ'NE</h1>
+  <p style="font-size: 11pt; font-weight: bold; text-align: center; margin-top: 6px; color: #1e293b;">
+    ${raporTuru === "heyet_3" ? "BİLİRKİŞİ KURULU (HEYET) RAPORU" : "BİLİRKİŞİ RAPORU"}
+    ${raporTuru === "heyet_3" ? (kararTuru === "oybirligi" ? " - OYBİRLİĞİ" : " - OYÇOKLUĞU (KARŞI OYLU)") : ""}
+  </p>
 </div>
 
 <table>
@@ -362,13 +418,32 @@ export default function RaporOtomasyonuView({
   <tr><td class="bold">DAVALI</td><td>: ${davali}</td></tr>
   <tr><td class="bold">DAVALI VEKİLİ</td><td>: ${davaliVekili}</td></tr>
   <tr><td class="bold">DAVA KONUSU</td><td>: ${davaKonusu}</td></tr>
-  <tr><td class="bold">BİLİRKİŞİ</td><td>: ${bilirkisiAdi} (${bilirkisiUnvan}) - Sicil No: ${bilirkisiSicilNo}</td></tr>
+  ${
+    raporTuru === "heyet_3"
+      ? `<tr>
+    <td class="bold">BİLİRKİŞİ KURULU</td>
+    <td>
+      1. <b>${bilirkisiAdi}</b> (${bilirkisiUnvan}) - Sicil No: ${bilirkisiSicilNo} [${bilirkisiGorev}]<br>
+      2. <b>${bilirkisi2Adi}</b> (${bilirkisi2Unvan}) - Sicil No: ${bilirkisi2SicilNo} [${bilirkisi2Gorev}]<br>
+      3. <b>${bilirkisi3Adi}</b> (${bilirkisi3Unvan}) - Sicil No: ${bilirkisi3SicilNo} [${bilirkisi3Gorev}]
+    </td>
+  </tr>
+  <tr>
+    <td class="bold">KURUL KARAR TÜRÜ</td>
+    <td>: ${
+      kararTuru === "oybirligi"
+        ? "<span style='color: #047857; font-weight: bold;'>OYBİRLİĞİ İLE TANZİM EDİLMİŞTİR</span>"
+        : `<span style='color: #b45309; font-weight: bold;'>OYÇOKLUĞU İLE TANZİM EDİLMİŞTİR (${muhalifBilirkisiAdi} Muhalefet Şerhlidir)</span>`
+    }</td>
+  </tr>`
+      : `<tr><td class="bold">BİLİRKİŞİ</td><td>: ${bilirkisiAdi} (${bilirkisiUnvan}) - Sicil No: ${bilirkisiSicilNo}</td></tr>`
+  }
   <tr><td class="bold">KEŞİF TARİHİ</td><td>: ${kesifTarihi}</td></tr>
   <tr><td class="bold">RAPOR TARİHİ</td><td>: ${raporTarihi}</td></tr>
 </table>
 
 <h2>I. İNCELEMENİN KONUSU VE KAPSAMI</h2>
-<p>Sayın Mahkemenizin ${dosyaNo} sayılı dosyasında verilen ara kararı uyarınca; taraflar arasındaki uyuşmazlığın çözümü için bilirkişiliğimize tevdi edilen dosya içeriğindeki bilgi, belge, keşif tutanağı ve mahallinde yapılan gözlemler doğrultusunda ${davaKonusu} kapsamında teknik ve bilimsel inceleme yapılarak gerekçeli raporun tanzim edilmesidir.</p>
+<p>Sayın Mahkemenizin ${dosyaNo} sayılı dosyasında verilen ara kararı uyarınca; taraflar arasındaki uyuşmazlığın çözümü için ${raporTuru === "heyet_3" ? "bilirkişi kurulumuza" : "bilirkişiliğimize"} tevdi edilen dosya içeriğindeki bilgi, belge, keşif tutanağı ve mahallinde yapılan gözlemler doğrultusunda ${davaKonusu} kapsamında teknik ve bilimsel inceleme yapılarak gerekçeli raporun tanzim edilmesidir.</p>
 
 <h2>II. BİLİRKİŞİNİN CEVAPLAMASI GEREKEN TEKNİK SORULAR</h2>
 <p>Sayın Mahkemenizce tarafımıza yöneltilen ve çözümü özel veya teknik bilgiyi gerektiren hususlar şunlardır:</p>
@@ -381,6 +456,25 @@ export default function RaporOtomasyonuView({
 
 <h2>IV. MAHALLİNDE YAPILAN KEŞİF VE FİİLİ TESPİTLER</h2>
 <p>${fiiliDurumAciklamasi}</p>
+
+${
+  raporTuru === "heyet_3"
+    ? `<div style="background-color: #f8fafc; border: 1px solid #cbd5e1; border-radius: 4px; padding: 10px 14px; margin: 12px 0;">
+  <p style="margin: 0 0 4px 0; font-weight: bold; color: #0f172a; font-size: 10.5pt;">
+    A) FEN / HARİTA VE KADASTRO BİLİRKİŞİSİ TESPİTİ (${bilirkisi2Adi}):
+  </p>
+  <p style="margin: 0; font-size: 10pt; color: #334155; line-height: 1.5;">${bilirkisi2TeknikNot}</p>
+</div>
+
+<div style="background-color: #f8fafc; border: 1px solid #cbd5e1; border-radius: 4px; padding: 10px 14px; margin: 12px 0;">
+  <p style="margin: 0 0 4px 0; font-weight: bold; color: #0f172a; font-size: 10.5pt;">
+    B) MÜLK BİLİRKİŞİSİ / DEĞERLEME UZMANI TESPİTİ (${bilirkisi3Adi}):
+  </p>
+  <p style="margin: 0; font-size: 10pt; color: #334155; line-height: 1.5;">${bilirkisi3TeknikNot}</p>
+</div>`
+    : ""
+}
+
 <table>
   <tr><th colspan="2">TAŞINMAZ / VARLIK TESPİT BİLGİLERİ</th></tr>
   <tr><td class="bold" style="width: 35%;">İli / İlçesi / Köyü</td><td>${parselIl} / ${parselIlce} / ${parselKoy}</td></tr>
@@ -470,21 +564,99 @@ ${
 <h2>VI. HMK 279 UYUMLU SONUÇ VE KANAAT</h2>
 <p style="white-space: pre-line;">${generatedKanaatMetni}</p>
 
-<h2>VII. İMZA VE EKLER LİSTESİ</h2>
+${
+  raporTuru === "heyet_3" && kararTuru === "oycoklugu"
+    ? `<h2>VII. MUHALEFET ŞERHİ (KARŞI OY GEREKÇESİ)</h2>
+<div style="background-color: #fffbeb; border: 1px solid #fde68a; border-left: 5px solid #d97706; padding: 12px 14px; margin: 12px 0;">
+  <p style="margin: 0 0 6px 0; font-weight: bold; color: #92400e; font-size: 10.5pt;">
+    MUHALİF BİLİRKİŞİ: ${muhalifBilirkisiAdi} (${muhalifBilirkisiUnvani})
+  </p>
+  <p style="margin: 0 0 8px 0; font-size: 10pt; color: #78350f; white-space: pre-line; line-height: 1.5;">
+    ${karsiOyMetni}
+  </p>
+  ${
+    karsiOyTutari > 0
+      ? `<p style="margin: 0; font-weight: bold; color: #b45309; font-size: 10.5pt;">
+    Muhalif Üyenin Takdir Ettiği Toplam Bedel Kanaati: ₺${karsiOyTutari.toLocaleString("tr-TR")}
+  </p>`
+      : ""
+  }
+</div>`
+    : ""
+}
+
+<h2>${raporTuru === "heyet_3" && kararTuru === "oycoklugu" ? "VIII" : "VII"}. İMZA VE EKLER LİSTESİ</h2>
 <p>İşbu rapor 3 (üç) nüsha olarak tanzim edilmiş olup, bir nüshası ıslak imzalı/e-imzalı olarak dosyasında saklanmak üzere Sayın Mahkemenize saygıyla arz olunur.</p>
 
 <p><b>Ekler:</b><br>
 1. Mahallinde çekilen fotoğraflar ve uydu görüntüleri albümü<br>
 2. İlçe Tarım ve Orman Müdürlüğü resmi münavebe maliyet cetveli onaylı örneği<br>
-3. Kadastro çapı ve aplikasyon krokisi<br>
-4. Bilirkişi yetki belgesi ve oda tescil belgesi</p>
+3. Kadastro çapı ve aplikasyon krokisi (Fen Bilirkişisi)<br>
+4. Bilirkişi yetki belgeleri ve oda tescil belgeleri</p>
 
-<div class="signature-box">
+${
+  raporTuru === "heyet_3"
+    ? `<div style="margin-top: 36px; border-top: 1px solid #cbd5e1; padding-top: 18px;">
+  <table style="border: none; width: 100%; border-collapse: collapse;">
+    <tr style="border: none;">
+      <td style="border: none; text-align: center; width: 33%; vertical-align: top; padding: 8px;">
+        <p style="font-weight: bold; margin: 0; font-size: 10.5pt; color: #0f172a;">${bilirkisiAdi}</p>
+        <p style="font-size: 9pt; color: #475569; margin: 2px 0;">${bilirkisiUnvan}</p>
+        <p style="font-size: 8.5pt; color: #64748b; margin: 2px 0;">Sicil No: ${bilirkisiSicilNo}</p>
+        <p style="font-size: 9.5pt; color: ${
+          kararTuru === "oycoklugu" && muhalifBilirkisi === "bilirkisi_1"
+            ? "#b45309"
+            : "#047857"
+        }; font-weight: bold; margin-top: 6px;">
+          ${
+            kararTuru === "oycoklugu" && muhalifBilirkisi === "bilirkisi_1"
+              ? "(Karşı Oyla - e-İmzalı)"
+              : "(Heyet Başkanı - e-İmzalı)"
+          }
+        </p>
+      </td>
+      <td style="border: none; text-align: center; width: 33%; vertical-align: top; padding: 8px;">
+        <p style="font-weight: bold; margin: 0; font-size: 10.5pt; color: #0f172a;">${bilirkisi2Adi}</p>
+        <p style="font-size: 9pt; color: #475569; margin: 2px 0;">${bilirkisi2Unvan}</p>
+        <p style="font-size: 8.5pt; color: #64748b; margin: 2px 0;">Sicil No: ${bilirkisi2SicilNo}</p>
+        <p style="font-size: 9.5pt; color: ${
+          kararTuru === "oycoklugu" && muhalifBilirkisi === "bilirkisi_2"
+            ? "#b45309"
+            : "#047857"
+        }; font-weight: bold; margin-top: 6px;">
+          ${
+            kararTuru === "oycoklugu" && muhalifBilirkisi === "bilirkisi_2"
+              ? "(Karşı Oyla - e-İmzalı)"
+              : "(Fen / Harita Bilirkişisi - e-İmzalı)"
+          }
+        </p>
+      </td>
+      <td style="border: none; text-align: center; width: 33%; vertical-align: top; padding: 8px;">
+        <p style="font-weight: bold; margin: 0; font-size: 10.5pt; color: #0f172a;">${bilirkisi3Adi}</p>
+        <p style="font-size: 9pt; color: #475569; margin: 2px 0;">${bilirkisi3Unvan}</p>
+        <p style="font-size: 8.5pt; color: #64748b; margin: 2px 0;">Sicil No: ${bilirkisi3SicilNo}</p>
+        <p style="font-size: 9.5pt; color: ${
+          kararTuru === "oycoklugu" && muhalifBilirkisi === "bilirkisi_3"
+            ? "#b45309"
+            : "#047857"
+        }; font-weight: bold; margin-top: 6px;">
+          ${
+            kararTuru === "oycoklugu" && muhalifBilirkisi === "bilirkisi_3"
+              ? "(Karşı Oyla - e-İmzalı)"
+              : "(Mülk Bilirkişisi - e-İmzalı)"
+          }
+        </p>
+      </td>
+    </tr>
+  </table>
+</div>`
+    : `<div class="signature-box">
   <p><b>${bilirkisiAdi}</b><br>
   ${bilirkisiUnvan}<br>
   Sicil No: ${bilirkisiSicilNo}<br>
-  (e-İmzalıdır)</p>
-</div>
+  <span style="color: #047857; font-weight: bold;">(e-İmzalıdır)</span></p>
+</div>`
+}
 
 </body>
 </html>`;
@@ -496,9 +668,27 @@ ${
     davali,
     davaliVekili,
     davaKonusu,
+    raporTuru,
     bilirkisiAdi,
     bilirkisiUnvan,
     bilirkisiSicilNo,
+    bilirkisiGorev,
+    bilirkisi2Adi,
+    bilirkisi2Unvan,
+    bilirkisi2SicilNo,
+    bilirkisi2Gorev,
+    bilirkisi2TeknikNot,
+    bilirkisi3Adi,
+    bilirkisi3Unvan,
+    bilirkisi3SicilNo,
+    bilirkisi3Gorev,
+    bilirkisi3TeknikNot,
+    kararTuru,
+    muhalifBilirkisi,
+    muhalifBilirkisiAdi,
+    muhalifBilirkisiUnvani,
+    karsiOyMetni,
+    karsiOyTutari,
     kesifTarihi,
     raporTarihi,
     mahkemeSorulari,
@@ -974,18 +1164,6 @@ ${
 
             <div>
               <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">
-                Bilirkişilik Bölge Kurulu Sicil No
-              </label>
-              <input
-                type="text"
-                value={bilirkisiSicilNo}
-                onChange={(e) => setBilirkisiSicilNo(e.target.value)}
-                className="w-full px-3 py-2 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-xs font-medium text-slate-800 dark:text-slate-100 focus:ring-2 focus:ring-emerald-500 outline-none"
-              />
-            </div>
-
-            <div>
-              <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">
                 Keşif Tarihi
               </label>
               <input
@@ -1007,6 +1185,323 @@ ${
                 className="w-full px-3 py-2 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-xs font-medium text-slate-800 dark:text-slate-100 focus:ring-2 focus:ring-emerald-500 outline-none"
               />
             </div>
+          </div>
+
+          {/* BİLİRKİŞİ GÖREVLENDİRME BİÇİMİ (MÜNFERİT vs 3'LÜ KURUL) */}
+          <div className="bg-slate-50 dark:bg-slate-800/40 rounded-2xl p-5 border border-slate-200 dark:border-slate-700 space-y-4">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-slate-200 dark:border-slate-700 pb-3">
+              <div>
+                <h3 className="text-xs font-bold text-slate-800 dark:text-slate-100 uppercase tracking-wider flex items-center gap-2">
+                  <Users size={16} className="text-emerald-600 dark:text-emerald-400" />
+                  Bilirkişi Görevlendirme Biçimi & Heyet Yapısı
+                </h3>
+                <p className="text-[11px] text-slate-500 dark:text-slate-400 mt-0.5">
+                  Kamulaştırma ve büyük zirai hasar davalarında mahkemelerce 3'lü kurul (Ziraat + Fen/Harita + Mülk) görevlendirilir.
+                </p>
+              </div>
+
+              <div className="flex items-center gap-1.5 bg-white dark:bg-slate-900 p-1 rounded-xl border border-slate-200 dark:border-slate-700 shrink-0">
+                <button
+                  type="button"
+                  onClick={() => setRaporTuru("tek")}
+                  className={`px-3 py-1.5 rounded-lg text-xs font-bold transition flex items-center gap-1.5 cursor-pointer ${
+                    raporTuru === "tek"
+                      ? "bg-emerald-600 text-white shadow-xs"
+                      : "text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800"
+                  }`}
+                >
+                  <FileText size={13} />
+                  Münferit (Tek Kişi)
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setRaporTuru("heyet_3")}
+                  className={`px-3 py-1.5 rounded-lg text-xs font-bold transition flex items-center gap-1.5 cursor-pointer ${
+                    raporTuru === "heyet_3"
+                      ? "bg-emerald-600 text-white shadow-xs"
+                      : "text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800"
+                  }`}
+                >
+                  <Users size={13} />
+                  3'lü Bilirkişi Kurulu (Heyet)
+                </button>
+              </div>
+            </div>
+
+            {raporTuru === "tek" ? (
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+                <div>
+                  <label className="block text-[11px] font-bold text-slate-700 dark:text-slate-300 mb-1">
+                    Bilirkişi Adı Soyadı
+                  </label>
+                  <input
+                    type="text"
+                    value={bilirkisiAdi}
+                    onChange={(e) => setBilirkisiAdi(e.target.value)}
+                    className="w-full px-3 py-2 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-xs font-medium text-slate-800 dark:text-slate-100 outline-none"
+                  />
+                </div>
+                <div>
+                  <label className="block text-[11px] font-bold text-slate-700 dark:text-slate-300 mb-1">
+                    Unvanı / Uzmanlık Alanı
+                  </label>
+                  <input
+                    type="text"
+                    value={bilirkisiUnvan}
+                    onChange={(e) => setBilirkisiUnvan(e.target.value)}
+                    className="w-full px-3 py-2 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-xs font-medium text-slate-800 dark:text-slate-100 outline-none"
+                  />
+                </div>
+                <div>
+                  <label className="block text-[11px] font-bold text-slate-700 dark:text-slate-300 mb-1">
+                    Bölge Kurulu Sicil No
+                  </label>
+                  <input
+                    type="text"
+                    value={bilirkisiSicilNo}
+                    onChange={(e) => setBilirkisiSicilNo(e.target.value)}
+                    className="w-full px-3 py-2 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-xs font-medium text-slate-800 dark:text-slate-100 outline-none"
+                  />
+                </div>
+              </div>
+            ) : (
+              <div className="space-y-4">
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                  {/* 1. BİLİRKİŞİ (ZİRAAT) */}
+                  <div className="p-3.5 rounded-xl border border-emerald-200 dark:border-emerald-800/60 bg-emerald-50/40 dark:bg-emerald-950/20 space-y-2.5">
+                    <div className="flex items-center justify-between border-b border-emerald-200 dark:border-emerald-800/40 pb-1.5">
+                      <span className="text-xs font-bold text-emerald-800 dark:text-emerald-300 flex items-center gap-1.5">
+                        <span className="w-5 h-5 rounded-full bg-emerald-600 text-white flex items-center justify-center text-[10px]">1</span>
+                        Ziraat Bilirkişisi (Heyet Bşk.)
+                      </span>
+                      <span className="text-[10px] text-emerald-600 dark:text-emerald-400 font-semibold">Tarımsal Gelir</span>
+                    </div>
+                    <div>
+                      <label className="block text-[10px] font-bold text-slate-600 dark:text-slate-400 mb-0.5">Adı Soyadı</label>
+                      <input
+                        type="text"
+                        value={bilirkisiAdi}
+                        onChange={(e) => setBilirkisiAdi(e.target.value)}
+                        className="w-full px-2.5 py-1.5 rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-xs font-medium text-slate-800 dark:text-slate-100 outline-none"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-[10px] font-bold text-slate-600 dark:text-slate-400 mb-0.5">Unvanı</label>
+                      <input
+                        type="text"
+                        value={bilirkisiUnvan}
+                        onChange={(e) => setBilirkisiUnvan(e.target.value)}
+                        className="w-full px-2.5 py-1.5 rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-xs font-medium text-slate-800 dark:text-slate-100 outline-none"
+                      />
+                    </div>
+                    <div className="grid grid-cols-2 gap-2">
+                      <div>
+                        <label className="block text-[10px] font-bold text-slate-600 dark:text-slate-400 mb-0.5">Sicil No</label>
+                        <input
+                          type="text"
+                          value={bilirkisiSicilNo}
+                          onChange={(e) => setBilirkisiSicilNo(e.target.value)}
+                          className="w-full px-2.5 py-1.5 rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-xs font-medium text-slate-800 dark:text-slate-100 outline-none"
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-[10px] font-bold text-slate-600 dark:text-slate-400 mb-0.5">Görev Kapsamı</label>
+                        <input
+                          type="text"
+                          value={bilirkisiGorev}
+                          onChange={(e) => setBilirkisiGorev(e.target.value)}
+                          className="w-full px-2.5 py-1.5 rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-[11px] font-medium text-slate-800 dark:text-slate-100 outline-none"
+                        />
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* 2. BİLİRKİŞİ (HARİTA / KADASTRO) */}
+                  <div className="p-3.5 rounded-xl border border-blue-200 dark:border-blue-800/60 bg-blue-50/40 dark:bg-blue-950/20 space-y-2.5">
+                    <div className="flex items-center justify-between border-b border-blue-200 dark:border-blue-800/40 pb-1.5">
+                      <span className="text-xs font-bold text-blue-800 dark:text-blue-300 flex items-center gap-1.5">
+                        <span className="w-5 h-5 rounded-full bg-blue-600 text-white flex items-center justify-center text-[10px]">2</span>
+                        Fen / Harita Bilirkişisi
+                      </span>
+                      <span className="text-[10px] text-blue-600 dark:text-blue-400 font-semibold">Kadastro & Sınır</span>
+                    </div>
+                    <div>
+                      <label className="block text-[10px] font-bold text-slate-600 dark:text-slate-400 mb-0.5">Adı Soyadı</label>
+                      <input
+                        type="text"
+                        value={bilirkisi2Adi}
+                        onChange={(e) => setBilirkisi2Adi(e.target.value)}
+                        className="w-full px-2.5 py-1.5 rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-xs font-medium text-slate-800 dark:text-slate-100 outline-none"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-[10px] font-bold text-slate-600 dark:text-slate-400 mb-0.5">Unvanı</label>
+                      <input
+                        type="text"
+                        value={bilirkisi2Unvan}
+                        onChange={(e) => setBilirkisi2Unvan(e.target.value)}
+                        className="w-full px-2.5 py-1.5 rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-xs font-medium text-slate-800 dark:text-slate-100 outline-none"
+                      />
+                    </div>
+                    <div className="grid grid-cols-2 gap-2">
+                      <div>
+                        <label className="block text-[10px] font-bold text-slate-600 dark:text-slate-400 mb-0.5">Sicil No</label>
+                        <input
+                          type="text"
+                          value={bilirkisi2SicilNo}
+                          onChange={(e) => setBilirkisi2SicilNo(e.target.value)}
+                          className="w-full px-2.5 py-1.5 rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-xs font-medium text-slate-800 dark:text-slate-100 outline-none"
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-[10px] font-bold text-slate-600 dark:text-slate-400 mb-0.5">Görev Kapsamı</label>
+                        <input
+                          type="text"
+                          value={bilirkisi2Gorev}
+                          onChange={(e) => setBilirkisi2Gorev(e.target.value)}
+                          className="w-full px-2.5 py-1.5 rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-[11px] font-medium text-slate-800 dark:text-slate-100 outline-none"
+                        />
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* 3. BİLİRKİŞİ (MÜLK / DEĞERLEME) */}
+                  <div className="p-3.5 rounded-xl border border-purple-200 dark:border-purple-800/60 bg-purple-50/40 dark:bg-purple-950/20 space-y-2.5">
+                    <div className="flex items-center justify-between border-b border-purple-200 dark:border-purple-800/40 pb-1.5">
+                      <span className="text-xs font-bold text-purple-800 dark:text-purple-300 flex items-center gap-1.5">
+                        <span className="w-5 h-5 rounded-full bg-purple-600 text-white flex items-center justify-center text-[10px]">3</span>
+                        Mülk / Değerleme Uzmanı
+                      </span>
+                      <span className="text-[10px] text-purple-600 dark:text-purple-400 font-semibold">İmar, Ulaşım & ODA</span>
+                    </div>
+                    <div>
+                      <label className="block text-[10px] font-bold text-slate-600 dark:text-slate-400 mb-0.5">Adı Soyadı</label>
+                      <input
+                        type="text"
+                        value={bilirkisi3Adi}
+                        onChange={(e) => setBilirkisi3Adi(e.target.value)}
+                        className="w-full px-2.5 py-1.5 rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-xs font-medium text-slate-800 dark:text-slate-100 outline-none"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-[10px] font-bold text-slate-600 dark:text-slate-400 mb-0.5">Unvanı</label>
+                      <input
+                        type="text"
+                        value={bilirkisi3Unvan}
+                        onChange={(e) => setBilirkisi3Unvan(e.target.value)}
+                        className="w-full px-2.5 py-1.5 rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-xs font-medium text-slate-800 dark:text-slate-100 outline-none"
+                      />
+                    </div>
+                    <div className="grid grid-cols-2 gap-2">
+                      <div>
+                        <label className="block text-[10px] font-bold text-slate-600 dark:text-slate-400 mb-0.5">Sicil No</label>
+                        <input
+                          type="text"
+                          value={bilirkisi3SicilNo}
+                          onChange={(e) => setBilirkisi3SicilNo(e.target.value)}
+                          className="w-full px-2.5 py-1.5 rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-xs font-medium text-slate-800 dark:text-slate-100 outline-none"
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-[10px] font-bold text-slate-600 dark:text-slate-400 mb-0.5">Görev Kapsamı</label>
+                        <input
+                          type="text"
+                          value={bilirkisi3Gorev}
+                          onChange={(e) => setBilirkisi3Gorev(e.target.value)}
+                          className="w-full px-2.5 py-1.5 rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-[11px] font-medium text-slate-800 dark:text-slate-100 outline-none"
+                        />
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                {/* HEYET KARAR TÜRÜ & MUHALEFET ŞERHİ (KARŞI OY) */}
+                <div className="p-4 rounded-xl border border-amber-200 dark:border-amber-800/60 bg-amber-50/50 dark:bg-amber-950/20 space-y-3">
+                  <div className="flex flex-wrap items-center justify-between gap-3">
+                    <div className="flex items-center gap-3">
+                      <span className="text-xs font-bold text-amber-900 dark:text-amber-200">Kurul Karar Niteliği:</span>
+                      <label className="flex items-center gap-1.5 text-xs text-slate-700 dark:text-slate-300 cursor-pointer">
+                        <input
+                          type="radio"
+                          name="kararTuru"
+                          checked={kararTuru === "oybirligi"}
+                          onChange={() => setKararTuru("oybirligi")}
+                          className="text-emerald-600"
+                        />
+                        <span className="font-semibold text-emerald-700 dark:text-emerald-400">Oybirliği</span>
+                      </label>
+                      <label className="flex items-center gap-1.5 text-xs text-slate-700 dark:text-slate-300 cursor-pointer">
+                        <input
+                          type="radio"
+                          name="kararTuru"
+                          checked={kararTuru === "oycoklugu"}
+                          onChange={() => setKararTuru("oycoklugu")}
+                          className="text-amber-600"
+                        />
+                        <span className="font-semibold text-amber-700 dark:text-amber-400">Oyçokluğu (Karşı Oy / Muhalefet Şerhi)</span>
+                      </label>
+                    </div>
+
+                    {kararTuru === "oycoklugu" && (
+                      <div className="flex items-center gap-2">
+                        <span className="text-xs font-bold text-slate-700 dark:text-slate-300">Muhalif Üye:</span>
+                        <select
+                          value={muhalifBilirkisi}
+                          onChange={(e) => setMuhalifBilirkisi(e.target.value as any)}
+                          className="px-2.5 py-1 rounded-lg border border-amber-300 dark:border-amber-700 bg-white dark:bg-slate-800 text-xs font-bold text-amber-900 dark:text-amber-200 outline-none"
+                        >
+                          <option value="bilirkisi_3">3. Bilirkişi ({bilirkisi3Adi})</option>
+                          <option value="bilirkisi_2">2. Bilirkişi ({bilirkisi2Adi})</option>
+                          <option value="bilirkisi_1">1. Bilirkişi ({bilirkisiAdi})</option>
+                        </select>
+                      </div>
+                    )}
+                  </div>
+
+                  {kararTuru === "oycoklugu" && (
+                    <div className="pt-2 space-y-2 border-t border-amber-200 dark:border-amber-800/40">
+                      <div className="flex items-center justify-between">
+                        <label className="text-xs font-bold text-amber-900 dark:text-amber-200">
+                          Muhalefet Şerhi (Karşı Oy Gerekçesi):
+                        </label>
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setKarsiOyMetni(
+                              "Sayın Çoğunluğun KFO oranını %5 olarak belirlemesine karşın; parselin sulama kanalına 15 m mesafede oluşu, münavebede ikinci ürün mısır ekimi ile dekar başına yüksek brüt hasılat sağlaması ve şehir merkezine 2.5 km mesafede oluşu nazara alındığında, kapitalizasyon faiz oranının %4.5 olarak takdiri ve m² birim değerinin buna göre hesaplanması gerektiği kanaatiyle çoğunluk görüşüne muhalifim."
+                            );
+                            setKarsiOyTutari(Math.round(toplamAraziDegeri * 1.15));
+                            showToast("Örnek karşı oy metni yüklendi");
+                          }}
+                          className="text-[11px] font-bold text-amber-800 dark:text-amber-300 hover:underline flex items-center gap-1 cursor-pointer"
+                        >
+                          <Sparkles size={12} /> Örnek Karşı Oy Yükle
+                        </button>
+                      </div>
+                      <textarea
+                        rows={3}
+                        value={karsiOyMetni}
+                        onChange={(e) => setKarsiOyMetni(e.target.value)}
+                        className="w-full p-2.5 rounded-xl border border-amber-300 dark:border-amber-700 bg-white dark:bg-slate-800 text-xs text-slate-800 dark:text-slate-100 outline-none leading-relaxed"
+                        placeholder="Muhalif üyenin çoğunluk kararına katılmama teknik ve matematiksel gerekçesini yazınız..."
+                      />
+                      <div className="flex items-center gap-2 pt-1">
+                        <span className="text-xs font-bold text-amber-900 dark:text-amber-200">
+                          Muhalif Üyenin Takdir Ettiği Toplam Bedel (TL):
+                        </span>
+                        <input
+                          type="number"
+                          value={karsiOyTutari || ""}
+                          placeholder="Örn: 4250000"
+                          onChange={(e) => setKarsiOyTutari(Number(e.target.value))}
+                          className="w-48 px-3 py-1.5 rounded-lg border border-amber-300 dark:border-amber-700 bg-white dark:bg-slate-800 text-xs font-bold text-amber-900 dark:text-amber-100 outline-none"
+                        />
+                      </div>
+                    </div>
+                  )}
+                </div>
+              </div>
+            )}
           </div>
 
           {/* Mahkemenin Cevaplamasını İstediği Sorular */}
@@ -1343,6 +1838,49 @@ ${
               className="w-full p-3 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-xs font-medium text-slate-800 dark:text-slate-100 outline-none leading-relaxed"
             />
           </div>
+
+          {/* HEYET MODUNDA: FEN VE MÜLK BİLİRKİŞİSİ TEKNİK TESPİT KARTLARI */}
+          {raporTuru === "heyet_3" && (
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 pt-2">
+              <div className="p-4 rounded-xl border border-blue-200 dark:border-blue-800/60 bg-blue-50/40 dark:bg-blue-950/20 space-y-2">
+                <div className="flex items-center justify-between">
+                  <label className="text-xs font-bold text-blue-900 dark:text-blue-200 flex items-center gap-1.5">
+                    <MapPin size={13} className="text-blue-600" />
+                    Fen / Harita Bilirkişisi Tespiti ({bilirkisi2Adi})
+                  </label>
+                  <span className="text-[10px] text-blue-600 dark:text-blue-300 font-semibold">
+                    Kadastro & Aplikasyon
+                  </span>
+                </div>
+                <textarea
+                  rows={4}
+                  value={bilirkisi2TeknikNot}
+                  onChange={(e) => setBilirkisi2TeknikNot(e.target.value)}
+                  className="w-full p-3 rounded-lg border border-blue-200 dark:border-blue-800 bg-white dark:bg-slate-800 text-xs text-slate-800 dark:text-slate-100 outline-none leading-relaxed"
+                  placeholder="Elektronik takeometre/GPS ile parsel sınırları, kadastro paftası uyumu, tecavüz durumu..."
+                />
+              </div>
+
+              <div className="p-4 rounded-xl border border-purple-200 dark:border-purple-800/60 bg-purple-50/40 dark:bg-purple-950/20 space-y-2">
+                <div className="flex items-center justify-between">
+                  <label className="text-xs font-bold text-purple-900 dark:text-purple-200 flex items-center gap-1.5">
+                    <Building2 size={13} className="text-purple-600" />
+                    Mülk Bilirkişisi / Değerleme Uzmanı Tespiti ({bilirkisi3Adi})
+                  </label>
+                  <span className="text-[10px] text-purple-600 dark:text-purple-300 font-semibold">
+                    İmar, Ulaşım & ODA
+                  </span>
+                </div>
+                <textarea
+                  rows={4}
+                  value={bilirkisi3TeknikNot}
+                  onChange={(e) => setBilirkisi3TeknikNot(e.target.value)}
+                  className="w-full p-3 rounded-lg border border-purple-200 dark:border-purple-800 bg-white dark:bg-slate-800 text-xs text-slate-800 dark:text-slate-100 outline-none leading-relaxed"
+                  placeholder="1983/6122 s. BKK kriterleri, imar durumu, yol cephesi ve objektif değer artış gerekçesi..."
+                />
+              </div>
+            </div>
+          )}
 
           <div className="flex justify-between pt-4 border-t border-slate-200 dark:border-slate-800">
             <button
@@ -1969,6 +2507,22 @@ ${
                 T.C.<br />
                 {mahkemeAdi.toUpperCase()}<br />
                 SAYIN HAKİMLİĞİ'NE
+                <div className="text-xs font-bold text-slate-600 mt-1 uppercase tracking-wide flex items-center justify-center gap-2">
+                  <span>{raporTuru === "heyet_3" ? "BİLİRKİŞİ KURULU (HEYET) RAPORU" : "BİLİRKİŞİ RAPORU"}</span>
+                  {raporTuru === "heyet_3" && (
+                    <span
+                      className={`px-2 py-0.5 rounded text-[10px] font-bold ${
+                        kararTuru === "oybirligi"
+                          ? "bg-emerald-100 text-emerald-800"
+                          : "bg-amber-100 text-amber-800"
+                      }`}
+                    >
+                      {kararTuru === "oybirligi"
+                        ? "OYBİRLİĞİ"
+                        : `OYÇOKLUĞU (${muhalifBilirkisiAdi} Muhalif)`}
+                    </span>
+                  )}
+                </div>
               </div>
 
               {/* Künye Tablosu */}
@@ -1989,10 +2543,33 @@ ${
                   <span className="font-bold">DAVA KONUSU</span>
                   <span className="col-span-2">: {davaKonusu}</span>
                 </div>
-                <div className="grid grid-cols-3 border-b border-slate-200 p-2">
-                  <span className="font-bold">BİLİRKİŞİ</span>
-                  <span className="col-span-2">: {bilirkisiAdi} - Sicil No: {bilirkisiSicilNo}</span>
-                </div>
+                {raporTuru === "heyet_3" ? (
+                  <>
+                    <div className="grid grid-cols-3 border-b border-slate-200 p-2">
+                      <span className="font-bold">BİLİRKİŞİ KURULU</span>
+                      <div className="col-span-2 space-y-1">
+                        <div>1. <b>{bilirkisiAdi}</b> ({bilirkisiUnvan}) - Sicil: {bilirkisiSicilNo} [{bilirkisiGorev}]</div>
+                        <div>2. <b>{bilirkisi2Adi}</b> ({bilirkisi2Unvan}) - Sicil: {bilirkisi2SicilNo} [{bilirkisi2Gorev}]</div>
+                        <div>3. <b>{bilirkisi3Adi}</b> ({bilirkisi3Unvan}) - Sicil: {bilirkisi3SicilNo} [{bilirkisi3Gorev}]</div>
+                      </div>
+                    </div>
+                    <div className="grid grid-cols-3 border-b border-slate-200 p-2">
+                      <span className="font-bold">KARAR TÜRÜ</span>
+                      <span className="col-span-2 font-bold">
+                        : {kararTuru === "oybirligi" ? (
+                          <span className="text-emerald-700">Oybirliği ile Tanzim Edilmiştir</span>
+                        ) : (
+                          <span className="text-amber-700">Oyçokluğu ile Tanzim Edilmiştir ({muhalifBilirkisiAdi} Karşı Oylu)</span>
+                        )}
+                      </span>
+                    </div>
+                  </>
+                ) : (
+                  <div className="grid grid-cols-3 border-b border-slate-200 p-2">
+                    <span className="font-bold">BİLİRKİŞİ</span>
+                    <span className="col-span-2">: {bilirkisiAdi} - Sicil No: {bilirkisiSicilNo}</span>
+                  </div>
+                )}
                 <div className="grid grid-cols-3 p-2">
                   <span className="font-bold">KEŞİF / RAPOR TARİHİ</span>
                   <span className="col-span-2">: Keşif: {kesifTarihi} / Rapor: {raporTarihi}</span>
@@ -2005,7 +2582,7 @@ ${
                   I. İNCELEMENİN KONUSU VE KAPSAMI
                 </h3>
                 <p>
-                  Sayın Mahkemenizin {dosyaNo} sayılı dosyasında verilen ara kararı uyarınca; {davaKonusu} kapsamında taşınmazın / varlığın mahallinde yapılan keşif ve dosyadaki resmi deliller çerçevesinde bilimsel değerleme yapılmasıdır.
+                  Sayın Mahkemenizin {dosyaNo} sayılı dosyasında verilen ara kararı uyarınca; {davaKonusu} kapsamında taşınmazın / varlığın mahallinde yapılan keşif ve dosyadaki resmi deliller çerçevesinde {raporTuru === "heyet_3" ? "bilirkişi kurulumuzca" : "bilirkişiliğimizce"} bilimsel değerleme yapılmasıdır.
                 </p>
               </div>
 
@@ -2027,6 +2604,25 @@ ${
                   III. MAHALLİNDE YAPILAN KEŞİF VE FİİLİ TESPİTLER
                 </h3>
                 <p>{fiiliDurumAciklamasi}</p>
+
+                {raporTuru === "heyet_3" && (
+                  <div className="mt-3 space-y-2">
+                    <div className="p-2.5 rounded bg-blue-50/70 border border-blue-200 text-xs">
+                      <span className="font-bold text-blue-900 block mb-0.5">
+                        A) Fen / Harita ve Kadastro Bilirkişisi Tespiti ({bilirkisi2Adi}):
+                      </span>
+                      <span className="text-slate-700">{bilirkisi2TeknikNot}</span>
+                    </div>
+
+                    <div className="p-2.5 rounded bg-purple-50/70 border border-purple-200 text-xs">
+                      <span className="font-bold text-purple-900 block mb-0.5">
+                        B) Mülk Bilirkişisi / Değerleme Uzmanı Tespiti ({bilirkisi3Adi}):
+                      </span>
+                      <span className="text-slate-700">{bilirkisi3TeknikNot}</span>
+                    </div>
+                  </div>
+                )}
+
                 <div className="mt-2 bg-slate-50 p-2.5 rounded border border-slate-200 text-xs">
                   <b>Konum:</b> {parselIl} / {parselIlce} / {parselKoy} | <b>Ada/Parsel:</b> {adaNo}/{parselNo} | <b>Alan:</b> {alanM2.toLocaleString("tr-TR")} m² | <b>Vasıf:</b> {araziTipi === "sulu" ? "Sulu Tarla" : "Kuru Tarla"} (Eğim: %{egimPct})
                 </div>
@@ -2074,13 +2670,82 @@ ${
                 <p className="whitespace-pre-line">{generatedKanaatMetni}</p>
               </div>
 
+              {/* Bölüm VI: MUHALEFET ŞERHİ (KARŞI OY) */}
+              {raporTuru === "heyet_3" && kararTuru === "oycoklugu" && (
+                <div className="p-3.5 rounded-xl border border-amber-300 bg-amber-50/70 text-xs space-y-1.5">
+                  <h3 className="font-bold text-amber-900 uppercase tracking-wide border-b border-amber-300 pb-1 flex items-center justify-between">
+                    <span>VI. MUHALEFET ŞERHİ (KARŞI OY GEREKÇESİ)</span>
+                    <span className="text-[10px] bg-amber-200 px-2 py-0.5 rounded font-bold">
+                      Muhalif: {muhalifBilirkisiAdi}
+                    </span>
+                  </h3>
+                  <p className="text-amber-900 leading-relaxed whitespace-pre-line">{karsiOyMetni}</p>
+                  {karsiOyTutari > 0 && (
+                    <div className="pt-1 font-bold text-amber-900">
+                      Muhalif Üyenin Takdir Ettiği Toplam Bedel: ₺{karsiOyTutari.toLocaleString("tr-TR")}
+                    </div>
+                  )}
+                </div>
+              )}
+
               {/* İmza Bloğu */}
-              <div className="pt-8 text-right font-sans text-xs">
-                <p className="font-bold text-sm">{bilirkisiAdi}</p>
-                <p className="text-slate-600">{bilirkisiUnvan}</p>
-                <p className="text-slate-500">Bilirkişi Sicil No: {bilirkisiSicilNo}</p>
-                <p className="text-emerald-700 font-bold mt-1">(e-İmzalıdır)</p>
-              </div>
+              {raporTuru === "heyet_3" ? (
+                <div className="pt-8 border-t border-slate-200 font-sans text-xs">
+                  <div className="grid grid-cols-3 gap-4 text-center">
+                    <div className="space-y-0.5">
+                      <p className="font-bold text-slate-900">{bilirkisiAdi}</p>
+                      <p className="text-[11px] text-slate-600">{bilirkisiUnvan}</p>
+                      <p className="text-[10px] text-slate-500">Sicil No: {bilirkisiSicilNo}</p>
+                      <p className={`text-[11px] font-bold mt-1 ${
+                        kararTuru === "oycoklugu" && muhalifBilirkisi === "bilirkisi_1"
+                          ? "text-amber-700"
+                          : "text-emerald-700"
+                      }`}>
+                        {kararTuru === "oycoklugu" && muhalifBilirkisi === "bilirkisi_1"
+                          ? "(Karşı Oyla - e-İmzalı)"
+                          : "(Heyet Başkanı - e-İmzalı)"}
+                      </p>
+                    </div>
+
+                    <div className="space-y-0.5">
+                      <p className="font-bold text-slate-900">{bilirkisi2Adi}</p>
+                      <p className="text-[11px] text-slate-600">{bilirkisi2Unvan}</p>
+                      <p className="text-[10px] text-slate-500">Sicil No: {bilirkisi2SicilNo}</p>
+                      <p className={`text-[11px] font-bold mt-1 ${
+                        kararTuru === "oycoklugu" && muhalifBilirkisi === "bilirkisi_2"
+                          ? "text-amber-700"
+                          : "text-emerald-700"
+                      }`}>
+                        {kararTuru === "oycoklugu" && muhalifBilirkisi === "bilirkisi_2"
+                          ? "(Karşı Oyla - e-İmzalı)"
+                          : "(Fen / Harita Bilirkişisi - e-İmzalı)"}
+                      </p>
+                    </div>
+
+                    <div className="space-y-0.5">
+                      <p className="font-bold text-slate-900">{bilirkisi3Adi}</p>
+                      <p className="text-[11px] text-slate-600">{bilirkisi3Unvan}</p>
+                      <p className="text-[10px] text-slate-500">Sicil No: {bilirkisi3SicilNo}</p>
+                      <p className={`text-[11px] font-bold mt-1 ${
+                        kararTuru === "oycoklugu" && muhalifBilirkisi === "bilirkisi_3"
+                          ? "text-amber-700"
+                          : "text-emerald-700"
+                      }`}>
+                        {kararTuru === "oycoklugu" && muhalifBilirkisi === "bilirkisi_3"
+                          ? "(Karşı Oyla - e-İmzalı)"
+                          : "(Mülk Bilirkişisi - e-İmzalı)"}
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              ) : (
+                <div className="pt-8 text-right font-sans text-xs">
+                  <p className="font-bold text-sm">{bilirkisiAdi}</p>
+                  <p className="text-slate-600">{bilirkisiUnvan}</p>
+                  <p className="text-slate-500">Bilirkişi Sicil No: {bilirkisiSicilNo}</p>
+                  <p className="text-emerald-700 font-bold mt-1">(e-İmzalıdır)</p>
+                </div>
+              )}
             </div>
           </div>
 
