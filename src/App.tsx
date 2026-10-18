@@ -114,6 +114,27 @@ export default function App() {
   const [activeTab, setActiveTab] = useState<TabId>("hero");
   const [mobileOpen, setMobileOpen] = useState(false);
   const [toast, setToast] = useState<string | null>(null);
+  const [activeDropdown, setActiveDropdown] = useState<"tarim" | "hayvancilik" | "araclar" | "egitim" | null>(null);
+  const topNavRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const handleClickOutside = (e: MouseEvent) => {
+      if (topNavRef.current && !topNavRef.current.contains(e.target as Node)) {
+        setActiveDropdown(null);
+      }
+    };
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === "Escape") {
+        setActiveDropdown(null);
+      }
+    };
+    document.addEventListener("mousedown", handleClickOutside);
+    window.addEventListener("keydown", handleKeyDown);
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+      window.removeEventListener("keydown", handleKeyDown);
+    };
+  }, []);
 
   // Akordeon menü durumları
   const [openSections, setOpenSections] = useState<Record<string, boolean>>({
@@ -1069,219 +1090,323 @@ export default function App() {
 
   const navItems = [
     // 01 Tarım
-    { id: "raporOtomasyonu" as TabId, label: "Adım Adım Rapor Otomasyonu", icon: <FileCheck size={18} />, group: "tarim", badge: "YÖNLENDİRMELİ" },
-    { id: "sihirbaz" as TabId, label: "01.05 Zirai Değerleme (Sihirbaz)", icon: <Wand2 size={18} />, group: "tarim", badge: "KFO / ODA" },
-    { id: "veriarsivi" as TabId, label: "Tarım Veri Arşivi", icon: <Database size={18} />, group: "tarim" },
-    { id: "tarimRaporlar" as TabId, label: "Tarım Örnek Raporları", icon: <FileText size={18} />, group: "tarim", badge: "İÇTİHATLI" },
+    { id: "raporOtomasyonu" as TabId, label: "Adım Adım Rapor Otomasyonu", icon: <FileCheck size={16} />, group: "tarim", badge: "YÖNLENDİRMELİ", desc: "6 adımlı rehberli A4/Word raporu" },
+    { id: "sihirbaz" as TabId, label: "01.05 Zirai Değerleme (Sihirbaz)", icon: <Wand2 size={16} />, group: "tarim", badge: "KFO / ODA", desc: "Kamulaştırma, ecrimisil, irtifak, ağaç" },
+    { id: "veriarsivi" as TabId, label: "Tarım Veri Arşivi", icon: <Database size={16} />, group: "tarim", desc: "81 il resmi TÜİK maliyet & verim" },
+    { id: "tarimRaporlar" as TabId, label: "Tarım Örnek Raporları", icon: <FileText size={16} />, group: "tarim", badge: "İÇTİHATLI", desc: "Yargıtay onaylı emsal bilirkişi raporları" },
 
     // 02 Hayvancılık
-    { id: "hayvancilikRaporOtomasyonu" as TabId, label: "Hayvancılık Rapor Otomasyonu", icon: <FileCheck size={18} />, group: "hayvancilik", badge: "YÖNLENDİRMELİ" },
-    { id: "hayvancilik" as TabId, label: "02.01 Hayvancılık", icon: <Beef size={18} />, group: "hayvancilik", badge: "YENİ" },
-    { id: "yemlerBesleme" as TabId, label: "02.05 Yemler & Besleme", icon: <Wheat size={18} />, group: "hayvancilik", badge: "YENİ" },
-    { id: "sutTeknolojisi" as TabId, label: "02.06 Süt & Mandıra", icon: <Milk size={18} />, group: "hayvancilik", badge: "TGK • KRİYOSKOPİ" },
-    { id: "hayvancilikRaporlar" as TabId, label: "Hayvancılık Örnek Raporları", icon: <FileCheck size={18} />, group: "hayvancilik", badge: "İÇTİHATLI" },
+    { id: "hayvancilikRaporOtomasyonu" as TabId, label: "Hayvancılık Rapor Otomasyonu", icon: <FileCheck size={16} />, group: "hayvancilik", badge: "YÖNLENDİRMELİ", desc: "6 adımlı heyet raporu & TBK 55 mahsup" },
+    { id: "hayvancilik" as TabId, label: "02.01 Hayvancılık", icon: <Beef size={16} />, group: "hayvancilik", badge: "YENİ", desc: "Büyükbaş, küçükbaş, kanatlı değerleme & telef" },
+    { id: "yemlerBesleme" as TabId, label: "02.05 Yemler & Besleme", icon: <Wheat size={16} />, group: "hayvancilik", badge: "YENİ", desc: "Rasyon hesabı, kalite & yem hasarı" },
+    { id: "sutTeknolojisi" as TabId, label: "02.06 Süt & Mandıra", icon: <Milk size={16} />, group: "hayvancilik", badge: "TGK • KRİYOSKOPİ", desc: "Çiğ süt, mandıra randıman, kalite & ayıp" },
+    { id: "hayvancilikRaporlar" as TabId, label: "Hayvancılık Örnek Raporları", icon: <FileCheck size={16} />, group: "hayvancilik", badge: "İÇTİHATLI", desc: "Yargıtay 3. & 11. HD emsal telefat raporları" },
 
     // Araçlar
-    { id: "aiAsistan" as TabId, label: "AI Saha Asistanı", icon: <MessageSquare size={18} />, group: "araclar", badge: "Meta AI" },
-    { id: "fotoAnaliz" as TabId, label: "Fotoğraf Analiz AI", icon: <Camera size={18} />, group: "araclar", badge: "Vision" },
-    { id: "uyduParsel" as TabId, label: "Uydu Parsel AI", icon: <Satellite size={18} />, group: "araclar", badge: "PREMIUM" },
-    { id: "tarayici" as TabId, label: "HMK 279 Tarayıcı", icon: <Microscope size={18} />, group: "araclar" },
-    { id: "ictihat" as TabId, label: "İçtihat Arama", icon: <Scale size={18} />, group: "araclar" },
+    { id: "aiAsistan" as TabId, label: "AI Saha Asistanı", icon: <MessageSquare size={16} />, group: "araclar", badge: "Meta AI", desc: "Keşif esnası mevzuat & formül danışmanı" },
+    { id: "fotoAnaliz" as TabId, label: "Fotoğraf Analiz AI", icon: <Camera size={16} />, group: "araclar", badge: "Vision", desc: "Hastalık, zarar ve fenolojik dönem tespiti" },
+    { id: "uyduParsel" as TabId, label: "Uydu Parsel AI", icon: <Satellite size={16} />, group: "araclar", badge: "PREMIUM", desc: "Sentinel-2 L2A NDVI & parsel sınırları" },
+    { id: "tarayici" as TabId, label: "HMK 279 Tarayıcı", icon: <Microscope size={16} />, group: "araclar", desc: "Kusur ve hukuki terim denetimi" },
+    { id: "ictihat" as TabId, label: "İçtihat Arama", icon: <Scale size={16} />, group: "araclar", desc: "Yargıtay 5., 3., 8. Hukuk Dairesi kararları" },
 
-    // Aday Bilirkişi Eğitimleri (En altta)
-    { id: "ilkeler" as TabId, label: "İlkeler & Standartlar", icon: <ShieldCheck size={18} />, group: "egitim", badge: "RESMİ" },
-    { id: "teorik" as TabId, label: "Teorik Eğitimler", icon: <BookOpen size={18} />, group: "egitim" },
-    { id: "uyap" as TabId, label: "UYAP Simülasyonu", icon: <Monitor size={18} />, group: "egitim" },
+    // Aday Bilirkişi Eğitimleri
+    { id: "ilkeler" as TabId, label: "İlkeler & Standartlar", icon: <ShieldCheck size={16} />, group: "egitim", badge: "RESMİ", desc: "Adalet Bakanlığı Rehber İlkeleri" },
+    { id: "teorik" as TabId, label: "Teorik Eğitimler", icon: <BookOpen size={16} />, group: "egitim", desc: "Zirai bilirkişilik mevzuat modülleri" },
+    { id: "uyap" as TabId, label: "UYAP Simülasyonu", icon: <Monitor size={16} />, group: "egitim", desc: "UYAP Bilirkişi Portal başvuru adımları" },
   ];
 
+  // Aktif sekmenin bağlı olduğu ana kategori grubu
+  const currentGroup = activeTab === "hero" ? "hero" : navItems.find((i) => i.id === activeTab)?.group || "tarim";
+
   return (
-    <div className="min-h-screen bg-[#f8fafc] dark:bg-[#080c14] text-slate-800 dark:text-slate-100 antialiased flex transition-colors duration-200">
-      {/* Sidebar */}
-      <aside className="w-[280px] bg-[#0f172a] text-white hidden md:flex flex-col shrink-0 shadow-xl z-20">
-        <div className="p-5 border-b border-white/10 flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <div className="w-9 h-9 rounded-xl bg-emerald-500/20 border border-emerald-500/30 flex items-center justify-center text-emerald-400">
-              <Leaf size={20} />
+    <div className="min-h-screen bg-[#f8fafc] dark:bg-[#080c14] text-slate-800 dark:text-slate-100 antialiased flex flex-col transition-colors duration-200">
+      {/* ========================================================= */}
+      {/* ÜST MENÜ (TOP NAVIGATION BAR) */}
+      {/* ========================================================= */}
+      <header ref={topNavRef} className="sticky top-0 z-40 bg-[#0f172a] text-white border-b border-white/10 shadow-lg select-none">
+        {/* 1. SATIR: LOGO, ANA KATEGORİ MENÜLERİ VE KULLANICI ARAÇLARI */}
+        <div className="px-4 md:px-8 py-2.5 flex items-center justify-between gap-4">
+          {/* Sol: Logo & Marka */}
+          <button
+            onClick={() => {
+              setActiveTab("hero");
+              setActiveDropdown(null);
+            }}
+            className="flex items-center gap-3 group cursor-pointer text-left shrink-0 focus:outline-none"
+            title="Ana Sayfaya Dön"
+          >
+            <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-emerald-500/30 to-teal-500/20 border border-emerald-500/40 flex items-center justify-center text-emerald-400 group-hover:scale-105 transition-transform shadow-xs">
+              <Leaf size={19} />
             </div>
             <div>
-              <h1 className="text-[17px] font-bold tracking-tight">Zirai Bilirkişi</h1>
-              <p className="text-[11px] text-emerald-400 font-medium">01 TARIM • 02 HAYVANCILIK • 26 GIDA</p>
+              <div className="flex items-center gap-2">
+                <span className="text-[17px] font-black tracking-tight text-white group-hover:text-emerald-300 transition-colors">
+                  Zirai Bilirkişi
+                </span>
+                <span className="hidden xl:inline-block text-[9px] px-1.5 py-0.5 rounded-full bg-emerald-500/20 text-emerald-300 border border-emerald-500/30 font-bold">
+                  PRO
+                </span>
+              </div>
+              <p className="text-[10px] text-emerald-400 font-semibold tracking-wider">
+                01 TARIM • 02 HAYVANCILIK • 26 GIDA
+              </p>
             </div>
-          </div>
-          <button
-            onClick={toggleTheme}
-            className="p-2 rounded-xl bg-white/10 hover:bg-white/20 text-slate-300 hover:text-white transition flex items-center justify-center cursor-pointer"
-            title={theme === "dark" ? "Gündüz Moduna Geç" : "Gece Moduna Geç"}
-            aria-label="Gece/Gündüz Modu"
-          >
-            {theme === "dark" ? <Sun size={17} className="text-amber-300" /> : <Moon size={17} className="text-sky-300" />}
-          </button>
-        </div>
-
-        <nav className="flex-1 overflow-y-auto py-4 px-3 space-y-3">
-          {/* ANA SAYFA / HERO BUTONU */}
-          <button
-            onClick={() => setActiveTab("hero")}
-            className={`w-full flex items-center justify-between px-3 py-2.5 rounded-xl text-[13px] font-medium transition border ${
-              activeTab === "hero"
-                ? "bg-emerald-500/20 border-emerald-500/40 text-emerald-300 font-bold shadow-sm"
-                : "border-transparent text-slate-300 hover:bg-white/5 hover:text-white"
-            }`}
-          >
-            <span className="flex items-center gap-3">
-              <Home size={18} className={activeTab === "hero" ? "text-emerald-400" : "text-slate-400"} />
-              <span>Ana Sayfa (Platform Tanıtımı)</span>
-            </span>
           </button>
 
-          {/* 01 TARIM AKORDEON */}
-          <div className="border-b border-white/5 pb-2">
+          {/* Orta: Masaüstü Üst Menü Unsurları (lg ve üzeri) */}
+          <nav className="hidden lg:flex items-center gap-1 xl:gap-1.5">
+            {/* ANA SAYFA */}
             <button
-              onClick={() => toggleSection("tarim")}
-              className="w-full flex items-center justify-between px-3 py-1.5 text-[11px] font-bold text-emerald-400 hover:text-emerald-300 uppercase tracking-wider transition"
+              onClick={() => {
+                setActiveTab("hero");
+                setActiveDropdown(null);
+              }}
+              className={`flex items-center gap-2 px-3 py-2 rounded-xl text-xs font-bold transition cursor-pointer border ${
+                activeTab === "hero"
+                  ? "bg-emerald-500/20 text-emerald-300 border-emerald-500/40 shadow-xs"
+                  : "border-transparent text-slate-300 hover:text-white hover:bg-white/10"
+              }`}
             >
-              <span className="flex items-center gap-2">
-                <Sprout size={13} className="text-emerald-400" />
-                01 TARIM
-              </span>
-              {openSections.tarim ? <ChevronDown size={14} /> : <ChevronRight size={14} />}
+              <Home size={15} className={activeTab === "hero" ? "text-emerald-400" : "text-slate-400"} />
+              <span>Ana Sayfa</span>
             </button>
-            {openSections.tarim && (
-              <div className="mt-1 space-y-1">
-                {navItems.filter((i) => i.group === "tarim").map((item) => (
-                  <button
-                    key={item.id}
-                    onClick={() => setActiveTab(item.id)}
-                    className={`w-full flex items-center justify-between px-3 py-2 rounded-xl text-[13px] font-medium transition ${
-                      activeTab === item.id ? "bg-emerald-500/15 border border-emerald-500/30 text-white font-semibold" : "text-slate-400 hover:bg-white/5 hover:text-white"
-                    }`}
-                  >
-                    <span className="flex items-center gap-3">{item.icon} <span>{item.label}</span></span>
-                    {item.badge && <span className="text-[9px] px-1.5 py-0.5 rounded-full bg-emerald-500/20 text-emerald-300 border border-emerald-500/30">{item.badge}</span>}
-                  </button>
-                ))}
-              </div>
-            )}
-          </div>
 
-          {/* 02 HAYVANCILIK AKORDEON */}
-          <div className="border-b border-white/5 pb-2">
-            <button
-              onClick={() => toggleSection("hayvancilik")}
-              className="w-full flex items-center justify-between px-3 py-1.5 text-[11px] font-bold text-amber-400 hover:text-amber-300 uppercase tracking-wider transition"
-            >
-              <span className="flex items-center gap-2">
-                <Beef size={13} className="text-amber-400" />
-                02 HAYVANCILIK
-              </span>
-              {openSections.hayvancilik ? <ChevronDown size={14} /> : <ChevronRight size={14} />}
-            </button>
-            {openSections.hayvancilik && (
-              <div className="mt-1 space-y-1">
-                {navItems.filter((i) => i.group === "hayvancilik").map((item) => (
-                  <button
-                    key={item.id}
-                    onClick={() => setActiveTab(item.id)}
-                    className={`w-full flex items-center justify-between px-3 py-2 rounded-xl text-[13px] font-medium transition ${
-                      activeTab === item.id ? "bg-amber-500/15 border border-amber-500/30 text-white font-semibold" : "text-slate-400 hover:bg-white/5 hover:text-white"
-                    }`}
-                  >
-                    <span className="flex items-center gap-3 text-amber-400">{item.icon} <span className="text-white">{item.label}</span></span>
-                    {item.badge && <span className="text-[9px] px-1.5 py-0.5 rounded-full bg-amber-500/20 text-amber-300 border border-amber-500/30">{item.badge}</span>}
-                  </button>
-                ))}
-              </div>
-            )}
-          </div>
+            {/* 01 TARIM DROPDOWN */}
+            <div className="relative">
+              <button
+                onClick={() => setActiveDropdown(activeDropdown === "tarim" ? null : "tarim")}
+                className={`flex items-center gap-2 px-3 py-2 rounded-xl text-xs font-bold transition cursor-pointer border ${
+                  currentGroup === "tarim"
+                    ? "bg-emerald-500/20 text-emerald-300 border-emerald-500/40 shadow-xs"
+                    : "border-transparent text-slate-300 hover:text-white hover:bg-white/10"
+                }`}
+              >
+                <Sprout size={15} className="text-emerald-400" />
+                <span>01 Tarım</span>
+                <ChevronDown size={13} className={`transition-transform duration-200 ${activeDropdown === "tarim" ? "rotate-180" : ""}`} />
+              </button>
 
-          {/* ARAÇLAR AKORDEON */}
-          <div className="border-b border-white/5 pb-2">
-            <button
-              onClick={() => toggleSection("araclar")}
-              className="w-full flex items-center justify-between px-3 py-1.5 text-[11px] font-bold text-sky-400 hover:text-sky-300 uppercase tracking-wider transition"
-            >
-              <span className="flex items-center gap-2">
-                <Wrench size={13} className="text-sky-400" />
-                ARAÇLAR
-              </span>
-              {openSections.araclar ? <ChevronDown size={14} /> : <ChevronRight size={14} />}
-            </button>
-            {openSections.araclar && (
-              <div className="mt-1 space-y-1">
-                {navItems.filter((i) => i.group === "araclar").map((item) => (
-                  <button
-                    key={item.id}
-                    onClick={() => setActiveTab(item.id)}
-                    className={`w-full flex items-center justify-between px-3 py-2 rounded-xl text-[13px] font-medium transition border ${
-                      activeTab === item.id ? "bg-sky-500/15 border-sky-500/30 text-white font-semibold" : "border-transparent text-slate-300 hover:bg-white/5"
-                    }`}
-                  >
-                    <span className="flex items-center gap-3 text-sky-400">{item.icon} <span className="text-white">{item.label}</span></span>
-                    {item.badge && <span className="text-[9px] px-1.5 py-0.5 rounded-full bg-sky-500/20 text-sky-300 border border-sky-500/30">{item.badge}</span>}
-                  </button>
-                ))}
-              </div>
-            )}
-          </div>
-
-          {/* ADAY BİLİRKİŞİ EĞİTİMLERİ AKORDEON (EN ALTA ALINDI) */}
-          <div className="pb-2">
-            <button
-              onClick={() => toggleSection("egitim")}
-              className="w-full flex items-center justify-between px-3 py-1.5 text-[11px] font-bold text-indigo-400 hover:text-indigo-300 uppercase tracking-wider transition"
-            >
-              <span className="flex items-center gap-2">
-                <GraduationCap size={13} className="text-indigo-400" />
-                ADAY BİLİRKİŞİ EĞİTİMLERİ
-              </span>
-              {openSections.egitim ? <ChevronDown size={14} /> : <ChevronRight size={14} />}
-            </button>
-            {openSections.egitim && (
-              <div className="mt-1 space-y-1">
-                {navItems.filter((i) => i.group === "egitim").map((item) => (
-                  <button
-                    key={item.id}
-                    onClick={() => setActiveTab(item.id)}
-                    className={`w-full flex items-center justify-between px-3 py-2 rounded-xl text-[13px] font-medium transition ${
-                      activeTab === item.id ? "bg-indigo-500/15 border border-indigo-500/30 text-white font-semibold" : "text-slate-400 hover:bg-white/5 hover:text-white"
-                    }`}
-                  >
-                    <span className="flex items-center gap-3 text-indigo-300">{item.icon} <span className="text-white">{item.label}</span></span>
-                    {item.badge && <span className="text-[9px] px-1.5 py-0.5 rounded-full bg-indigo-500/20 text-indigo-300 border border-indigo-500/30">{item.badge}</span>}
-                  </button>
-                ))}
-              </div>
-            )}
-          </div>
-        </nav>
-
-        <div className="p-4 border-t border-white/10 bg-[#0b1222]">
-          <div className="flex items-center gap-3">
-            <div className="w-8 h-8 rounded-full bg-emerald-500/20 text-emerald-300 font-bold grid place-items-center text-xs">ZM</div>
-            <div className="text-xs">
-              <p className="font-semibold text-slate-100">Ziraat Mühendisi</p>
-              <p className="text-emerald-400">Meta AI Aktif</p>
+              {activeDropdown === "tarim" && (
+                <div className="absolute top-full left-0 mt-2 w-80 bg-[#0f172a]/95 backdrop-blur-xl border border-emerald-500/30 rounded-2xl p-2 shadow-2xl z-50 animate-in fade-in zoom-in-95 duration-150">
+                  <div className="px-3 py-2 border-b border-white/10 mb-1 flex items-center justify-between">
+                    <span className="text-[10px] font-bold text-emerald-400 uppercase tracking-wider flex items-center gap-1.5">
+                      <Sprout size={12} /> 01 Tarım & Zirai Değerleme
+                    </span>
+                    <span className="text-[10px] text-slate-400 bg-white/5 px-2 py-0.5 rounded-full">4 Modül</span>
+                  </div>
+                  <div className="space-y-1">
+                    {navItems.filter((i) => i.group === "tarim").map((item) => (
+                      <button
+                        key={item.id}
+                        onClick={() => {
+                          setActiveTab(item.id);
+                          setActiveDropdown(null);
+                        }}
+                        className={`w-full flex items-center justify-between p-2.5 rounded-xl text-left transition cursor-pointer border ${
+                          activeTab === item.id
+                            ? "bg-emerald-500/25 border-emerald-500/40 text-emerald-200 font-semibold"
+                            : "border-transparent hover:bg-white/5 text-slate-200"
+                        }`}
+                      >
+                        <div className="flex items-center gap-2.5 min-w-0">
+                          <div className="w-8 h-8 rounded-lg bg-emerald-500/15 text-emerald-400 flex items-center justify-center shrink-0">
+                            {item.icon}
+                          </div>
+                          <div className="min-w-0">
+                            <p className="text-xs font-bold truncate text-slate-100">{item.label}</p>
+                            <p className="text-[10px] text-slate-400 truncate">{item.desc}</p>
+                          </div>
+                        </div>
+                        {item.badge && (
+                          <span className="text-[9px] px-1.5 py-0.5 rounded-full bg-emerald-500/20 text-emerald-300 border border-emerald-500/30 shrink-0 ml-2 font-semibold">
+                            {item.badge}
+                          </span>
+                        )}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              )}
             </div>
-          </div>
-        </div>
-      </aside>
 
-      {/* Main Content */}
-      <main className="flex-1 flex flex-col min-w-0 h-screen overflow-hidden">
-        {/* Desktop Header Top Bar with Theme Toggle */}
-        <header className="hidden md:flex items-center justify-between px-8 py-3.5 border-b border-slate-200/80 bg-white/80 backdrop-blur-md shrink-0 sticky top-0 z-20 shadow-xs">
-          <div className="flex items-center gap-3">
-            <span className="text-[11px] font-bold uppercase tracking-wider text-emerald-600 bg-emerald-50 px-2.5 py-1 rounded-lg border border-emerald-200/60">
-              {activeTab === "hero" ? "Platform" : navItems.find((i) => i.id === activeTab)?.group === "tarim" ? "01 Tarım" : navItems.find((i) => i.id === activeTab)?.group === "hayvancilik" ? "02 Hayvancılık" : navItems.find((i) => i.id === activeTab)?.group === "egitim" ? "Aday Eğitimi" : "Araçlar"}
-            </span>
-            <span className="text-slate-400 text-sm">/</span>
-            <h2 className="text-sm font-bold text-slate-800">
-              {activeTab === "hero" ? "Platform Tanıtımı & Genel Bakış" : navItems.find((i) => i.id === activeTab)?.label || "Bilirkişi Portalı"}
-            </h2>
-          </div>
+            {/* 02 HAYVANCILIK DROPDOWN */}
+            <div className="relative">
+              <button
+                onClick={() => setActiveDropdown(activeDropdown === "hayvancilik" ? null : "hayvancilik")}
+                className={`flex items-center gap-2 px-3 py-2 rounded-xl text-xs font-bold transition cursor-pointer border ${
+                  currentGroup === "hayvancilik"
+                    ? "bg-amber-500/20 text-amber-300 border-amber-500/40 shadow-xs"
+                    : "border-transparent text-slate-300 hover:text-white hover:bg-white/10"
+                }`}
+              >
+                <Beef size={15} className="text-amber-400" />
+                <span>02 Hayvancılık</span>
+                <ChevronDown size={13} className={`transition-transform duration-200 ${activeDropdown === "hayvancilik" ? "rotate-180" : ""}`} />
+              </button>
 
-          <div className="flex items-center gap-3">
-            {/* PWA Kurulum Butonu (Masaüstü) */}
+              {activeDropdown === "hayvancilik" && (
+                <div className="absolute top-full left-0 mt-2 w-80 bg-[#0f172a]/95 backdrop-blur-xl border border-amber-500/30 rounded-2xl p-2 shadow-2xl z-50 animate-in fade-in zoom-in-95 duration-150">
+                  <div className="px-3 py-2 border-b border-white/10 mb-1 flex items-center justify-between">
+                    <span className="text-[10px] font-bold text-amber-400 uppercase tracking-wider flex items-center gap-1.5">
+                      <Beef size={12} /> 02 Hayvancılık, Yem & Mandıra
+                    </span>
+                    <span className="text-[10px] text-slate-400 bg-white/5 px-2 py-0.5 rounded-full">5 Modül</span>
+                  </div>
+                  <div className="space-y-1">
+                    {navItems.filter((i) => i.group === "hayvancilik").map((item) => (
+                      <button
+                        key={item.id}
+                        onClick={() => {
+                          setActiveTab(item.id);
+                          setActiveDropdown(null);
+                        }}
+                        className={`w-full flex items-center justify-between p-2.5 rounded-xl text-left transition cursor-pointer border ${
+                          activeTab === item.id
+                            ? "bg-amber-500/25 border-amber-500/40 text-amber-200 font-semibold"
+                            : "border-transparent hover:bg-white/5 text-slate-200"
+                        }`}
+                      >
+                        <div className="flex items-center gap-2.5 min-w-0">
+                          <div className="w-8 h-8 rounded-lg bg-amber-500/15 text-amber-400 flex items-center justify-center shrink-0">
+                            {item.icon}
+                          </div>
+                          <div className="min-w-0">
+                            <p className="text-xs font-bold truncate text-slate-100">{item.label}</p>
+                            <p className="text-[10px] text-slate-400 truncate">{item.desc}</p>
+                          </div>
+                        </div>
+                        {item.badge && (
+                          <span className="text-[9px] px-1.5 py-0.5 rounded-full bg-amber-500/20 text-amber-300 border border-amber-500/30 shrink-0 ml-2 font-semibold">
+                            {item.badge}
+                          </span>
+                        )}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              )}
+            </div>
+
+            {/* ARAÇLAR DROPDOWN */}
+            <div className="relative">
+              <button
+                onClick={() => setActiveDropdown(activeDropdown === "araclar" ? null : "araclar")}
+                className={`flex items-center gap-2 px-3 py-2 rounded-xl text-xs font-bold transition cursor-pointer border ${
+                  currentGroup === "araclar"
+                    ? "bg-sky-500/20 text-sky-300 border-sky-500/40 shadow-xs"
+                    : "border-transparent text-slate-300 hover:text-white hover:bg-white/10"
+                }`}
+              >
+                <Wrench size={15} className="text-sky-400" />
+                <span>Araçlar</span>
+                <ChevronDown size={13} className={`transition-transform duration-200 ${activeDropdown === "araclar" ? "rotate-180" : ""}`} />
+              </button>
+
+              {activeDropdown === "araclar" && (
+                <div className="absolute top-full left-0 mt-2 w-80 bg-[#0f172a]/95 backdrop-blur-xl border border-sky-500/30 rounded-2xl p-2 shadow-2xl z-50 animate-in fade-in zoom-in-95 duration-150">
+                  <div className="px-3 py-2 border-b border-white/10 mb-1 flex items-center justify-between">
+                    <span className="text-[10px] font-bold text-sky-400 uppercase tracking-wider flex items-center gap-1.5">
+                      <Wrench size={12} /> AI & Hukuk Analiz Araçları
+                    </span>
+                    <span className="text-[10px] text-slate-400 bg-white/5 px-2 py-0.5 rounded-full">5 Modül</span>
+                  </div>
+                  <div className="space-y-1">
+                    {navItems.filter((i) => i.group === "araclar").map((item) => (
+                      <button
+                        key={item.id}
+                        onClick={() => {
+                          setActiveTab(item.id);
+                          setActiveDropdown(null);
+                        }}
+                        className={`w-full flex items-center justify-between p-2.5 rounded-xl text-left transition cursor-pointer border ${
+                          activeTab === item.id
+                            ? "bg-sky-500/25 border-sky-500/40 text-sky-200 font-semibold"
+                            : "border-transparent hover:bg-white/5 text-slate-200"
+                        }`}
+                      >
+                        <div className="flex items-center gap-2.5 min-w-0">
+                          <div className="w-8 h-8 rounded-lg bg-sky-500/15 text-sky-400 flex items-center justify-center shrink-0">
+                            {item.icon}
+                          </div>
+                          <div className="min-w-0">
+                            <p className="text-xs font-bold truncate text-slate-100">{item.label}</p>
+                            <p className="text-[10px] text-slate-400 truncate">{item.desc}</p>
+                          </div>
+                        </div>
+                        {item.badge && (
+                          <span className="text-[9px] px-1.5 py-0.5 rounded-full bg-sky-500/20 text-sky-300 border border-sky-500/30 shrink-0 ml-2 font-semibold">
+                            {item.badge}
+                          </span>
+                        )}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              )}
+            </div>
+
+            {/* ADAY BİLİRKİŞİ EĞİTİMLERİ DROPDOWN */}
+            <div className="relative">
+              <button
+                onClick={() => setActiveDropdown(activeDropdown === "egitim" ? null : "egitim")}
+                className={`flex items-center gap-2 px-3 py-2 rounded-xl text-xs font-bold transition cursor-pointer border ${
+                  currentGroup === "egitim"
+                    ? "bg-indigo-500/20 text-indigo-300 border-indigo-500/40 shadow-xs"
+                    : "border-transparent text-slate-300 hover:text-white hover:bg-white/10"
+                }`}
+              >
+                <GraduationCap size={15} className="text-indigo-400" />
+                <span>Eğitimler</span>
+                <ChevronDown size={13} className={`transition-transform duration-200 ${activeDropdown === "egitim" ? "rotate-180" : ""}`} />
+              </button>
+
+              {activeDropdown === "egitim" && (
+                <div className="absolute top-full right-0 mt-2 w-80 bg-[#0f172a]/95 backdrop-blur-xl border border-indigo-500/30 rounded-2xl p-2 shadow-2xl z-50 animate-in fade-in zoom-in-95 duration-150">
+                  <div className="px-3 py-2 border-b border-white/10 mb-1 flex items-center justify-between">
+                    <span className="text-[10px] font-bold text-indigo-400 uppercase tracking-wider flex items-center gap-1.5">
+                      <GraduationCap size={12} /> Aday Bilirkişi Eğitim & Standartları
+                    </span>
+                    <span className="text-[10px] text-slate-400 bg-white/5 px-2 py-0.5 rounded-full">3 Modül</span>
+                  </div>
+                  <div className="space-y-1">
+                    {navItems.filter((i) => i.group === "egitim").map((item) => (
+                      <button
+                        key={item.id}
+                        onClick={() => {
+                          setActiveTab(item.id);
+                          setActiveDropdown(null);
+                        }}
+                        className={`w-full flex items-center justify-between p-2.5 rounded-xl text-left transition cursor-pointer border ${
+                          activeTab === item.id
+                            ? "bg-indigo-500/25 border-indigo-500/40 text-indigo-200 font-semibold"
+                            : "border-transparent hover:bg-white/5 text-slate-200"
+                        }`}
+                      >
+                        <div className="flex items-center gap-2.5 min-w-0">
+                          <div className="w-8 h-8 rounded-lg bg-indigo-500/15 text-indigo-400 flex items-center justify-center shrink-0">
+                            {item.icon}
+                          </div>
+                          <div className="min-w-0">
+                            <p className="text-xs font-bold truncate text-slate-100">{item.label}</p>
+                            <p className="text-[10px] text-slate-400 truncate">{item.desc}</p>
+                          </div>
+                        </div>
+                        {item.badge && (
+                          <span className="text-[9px] px-1.5 py-0.5 rounded-full bg-indigo-500/20 text-indigo-300 border border-indigo-500/30 shrink-0 ml-2 font-semibold">
+                            {item.badge}
+                          </span>
+                        )}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              )}
+            </div>
+          </nav>
+
+          {/* Sağ: PWA, Tema, Durum & Profil */}
+          <div className="flex items-center gap-2 sm:gap-3 shrink-0">
+            {/* PWA Kurulum Butonu */}
             <button
               onClick={() => {
                 if (deferredPrompt) {
@@ -1290,99 +1415,185 @@ export default function App() {
                   setShowInstallModal(true);
                 }
               }}
-              className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl border border-emerald-500/30 bg-emerald-500/10 hover:bg-emerald-500/20 text-xs font-bold text-emerald-700 dark:text-emerald-300 transition shadow-xs cursor-pointer"
+              className="flex items-center gap-1.5 px-2.5 sm:px-3 py-1.5 rounded-xl border border-emerald-500/30 bg-emerald-500/10 hover:bg-emerald-500/20 text-xs font-bold text-emerald-300 transition shadow-xs cursor-pointer min-h-[36px]"
               title="Zirai Bilirkişi PWA Kurulumu & Çevrimdışı Kullanım"
             >
-              <Smartphone size={14} className="text-emerald-600 dark:text-emerald-400" />
-              <span>{isStandalone ? "PWA Aktif" : "Uygulamayı Yükle"}</span>
+              <Smartphone size={14} className="text-emerald-400" />
+              <span className="hidden sm:inline">{isStandalone ? "PWA Aktif" : "Uygulamayı Yükle"}</span>
+              <span className="sm:hidden">{isStandalone ? "PWA" : "Yükle"}</span>
             </button>
 
             {/* Gece / Gündüz Modu Butonu */}
             <button
               onClick={toggleTheme}
-              className="flex items-center gap-2 px-3 py-1.5 rounded-xl border border-slate-200 bg-slate-50 hover:bg-slate-100 text-xs font-bold text-slate-700 transition shadow-xs cursor-pointer"
+              className="flex items-center gap-1.5 px-2.5 sm:px-3 py-1.5 rounded-xl border border-white/10 bg-white/5 hover:bg-white/10 text-xs font-bold text-slate-200 transition shadow-xs cursor-pointer min-h-[36px]"
               title={theme === "dark" ? "Gündüz Moduna Geç" : "Gece Moduna Geç"}
               aria-label="Gece/Gündüz Modu"
             >
               {theme === "dark" ? (
                 <>
                   <Sun size={15} className="text-amber-400" />
-                  <span>Gündüz Modu</span>
+                  <span className="hidden md:inline">Gündüz</span>
                 </>
               ) : (
                 <>
-                  <Moon size={15} className="text-indigo-600" />
-                  <span>Gece Modu</span>
+                  <Moon size={15} className="text-sky-300" />
+                  <span className="hidden md:inline">Gece</span>
                 </>
               )}
             </button>
 
-            {/* Durum Göstergesi */}
-            <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-slate-50 border border-slate-200 text-[11px] font-medium text-slate-600">
-              <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
+            {/* Durum Göstergesi (Geniş Ekran) */}
+            <div className="hidden xl:flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-white/5 border border-white/10 text-[11px] font-medium text-slate-300">
+              <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
               <span>TÜİK 2026 & HMK 279 Uyumlu</span>
             </div>
-          </div>
-        </header>
 
-        {/* Mobile Header with PWA & Connection status */}
-        <header className="md:hidden bg-[#0f172a] text-white px-4 py-3 flex items-center justify-between border-b border-white/10 shrink-0 sticky top-0 z-30 shadow-md">
-          <div className="flex items-center gap-2.5">
-            <button
-              onClick={() => setActiveTab("hero")}
-              className="w-8 h-8 rounded-lg bg-emerald-500/20 border border-emerald-500/30 flex items-center justify-center text-emerald-400 cursor-pointer"
-            >
-              <Leaf size={16} />
-            </button>
-            <div>
-              <span className="font-bold text-sm block leading-none">Zirai Bilirkişi</span>
-              <span className="text-[10px] text-emerald-400 font-medium">01 Tarım • 02 Hayvancılık • 26 Gıda</span>
+            {/* Bilirkişi Rozeti */}
+            <div className="hidden sm:flex items-center gap-2 pl-2 border-l border-white/10">
+              <div
+                className="w-8 h-8 rounded-xl bg-emerald-500/20 border border-emerald-500/30 text-emerald-300 font-bold grid place-items-center text-xs shadow-xs"
+                title="Ziraat Mühendisi Bilirkişi Profili"
+              >
+                ZM
+              </div>
             </div>
-          </div>
 
-          <div className="flex items-center gap-2">
-            {/* Mobile PWA Yükle Butonu */}
-            <button
-              onClick={() => {
-                if (deferredPrompt) {
-                  handleInstallClick();
-                } else {
-                  setShowInstallModal(true);
-                }
-              }}
-              className="flex items-center gap-1 text-[11px] bg-emerald-500 text-slate-950 font-bold px-2 py-1 rounded-lg shadow-sm cursor-pointer"
-              title="Telefona Yükle / PWA"
-            >
-              <Smartphone size={12} />
-              <span>{isStandalone ? "PWA" : "Yükle"}</span>
-            </button>
-
-            {/* Mobile Gece / Gündüz Butonu */}
-            <button
-              onClick={toggleTheme}
-              className="p-1.5 rounded-lg bg-white/10 hover:bg-white/15 text-slate-200 transition cursor-pointer"
-              title={theme === "dark" ? "Gündüz Modu" : "Gece Modu"}
-              aria-label="Gece/Gündüz Modu"
-            >
-              {theme === "dark" ? <Sun size={17} className="text-amber-300" /> : <Moon size={17} className="text-sky-300" />}
-            </button>
-
-            {!isOnline && (
-              <span className="flex items-center gap-1 text-[10px] bg-rose-500/20 text-rose-300 border border-rose-500/40 px-2 py-0.5 rounded-full">
-                <WifiOff size={10} /> Çevrimdışı
-              </span>
-            )}
-
+            {/* Mobil Menü Butonu (lg altında görünür) */}
             <button
               onClick={() => setMobileOpen(!mobileOpen)}
-              className="p-1.5 rounded-lg bg-white/10 hover:bg-white/15 text-slate-200 cursor-pointer"
+              className="lg:hidden p-2 rounded-xl bg-white/10 hover:bg-white/15 text-slate-200 cursor-pointer transition min-h-[36px] min-w-[36px] flex items-center justify-center"
               aria-label="Menü"
             >
               {mobileOpen ? <X size={20} /> : <Menu size={20} />}
             </button>
           </div>
-        </header>
+        </div>
 
+        {/* 2. SATIR (SUB-NAVBAR): BREADCRUMB VE AKTİF KATEGORİ HIZLI GEÇİŞ DÜĞMELERİ */}
+        <div className="bg-[#131d31] dark:bg-[#080d19] border-t border-white/10 px-4 md:px-8 py-2 flex items-center justify-between text-xs overflow-x-auto gap-3">
+          {/* Sol: Ekmek Kırıntısı (Breadcrumbs) */}
+          <div className="flex items-center gap-2 text-slate-300 shrink-0 font-medium">
+            <button
+              onClick={() => {
+                setActiveTab("hero");
+                setActiveDropdown(null);
+              }}
+              className="text-slate-400 hover:text-white transition flex items-center gap-1.5 cursor-pointer"
+            >
+              <Home size={13} />
+              <span>Portal</span>
+            </button>
+            <span className="text-slate-600">/</span>
+            <span
+              className={`px-2 py-0.5 rounded-md font-bold text-[10px] uppercase tracking-wider ${
+                currentGroup === "tarim"
+                  ? "bg-emerald-500/20 text-emerald-300 border border-emerald-500/30"
+                  : currentGroup === "hayvancilik"
+                  ? "bg-amber-500/20 text-amber-300 border border-amber-500/30"
+                  : currentGroup === "araclar"
+                  ? "bg-sky-500/20 text-sky-300 border border-sky-500/30"
+                  : currentGroup === "egitim"
+                  ? "bg-indigo-500/20 text-indigo-300 border border-indigo-500/30"
+                  : "bg-white/10 text-slate-300"
+              }`}
+            >
+              {currentGroup === "hero"
+                ? "Platform"
+                : currentGroup === "tarim"
+                ? "01 Tarım"
+                : currentGroup === "hayvancilik"
+                ? "02 Hayvancılık"
+                : currentGroup === "egitim"
+                ? "Aday Eğitimi"
+                : "Araçlar"}
+            </span>
+            {activeTab !== "hero" && (
+              <>
+                <span className="text-slate-600">/</span>
+                <span className="font-bold text-white flex items-center gap-1">
+                  {navItems.find((i) => i.id === activeTab)?.label}
+                </span>
+              </>
+            )}
+          </div>
+
+          {/* Sağ: Aktif Kategori İçi Hızlı Geçiş Butonları */}
+          <div className="flex items-center gap-1.5 shrink-0">
+            {currentGroup === "hero" ? (
+              <>
+                <span className="text-[11px] text-slate-400 font-medium hidden sm:inline mr-1">Öne Çıkanlar:</span>
+                <button
+                  onClick={() => setActiveTab("raporOtomasyonu")}
+                  className="flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-emerald-500/15 hover:bg-emerald-500/25 border border-emerald-500/30 text-emerald-300 font-semibold text-xs transition cursor-pointer"
+                >
+                  <FileCheck size={13} />
+                  <span>Tarım Rapor Otomasyonu</span>
+                </button>
+                <button
+                  onClick={() => setActiveTab("hayvancilikRaporOtomasyonu")}
+                  className="flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-amber-500/15 hover:bg-amber-500/25 border border-amber-500/30 text-amber-300 font-semibold text-xs transition cursor-pointer"
+                >
+                  <Beef size={13} />
+                  <span>Hayvancılık Rapor Otomasyonu</span>
+                </button>
+                <button
+                  onClick={() => setActiveTab("uyduParsel")}
+                  className="flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-sky-500/15 hover:bg-sky-500/25 border border-sky-500/30 text-sky-300 font-semibold text-xs transition cursor-pointer"
+                >
+                  <Satellite size={13} />
+                  <span>Uydu Parsel AI</span>
+                </button>
+                <button
+                  onClick={() => setActiveTab("ictihat")}
+                  className="flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-indigo-500/15 hover:bg-indigo-500/25 border border-indigo-500/30 text-indigo-300 font-semibold text-xs transition cursor-pointer"
+                >
+                  <Scale size={13} />
+                  <span>İçtihat Arama</span>
+                </button>
+              </>
+            ) : (
+              navItems
+                .filter((i) => i.group === currentGroup)
+                .map((item) => {
+                  const isCurrent = activeTab === item.id;
+                  const colorClass =
+                    currentGroup === "tarim"
+                      ? isCurrent
+                        ? "bg-emerald-500 text-slate-950 font-bold shadow-sm"
+                        : "bg-white/5 hover:bg-white/10 text-slate-300 border border-white/5"
+                      : currentGroup === "hayvancilik"
+                      ? isCurrent
+                        ? "bg-amber-500 text-slate-950 font-bold shadow-sm"
+                        : "bg-white/5 hover:bg-white/10 text-slate-300 border border-white/5"
+                      : currentGroup === "araclar"
+                      ? isCurrent
+                        ? "bg-sky-500 text-slate-950 font-bold shadow-sm"
+                        : "bg-white/5 hover:bg-white/10 text-slate-300 border border-white/5"
+                      : isCurrent
+                      ? "bg-indigo-500 text-white font-bold shadow-sm"
+                      : "bg-white/5 hover:bg-white/10 text-slate-300 border border-white/5";
+
+                  return (
+                    <button
+                      key={item.id}
+                      onClick={() => setActiveTab(item.id)}
+                      className={`flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs transition cursor-pointer ${colorClass}`}
+                    >
+                      {item.icon}
+                      <span>{item.label}</span>
+                    </button>
+                  );
+                })
+            )}
+          </div>
+        </div>
+      </header>
+
+      {/* ========================================================= */}
+      {/* ANA İÇERİK ALANI (MAIN CONTENT AREA) */}
+      {/* ========================================================= */}
+      <main className="flex-1 flex flex-col min-w-0 overflow-y-auto">
         {/* PWA Güncelleme Bildirim Çubuğu */}
         {hasUpdate && (
           <div className="bg-gradient-to-r from-indigo-900 to-slate-900 border-b border-indigo-500/40 px-4 py-2 text-xs text-white flex items-center justify-between gap-3 shadow-md z-30 animate-[fadeIn_0.3s_ease]">
@@ -1399,7 +1610,7 @@ export default function App() {
           </div>
         )}
 
-        {/* Offline notification banner if network is disconnected */}
+        {/* Offline Bildirim Çubuğu */}
         {!isOnline && (
           <div className="bg-amber-500/15 border-b border-amber-500/30 px-4 py-1.5 text-xs text-amber-200 flex items-center justify-center gap-2">
             <WifiOff size={13} className="text-amber-400" />
@@ -1407,9 +1618,9 @@ export default function App() {
           </div>
         )}
 
-        {/* Rich Mobile Drawer / Accordion Navigation */}
+        {/* Mobil Çekmece (Mobile Drawer) */}
         {mobileOpen && (
-          <div className="md:hidden fixed inset-0 z-50 bg-[#0f172a]/95 backdrop-blur-md pt-16 p-4 overflow-y-auto space-y-4 flex flex-col">
+          <div className="lg:hidden fixed inset-0 z-50 bg-[#0f172a]/95 backdrop-blur-md pt-16 p-4 overflow-y-auto space-y-4 flex flex-col">
             <div className="flex justify-between items-center pb-2 border-b border-white/10">
               <span className="text-xs font-bold text-slate-400 tracking-wider">NAVİGASYON</span>
               <button
@@ -1539,8 +1750,8 @@ export default function App() {
           </div>
         )}
 
-        <div className="flex-1 overflow-y-auto p-4 md:p-8">
-          <div className="max-w-[1200px] mx-auto">
+        <div className="flex-1 p-4 md:p-8 pb-24 md:pb-12">
+          <div className="max-w-[1400px] mx-auto">
             {/* HERO / TANITIM EKRANI */}
             {activeTab === "hero" && (
               <HeroView onSelectTab={setActiveTab} />
