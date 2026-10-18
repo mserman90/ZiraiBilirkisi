@@ -11,7 +11,9 @@ export type TabId =
   | "fotoAnaliz" 
   | "uyduParsel"
   | "hayvancilik"
-  | "yemlerBesleme";
+  | "yemlerBesleme"
+  | "tarimRaporlar"
+  | "hayvancilikRaporlar";
 
 export type IlkeMadde = {
   id: string;
@@ -137,3 +139,50 @@ export type TarsimData = {
   crossUyumlu: boolean;
   ndviDrop?: string;
 };
+
+export interface HesaplamaPrensibi {
+  baslik: string;
+  kanunVeIctihat: string;
+  aciklama: string;
+  formulMetni: string;
+  degiskenler: { ad: string; tanim: string }[];
+  yargitayKriterleri: string[];
+  dikkatEdilecekler: string[];
+}
+
+export interface OrnekRapor {
+  id: string;
+  kategori: "tarim" | "hayvancilik";
+  altKategori: string;
+  baslik: string;
+  etiket: string;
+  mahkeme: string;
+  dosyaNo: string;
+  davaTuru: string;
+  kesifTarihi: string;
+  ozet: string;
+  iddiaVeSavunma: {
+    davaciIstem: string;
+    davaliSavunma: string;
+    uyusmazlikNoktasi: string;
+  };
+  hesaplamaPrensibi: HesaplamaPrensibi;
+  teknikVeriler: {
+    etiket: string;
+    deger: string | number;
+    birim?: string;
+    aciklama?: string;
+  }[];
+  hesaplamaAdimlari: {
+    adimNo: number;
+    adimAdi: string;
+    islem: string;
+    sonuc: string;
+    aciklama: string;
+  }[];
+  toplamTazminatTL: number;
+  sonucVeKanaatMetni: string;
+  bilirkisiHeyeti: string[];
+  yargitayOnayNotu?: string;
+}
+

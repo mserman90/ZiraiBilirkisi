@@ -150,7 +150,7 @@ export default function HeroView({ onSelectTab }: HeroViewProps) {
               Yargıtay 3. HD ecrimisil artış formülleri, zilyetlik ve irtifak hakkı değer düşüklüğü hesaplamaları.
             </p>
 
-            <div className="grid grid-cols-2 gap-2.5 pt-2">
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-2.5 pt-2">
               <button
                 onClick={() => onSelectTab("sihirbaz")}
                 className="flex items-center justify-between p-3 rounded-xl bg-slate-50 hover:bg-emerald-50/60 border border-slate-200/80 text-left transition group"
@@ -168,9 +168,20 @@ export default function HeroView({ onSelectTab }: HeroViewProps) {
               >
                 <div>
                   <p className="text-xs font-bold text-slate-900 group-hover:text-emerald-700">Tarım Veri Arşivi</p>
-                  <p className="text-[11px] text-slate-500">İl/İlçe maliyet cetvelleri</p>
+                  <p className="text-[11px] text-slate-500">TÜİK ÇEGF & ÜFE</p>
                 </div>
                 <ArrowRight size={14} className="text-slate-400 group-hover:text-emerald-600 transition" />
+              </button>
+
+              <button
+                onClick={() => onSelectTab("tarimRaporlar")}
+                className="flex items-center justify-between p-3 rounded-xl bg-emerald-50/70 hover:bg-emerald-100/70 border border-emerald-200 text-left transition group"
+              >
+                <div>
+                  <p className="text-xs font-bold text-emerald-950 group-hover:text-emerald-800">Örnek Raporlar</p>
+                  <p className="text-[11px] text-emerald-700">İçtihatlı tam metinler</p>
+                </div>
+                <ArrowRight size={14} className="text-emerald-600 transition" />
               </button>
             </div>
           </div>
@@ -196,7 +207,7 @@ export default function HeroView({ onSelectTab }: HeroViewProps) {
               NRC/TÜBİTAK standartlarında TMR rasyon formülasyonu, aflatoksin/mikotoksin ve ayıp incelemeleri.
             </p>
 
-            <div className="grid grid-cols-2 gap-2.5 pt-2">
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-2.5 pt-2">
               <button
                 onClick={() => onSelectTab("hayvancilik")}
                 className="flex items-center justify-between p-3 rounded-xl bg-slate-50 hover:bg-amber-50/60 border border-slate-200/80 text-left transition group"
@@ -213,10 +224,21 @@ export default function HeroView({ onSelectTab }: HeroViewProps) {
                 className="flex items-center justify-between p-3 rounded-xl bg-slate-50 hover:bg-amber-50/60 border border-slate-200/80 text-left transition group"
               >
                 <div>
-                  <p className="text-xs font-bold text-slate-900 group-hover:text-amber-700">02.05 Yemler & Besleme</p>
-                  <p className="text-[11px] text-slate-500">Rasyon, RFV & analiz</p>
+                  <p className="text-xs font-bold text-slate-900 group-hover:text-amber-700">02.05 Yemler</p>
+                  <p className="text-[11px] text-slate-500">Rasyon & analiz</p>
                 </div>
                 <ArrowRight size={14} className="text-slate-400 group-hover:text-amber-600 transition" />
+              </button>
+
+              <button
+                onClick={() => onSelectTab("hayvancilikRaporlar")}
+                className="flex items-center justify-between p-3 rounded-xl bg-amber-50/70 hover:bg-amber-100/70 border border-amber-200 text-left transition group"
+              >
+                <div>
+                  <p className="text-xs font-bold text-amber-950 group-hover:text-amber-800">Örnek Raporlar</p>
+                  <p className="text-[11px] text-amber-700">Telef, zehirlenme, yem</p>
+                </div>
+                <ArrowRight size={14} className="text-amber-600 transition" />
               </button>
             </div>
           </div>

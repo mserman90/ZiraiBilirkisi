@@ -91,6 +91,7 @@ import HayvancilikView from "./components/HayvancilikView";
 import YemlerBeslemeView from "./components/YemlerBeslemeView";
 import HeroView from "./components/HeroView";
 import TarimVeriArsiviView from "./components/TarimVeriArsiviView";
+import OrnekRaporlarView from "./components/OrnekRaporlarView";
 import {
   UFE_RATES,
   ICTIHAT_DB,
@@ -959,10 +960,12 @@ export default function App() {
     // 01 Tarım
     { id: "sihirbaz" as TabId, label: "01.05 Zirai Değerleme (Sihirbaz)", icon: <Wand2 size={18} />, group: "tarim", badge: "KFO / ODA" },
     { id: "veriarsivi" as TabId, label: "Tarım Veri Arşivi", icon: <Database size={18} />, group: "tarim" },
+    { id: "tarimRaporlar" as TabId, label: "Tarım Örnek Raporları", icon: <FileText size={18} />, group: "tarim", badge: "İÇTİHATLI" },
 
     // 02 Hayvancılık
     { id: "hayvancilik" as TabId, label: "02.01 Hayvancılık", icon: <Beef size={18} />, group: "hayvancilik", badge: "YENİ" },
     { id: "yemlerBesleme" as TabId, label: "02.05 Yemler & Besleme", icon: <Wheat size={18} />, group: "hayvancilik", badge: "YENİ" },
+    { id: "hayvancilikRaporlar" as TabId, label: "Hayvancılık Örnek Raporları", icon: <FileCheck size={18} />, group: "hayvancilik", badge: "İÇTİHATLI" },
 
     // Araçlar
     { id: "aiAsistan" as TabId, label: "AI Saha Asistanı", icon: <MessageSquare size={18} />, group: "araclar", badge: "Meta AI" },
@@ -1653,6 +1656,21 @@ export default function App() {
               />
             )}
 
+            {/* 01 TARIM ÖRNEK RAPORLARI */}
+            {activeTab === "tarimRaporlar" && (
+              <OrnekRaporlarView
+                showToast={showToast}
+                defaultCategory="tarim"
+                onTransferToWizard={({ netGelir, araziTipi, urunAdi }) => {
+                  setKamuNet(netGelir);
+                  setKamuArazi(araziTipi);
+                  setWizType("kamulastirma");
+                  setActiveTab("sihirbaz");
+                  showToast(`🌾 ${urunAdi} (${netGelir.toLocaleString("tr-TR")} TL/da) Rapor Sihirbazına aktarıldı`);
+                }}
+              />
+            )}
+
             {/* TEORİK TEMEL EĞİTİM MODÜLLERİ */}
             {activeTab === "teorik" && (
               <TemelEgitimView
@@ -1682,6 +1700,14 @@ export default function App() {
               <YemlerBeslemeView
                 showToast={showToast}
                 onGoToWizard={() => setActiveTab("sihirbaz")}
+              />
+            )}
+
+            {/* 02 HAYVANCILIK & YEM ÖRNEK RAPORLARI */}
+            {activeTab === "hayvancilikRaporlar" && (
+              <OrnekRaporlarView
+                showToast={showToast}
+                defaultCategory="hayvancilik"
               />
             )}
           </div>
