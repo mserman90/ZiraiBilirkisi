@@ -1,7 +1,7 @@
 {
-  "name": "Zirai ve Hayvancılık Bilirkişi Portalı",
-  "short_name": "ZiraiBilirkişi",
-  "description": "01 Tarım ve 02 Hayvancılık bilirkişiliği için Yargıtay standartlarında kamulaştırma, telefat tazminatı, rasyon formülasyonu ve uydu parsel analiz portalı.",
+  "name": "Zirai Bilirkişi",
+  "short_name": "Zirai Bilirkişi",
+  "description": "01 Tarım, 02 Hayvancılık, Süt Teknolojisi ve 26 Gıda bilirkişiliği için Yargıtay standartlarında resmi adli hesaplama ve rapor otomasyonu portalı.",
   "start_url": "/ZiraiBilirkisi/",
   "scope": "/ZiraiBilirkisi/",
   "display": "standalone",

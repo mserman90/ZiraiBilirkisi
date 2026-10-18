@@ -1062,8 +1062,8 @@ export default function App() {
               <Leaf size={20} />
             </div>
             <div>
-              <h1 className="text-[17px] font-bold tracking-tight">Ziraat Asistan</h1>
-              <p className="text-[11px] text-emerald-400 font-medium">01 TARIM • 02 HAYVANCILIK</p>
+              <h1 className="text-[17px] font-bold tracking-tight">Zirai Bilirkişi</h1>
+              <p className="text-[11px] text-emerald-400 font-medium">01 TARIM • 02 HAYVANCILIK • 26 GIDA</p>
             </div>
           </div>
           <button
@@ -1277,8 +1277,8 @@ export default function App() {
               <Leaf size={16} />
             </button>
             <div>
-              <span className="font-bold text-sm block leading-none">Ziraat Asistan</span>
-              <span className="text-[10px] text-emerald-400 font-medium">01 Tarım • 02 Hayvancılık</span>
+              <span className="font-bold text-sm block leading-none">Zirai Bilirkişi</span>
+              <span className="text-[10px] text-emerald-400 font-medium">01 Tarım • 02 Hayvancılık • 26 Gıda</span>
             </div>
           </div>
 
