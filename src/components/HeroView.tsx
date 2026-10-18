@@ -20,6 +20,7 @@ import {
   FileCheck,
   TrendingUp,
   Award,
+  Milk,
 } from "lucide-react";
 import { TabId } from "../types";
 
@@ -89,6 +90,14 @@ export default function HeroView({ onSelectTab }: HeroViewProps) {
             >
               <Wheat size={16} className="text-emerald-400" />
               <span>02.05 Yemler & Besleme</span>
+            </button>
+
+            <button
+              onClick={() => onSelectTab("sutTeknolojisi")}
+              className="flex items-center gap-2 px-5 py-3.5 rounded-2xl bg-sky-500/10 hover:bg-sky-500/20 text-sky-300 font-semibold text-sm border border-sky-500/30 backdrop-blur-sm transition"
+            >
+              <Milk size={16} className="text-sky-400" />
+              <span>02.06 Süt & Mandıra</span>
             </button>
           </div>
 

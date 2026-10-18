@@ -14,7 +14,8 @@ export type TabId =
   | "yemlerBesleme"
   | "tarimRaporlar"
   | "hayvancilikRaporlar"
-  | "raporOtomasyonu";
+  | "raporOtomasyonu"
+  | "sutTeknolojisi";
 
 export type IlkeMadde = {
   id: string;

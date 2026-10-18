@@ -69,6 +69,7 @@ import {
   Wrench,
   WifiOff,
   Smartphone,
+  Milk,
 } from "lucide-react";
 import {
   LineChart,
@@ -96,6 +97,7 @@ import TarimVeriArsiviView from "./components/TarimVeriArsiviView";
 import OrnekRaporlarView from "./components/OrnekRaporlarView";
 import IctihatAramaView from "./components/IctihatAramaView";
 import RaporOtomasyonuView from "./components/RaporOtomasyonuView";
+import SutUrunleriView from "./components/SutUrunleriView";
 import {
   UFE_RATES,
   ICTIHAT_DB,
@@ -1034,6 +1036,7 @@ export default function App() {
     // 02 Hayvancılık
     { id: "hayvancilik" as TabId, label: "02.01 Hayvancılık", icon: <Beef size={18} />, group: "hayvancilik", badge: "YENİ" },
     { id: "yemlerBesleme" as TabId, label: "02.05 Yemler & Besleme", icon: <Wheat size={18} />, group: "hayvancilik", badge: "YENİ" },
+    { id: "sutTeknolojisi" as TabId, label: "02.06 Süt & Mandıra", icon: <Milk size={18} />, group: "hayvancilik", badge: "TGK • KRİYOSKOPİ" },
     { id: "hayvancilikRaporlar" as TabId, label: "Hayvancılık Örnek Raporları", icon: <FileCheck size={18} />, group: "hayvancilik", badge: "İÇTİHATLI" },
 
     // Araçlar
@@ -1830,6 +1833,14 @@ export default function App() {
               <YemlerBeslemeView
                 showToast={showToast}
                 onGoToWizard={() => setActiveTab("sihirbaz")}
+              />
+            )}
+
+            {/* 02.06 SÜT TEKNOLOJİSİ & MANDIRA */}
+            {activeTab === "sutTeknolojisi" && (
+              <SutUrunleriView
+                showToast={showToast}
+                onGoToReportAutomation={() => setActiveTab("raporOtomasyonu")}
               />
             )}
 
