@@ -7,12 +7,43 @@
   .safe-area-bottom {
     padding-bottom: calc(0.5rem + env(safe-area-inset-bottom));
   }
+  .safe-area-top {
+    padding-top: env(safe-area-inset-top);
+  }
+  .safe-area-x {
+    padding-left: env(safe-area-inset-left);
+    padding-right: env(safe-area-inset-right);
+  }
+}
+
+/* Touch targets and tap highlight optimization */
+* {
+  -webkit-tap-highlight-color: transparent;
+}
+
+@media (max-width: 768px) {
+  .touch-target {
+    min-height: 44px;
+    min-width: 44px;
+  }
 }
 
 /* Smooth scrolling on mobile devices */
 html, body {
   -webkit-overflow-scrolling: touch;
   overscroll-behavior-y: none;
+}
+
+@media all and (display-mode: standalone) {
+  /* Standalone PWA adjustments */
+  body {
+    user-select: none;
+    -webkit-user-select: none;
+  }
+  input, textarea, select, [contenteditable="true"] {
+    user-select: text;
+    -webkit-user-select: text;
+  }
 }
 
 /* -------------------------------------------------------------

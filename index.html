@@ -2,16 +2,23 @@
 <html lang="tr">
   <head>
     <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, viewport-fit=cover" />
     <title>Zirai Bilirkişi</title>
     <meta name="description" content="T.C. Adalet Bakanlığı ve Yargıtay standartlarında Zirai Bilirkişi (Tarım, Hayvancılık, Süt Teknolojisi ve Gıda) Portalı." />
     <meta property="og:title" content="Zirai Bilirkişi" />
     <meta property="og:description" content="T.C. Adalet Bakanlığı ve Yargıtay standartlarında Zirai Bilirkişi (Tarım, Hayvancılık, Süt Teknolojisi ve Gıda) Portalı." />
     <meta property="og:type" content="website" />
+    
+    <!-- PWA & Mobile Meta Tags -->
     <meta name="theme-color" content="#0f172a" />
+    <meta name="mobile-web-app-capable" content="yes" />
+    <meta name="application-name" content="Zirai Bilirkişi" />
     <meta name="apple-mobile-web-app-capable" content="yes" />
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
     <meta name="apple-mobile-web-app-title" content="Zirai Bilirkişi" />
+    <meta name="format-detection" content="telephone=no" />
+    <meta name="msapplication-TileColor" content="#0f172a" />
+
     <link rel="manifest" href="/ZiraiBilirkisi/manifest.json" />
     <link rel="icon" type="image/svg+xml" href="/ZiraiBilirkisi/icon.svg" />
     <link rel="apple-touch-icon" href="/ZiraiBilirkisi/apple-touch-icon.png" />
@@ -40,11 +47,22 @@
       if ('serviceWorker' in navigator) {
         window.addEventListener('load', () => {
           navigator.serviceWorker.register('/ZiraiBilirkisi/sw.js')
-            .then(reg => console.log('PWA ServiceWorker registered with scope:', reg.scope))
+            .then(reg => {
+              console.log('PWA ServiceWorker registered with scope:', reg.scope);
+              reg.addEventListener('updatefound', () => {
+                const newWorker = reg.installing;
+                if (newWorker) {
+                  newWorker.addEventListener('statechange', () => {
+                    if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
+                      window.dispatchEvent(new CustomEvent('zirai_pwa_update_available', { detail: { registration: reg } }));
+                    }
+                  });
+                }
+              });
+            })
             .catch(err => console.log('ServiceWorker registration skipped or failed:', err));
         });
       }
     </script>
   </body>
 </html>
-

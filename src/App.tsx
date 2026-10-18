@@ -98,6 +98,7 @@ import OrnekRaporlarView from "./components/OrnekRaporlarView";
 import IctihatAramaView from "./components/IctihatAramaView";
 import RaporOtomasyonuView from "./components/RaporOtomasyonuView";
 import SutUrunleriView from "./components/SutUrunleriView";
+import PwaInstallModal from "./components/PwaInstallModal";
 import {
   UFE_RATES,
   ICTIHAT_DB,
@@ -163,6 +164,9 @@ export default function App() {
   const [isOnline, setIsOnline] = useState<boolean>(navigator.onLine);
   const [deferredPrompt, setDeferredPrompt] = useState<any>(null);
   const [showInstallBanner, setShowInstallBanner] = useState<boolean>(false);
+  const [showInstallModal, setShowInstallModal] = useState<boolean>(false);
+  const [isStandalone, setIsStandalone] = useState<boolean>(false);
+  const [hasUpdate, setHasUpdate] = useState<boolean>(false);
 
   useEffect(() => {
     const handleOnline = () => setIsOnline(true);
@@ -171,30 +175,62 @@ export default function App() {
     window.addEventListener("online", handleOnline);
     window.addEventListener("offline", handleOffline);
 
+    // Standalone PWA tespiti
+    const checkStandalone = () => {
+      const standalone =
+        window.matchMedia("(display-mode: standalone)").matches ||
+        (window.navigator as any).standalone === true;
+      setIsStandalone(standalone);
+    };
+    checkStandalone();
+
     const handleBeforeInstallPrompt = (e: Event) => {
       e.preventDefault();
       setDeferredPrompt(e);
       setShowInstallBanner(true);
     };
 
+    const handlePwaUpdate = () => {
+      setHasUpdate(true);
+      showToast("Zirai Bilirkişi için yeni bir sürüm mevcut!");
+    };
+
     window.addEventListener("beforeinstallprompt", handleBeforeInstallPrompt);
+    window.addEventListener("zirai_pwa_update_available", handlePwaUpdate);
 
     return () => {
       window.removeEventListener("online", handleOnline);
       window.removeEventListener("offline", handleOffline);
       window.removeEventListener("beforeinstallprompt", handleBeforeInstallPrompt);
+      window.removeEventListener("zirai_pwa_update_available", handlePwaUpdate);
     };
   }, []);
 
-  const handleInstallClick = async () => {
-    if (!deferredPrompt) return;
-    deferredPrompt.prompt();
-    const { outcome } = await deferredPrompt.userChoice;
-    if (outcome === "accepted") {
-      setShowInstallBanner(false);
-      showToast("Uygulama başarıyla yüklendi");
+  const handleApplyUpdate = () => {
+    if ("serviceWorker" in navigator) {
+      navigator.serviceWorker.getRegistration().then((reg) => {
+        if (reg?.waiting) {
+          reg.waiting.postMessage({ type: "SKIP_WAITING" });
+        }
+      });
     }
-    setDeferredPrompt(null);
+    window.location.reload();
+  };
+
+  const handleInstallClick = async () => {
+    if (deferredPrompt) {
+      deferredPrompt.prompt();
+      const { outcome } = await deferredPrompt.userChoice;
+      if (outcome === "accepted") {
+        setShowInstallBanner(false);
+        setShowInstallModal(false);
+        setIsStandalone(true);
+        showToast("Zirai Bilirkişi ana ekranınıza başarıyla yüklendi!");
+      }
+      setDeferredPrompt(null);
+    } else {
+      setShowInstallModal(true);
+    }
   };
 
   // Wizard states
@@ -1243,6 +1279,22 @@ export default function App() {
           </div>
 
           <div className="flex items-center gap-3">
+            {/* PWA Kurulum Butonu (Masaüstü) */}
+            <button
+              onClick={() => {
+                if (deferredPrompt) {
+                  handleInstallClick();
+                } else {
+                  setShowInstallModal(true);
+                }
+              }}
+              className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl border border-emerald-500/30 bg-emerald-500/10 hover:bg-emerald-500/20 text-xs font-bold text-emerald-700 dark:text-emerald-300 transition shadow-xs cursor-pointer"
+              title="Zirai Bilirkişi PWA Kurulumu & Çevrimdışı Kullanım"
+            >
+              <Smartphone size={14} className="text-emerald-600 dark:text-emerald-400" />
+              <span>{isStandalone ? "PWA Aktif" : "Uygulamayı Yükle"}</span>
+            </button>
+
             {/* Gece / Gündüz Modu Butonu */}
             <button
               onClick={toggleTheme}
@@ -1276,7 +1328,7 @@ export default function App() {
           <div className="flex items-center gap-2.5">
             <button
               onClick={() => setActiveTab("hero")}
-              className="w-8 h-8 rounded-lg bg-emerald-500/20 border border-emerald-500/30 flex items-center justify-center text-emerald-400"
+              className="w-8 h-8 rounded-lg bg-emerald-500/20 border border-emerald-500/30 flex items-center justify-center text-emerald-400 cursor-pointer"
             >
               <Leaf size={16} />
             </button>
@@ -1287,6 +1339,22 @@ export default function App() {
           </div>
 
           <div className="flex items-center gap-2">
+            {/* Mobile PWA Yükle Butonu */}
+            <button
+              onClick={() => {
+                if (deferredPrompt) {
+                  handleInstallClick();
+                } else {
+                  setShowInstallModal(true);
+                }
+              }}
+              className="flex items-center gap-1 text-[11px] bg-emerald-500 text-slate-950 font-bold px-2 py-1 rounded-lg shadow-sm cursor-pointer"
+              title="Telefona Yükle / PWA"
+            >
+              <Smartphone size={12} />
+              <span>{isStandalone ? "PWA" : "Yükle"}</span>
+            </button>
+
             {/* Mobile Gece / Gündüz Butonu */}
             <button
               onClick={toggleTheme}
@@ -1302,23 +1370,32 @@ export default function App() {
                 <WifiOff size={10} /> Çevrimdışı
               </span>
             )}
-            {showInstallBanner && (
-              <button
-                onClick={handleInstallClick}
-                className="flex items-center gap-1 text-[11px] bg-emerald-500 text-slate-950 font-bold px-2.5 py-1 rounded-lg shadow-sm"
-              >
-                <Smartphone size={12} /> Yükle
-              </button>
-            )}
+
             <button
               onClick={() => setMobileOpen(!mobileOpen)}
-              className="p-1.5 rounded-lg bg-white/10 hover:bg-white/15 text-slate-200"
+              className="p-1.5 rounded-lg bg-white/10 hover:bg-white/15 text-slate-200 cursor-pointer"
               aria-label="Menü"
             >
               {mobileOpen ? <X size={20} /> : <Menu size={20} />}
             </button>
           </div>
         </header>
+
+        {/* PWA Güncelleme Bildirim Çubuğu */}
+        {hasUpdate && (
+          <div className="bg-gradient-to-r from-indigo-900 to-slate-900 border-b border-indigo-500/40 px-4 py-2 text-xs text-white flex items-center justify-between gap-3 shadow-md z-30 animate-[fadeIn_0.3s_ease]">
+            <div className="flex items-center gap-2">
+              <Sparkles size={14} className="text-emerald-400 shrink-0" />
+              <span><b>Zirai Bilirkişi Güncellemesi:</b> En yeni Yargıtay standartları ve hesaplama motoru hazır.</span>
+            </div>
+            <button
+              onClick={handleApplyUpdate}
+              className="px-3 py-1 bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-black rounded-lg text-xs transition shrink-0 cursor-pointer shadow-sm"
+            >
+              Yenile & Güncelle
+            </button>
+          </div>
+        )}
 
         {/* Offline notification banner if network is disconnected */}
         {!isOnline && (
@@ -1440,18 +1517,23 @@ export default function App() {
               ))}
             </div>
 
-            {/* PWA Install Button inside menu if available */}
-            {showInstallBanner && (
-              <div className="pt-3 border-t border-white/10">
-                <button
-                  onClick={handleInstallClick}
-                  className="w-full flex items-center justify-center gap-2 py-3 bg-gradient-to-r from-emerald-500 to-teal-500 text-slate-950 font-bold rounded-xl shadow-lg text-sm"
-                >
-                  <Smartphone size={16} />
-                  <span>Uygulamayı Telefona Yükle</span>
-                </button>
-              </div>
-            )}
+            {/* PWA Install Button inside menu */}
+            <div className="pt-3 border-t border-white/10">
+              <button
+                onClick={() => {
+                  setMobileOpen(false);
+                  if (deferredPrompt) {
+                    handleInstallClick();
+                  } else {
+                    setShowInstallModal(true);
+                  }
+                }}
+                className="w-full flex items-center justify-center gap-2 py-3 bg-gradient-to-r from-emerald-500 to-teal-500 hover:from-emerald-400 hover:to-teal-400 text-slate-950 font-black rounded-xl shadow-lg text-xs tracking-wide transition cursor-pointer"
+              >
+                <Smartphone size={16} />
+                <span>{isStandalone ? "Uygulama Cihaza Kurulu (PWA Aktif)" : "Uygulamayı Telefona Yükle (PWA)"}</span>
+              </button>
+            </div>
           </div>
         )}
 
@@ -1870,7 +1952,7 @@ export default function App() {
         <nav className="md:hidden bg-[#0f172a] border-t border-white/10 px-2 py-1.5 flex items-center justify-around shrink-0 z-30 shadow-2xl safe-area-bottom">
           <button
             onClick={() => setActiveTab("hero")}
-            className={`flex flex-col items-center justify-center py-1 px-2 rounded-lg text-[10px] font-medium transition ${
+            className={`flex flex-col items-center justify-center py-1 px-2 rounded-lg text-[10px] font-medium transition min-h-[44px] cursor-pointer ${
               activeTab === "hero" ? "text-emerald-400 font-bold" : "text-slate-400 hover:text-slate-200"
             }`}
           >
@@ -1879,19 +1961,23 @@ export default function App() {
           </button>
 
           <button
-            onClick={() => setActiveTab("sihirbaz")}
-            className={`flex flex-col items-center justify-center py-1 px-2 rounded-lg text-[10px] font-medium transition ${
-              activeTab === "sihirbaz" || activeTab === "veriarsivi" ? "text-emerald-400 font-bold" : "text-slate-400 hover:text-slate-200"
+            onClick={() => setActiveTab("raporOtomasyonu")}
+            className={`flex flex-col items-center justify-center py-1 px-2 rounded-lg text-[10px] font-medium transition min-h-[44px] cursor-pointer ${
+              activeTab === "raporOtomasyonu" || activeTab === "sihirbaz" || activeTab === "veriarsivi" || activeTab === "tarimRaporlar"
+                ? "text-emerald-400 font-bold"
+                : "text-slate-400 hover:text-slate-200"
             }`}
           >
-            <Sprout size={17} className={activeTab === "sihirbaz" ? "text-emerald-400" : "text-slate-400"} />
+            <Sprout size={17} className={activeTab === "raporOtomasyonu" || activeTab === "sihirbaz" ? "text-emerald-400" : "text-slate-400"} />
             <span className="mt-0.5">01 Tarım</span>
           </button>
 
           <button
             onClick={() => setActiveTab("hayvancilik")}
-            className={`flex flex-col items-center justify-center py-1 px-2 rounded-lg text-[10px] font-medium transition ${
-              activeTab === "hayvancilik" || activeTab === "yemlerBesleme" ? "text-amber-400 font-bold" : "text-slate-400 hover:text-slate-200"
+            className={`flex flex-col items-center justify-center py-1 px-2 rounded-lg text-[10px] font-medium transition min-h-[44px] cursor-pointer ${
+              activeTab === "hayvancilik" || activeTab === "yemlerBesleme" || activeTab === "sutTeknolojisi" || activeTab === "hayvancilikRaporlar"
+                ? "text-amber-400 font-bold"
+                : "text-slate-400 hover:text-slate-200"
             }`}
           >
             <Beef size={17} className={activeTab === "hayvancilik" || activeTab === "yemlerBesleme" ? "text-amber-400" : "text-slate-400"} />
@@ -1900,7 +1986,7 @@ export default function App() {
 
           <button
             onClick={() => setActiveTab("uyduParsel")}
-            className={`flex flex-col items-center justify-center py-1 px-2 rounded-lg text-[10px] font-medium transition ${
+            className={`flex flex-col items-center justify-center py-1 px-2 rounded-lg text-[10px] font-medium transition min-h-[44px] cursor-pointer ${
               activeTab === "uyduParsel" || activeTab === "aiAsistan" || activeTab === "fotoAnaliz" || activeTab === "tarayici" || activeTab === "ictihat"
                 ? "text-sky-400 font-bold"
                 : "text-slate-400 hover:text-slate-200"
@@ -1912,7 +1998,7 @@ export default function App() {
 
           <button
             onClick={() => setMobileOpen(true)}
-            className="flex flex-col items-center justify-center py-1 px-2 rounded-lg text-[10px] font-medium text-slate-400 hover:text-slate-200"
+            className="flex flex-col items-center justify-center py-1 px-2 rounded-lg text-[10px] font-medium text-slate-400 hover:text-slate-200 min-h-[44px] cursor-pointer"
           >
             <Menu size={17} />
             <span className="mt-0.5">Tüm Menü</span>
@@ -1951,6 +2037,15 @@ export default function App() {
           <CheckCircle2 size={16} className="text-emerald-400" /> {toast}
         </div>
       )}
+
+      {/* PWA Install Modal */}
+      <PwaInstallModal
+        isOpen={showInstallModal}
+        onClose={() => setShowInstallModal(false)}
+        deferredPrompt={deferredPrompt}
+        onInstallPrompt={handleInstallClick}
+        isStandalone={isStandalone}
+      />
     </div>
   );
 }
