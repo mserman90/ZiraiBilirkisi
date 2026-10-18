@@ -38,6 +38,9 @@ import {
   FlaskConical,
   Activity,
   Microscope,
+  TreePine,
+  Building2,
+  Scissors,
 } from "lucide-react";
 import {
   DAVA_TURLERI_DB,
@@ -46,6 +49,19 @@ import {
   scanHmkViolations,
 } from "../data/raporOtomasyonuData";
 import { TUIK_TARIM_VERITABANI } from "../data/tuikTarimData";
+import EkRaporModule from "./EkRaporModule";
+import MeyveAgaciModule from "./MeyveAgaciModule";
+import ZiraiYapiModule from "./ZiraiYapiModule";
+import KismiKamulastirmaModule from "./KismiKamulastirmaModule";
+import AdaletIlkeleriModule from "./AdaletIlkeleriModule";
+
+export type RaporSubTab =
+  | "kokRapor"
+  | "ekRapor"
+  | "agacHesap"
+  | "ziraiYapi"
+  | "kismiKamulastirma"
+  | "adaletIlkeleri";
 
 interface RaporOtomasyonuViewProps {
   showToast: (msg: string) => void;
@@ -56,6 +72,9 @@ export default function RaporOtomasyonuView({
   showToast,
   onGoToWizard,
 }: RaporOtomasyonuViewProps) {
+  // Alt Modül Tabı: Kök Rapor (varsayılan) | İtiraz & Ek Rapor | Ağaç | Yapı | Kısmi Kamulaştırma | Adalet 32 İlke
+  const [activeSubTab, setActiveSubTab] = useState<RaporSubTab>("kokRapor");
+
   // Wizard adımları: 1 = Künye, 2 = Dava Türü & Şablon, 3 = Keşif & Tespit, 4 = Bilimsel Hesaplama, 5 = HMK 279 Denetim, 6 = Resmi Rapor
   const [currentStep, setCurrentStep] = useState<number>(1);
 
@@ -219,6 +238,8 @@ export default function RaporOtomasyonuView({
     if (d.ornekVeriler.gidaAnalizDegeri) setGidaAnalizDegeri(d.ornekVeriler.gidaAnalizDegeri);
     if (d.ornekVeriler.gidaStandartDeger) setGidaStandartDeger(d.ornekVeriler.gidaStandartDeger);
 
+    setActiveSubTab("kokRapor");
+    setCurrentStep(1);
     showToast(`✅ ${d.ad} şablonu ve resmi soru kalıpları yüklendi`);
   };
 
@@ -620,7 +641,172 @@ ${
         </div>
       </div>
 
-      {/* ADIM İLERLEME ÇUBUĞU (WIZARD STEPS) */}
+      {/* ALT MODÜL SEÇİCİ (REHBER KİTAPLAR & UZMANLIK ARAÇLARI) */}
+      <div className="bg-white dark:bg-slate-900 rounded-2xl p-2 shadow-sm border border-slate-200 dark:border-slate-800">
+        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-2">
+          <button
+            onClick={() => setActiveSubTab("kokRapor")}
+            className={`p-3 rounded-xl text-xs font-bold transition flex flex-col items-center justify-center gap-1.5 border text-center cursor-pointer ${
+              activeSubTab === "kokRapor"
+                ? "bg-emerald-600 text-white border-emerald-600 shadow-md"
+                : "bg-slate-50 dark:bg-slate-800/60 border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800"
+            }`}
+          >
+            <FileCheck
+              size={18}
+              className={
+                activeSubTab === "kokRapor"
+                  ? "text-white"
+                  : "text-emerald-600 dark:text-emerald-400"
+              }
+            />
+            <span className="leading-tight">Kök Rapor Sihirbazı</span>
+            <span
+              className={`text-[10px] font-normal ${
+                activeSubTab === "kokRapor" ? "text-emerald-100" : "text-slate-500"
+              }`}
+            >
+              6 Adımlı Resmi Rapor
+            </span>
+          </button>
+
+          <button
+            onClick={() => setActiveSubTab("ekRapor")}
+            className={`p-3 rounded-xl text-xs font-bold transition flex flex-col items-center justify-center gap-1.5 border text-center cursor-pointer ${
+              activeSubTab === "ekRapor"
+                ? "bg-emerald-600 text-white border-emerald-600 shadow-md"
+                : "bg-slate-50 dark:bg-slate-800/60 border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800"
+            }`}
+          >
+            <Scale
+              size={18}
+              className={
+                activeSubTab === "ekRapor"
+                  ? "text-white"
+                  : "text-emerald-600 dark:text-emerald-400"
+              }
+            />
+            <span className="leading-tight">İtiraz & Ek Rapor</span>
+            <span
+              className={`text-[10px] font-normal ${
+                activeSubTab === "ekRapor" ? "text-emerald-100" : "text-slate-500"
+              }`}
+            >
+              HMK 281 Kademeli Tablo
+            </span>
+          </button>
+
+          <button
+            onClick={() => setActiveSubTab("agacHesap")}
+            className={`p-3 rounded-xl text-xs font-bold transition flex flex-col items-center justify-center gap-1.5 border text-center cursor-pointer ${
+              activeSubTab === "agacHesap"
+                ? "bg-emerald-600 text-white border-emerald-600 shadow-md"
+                : "bg-slate-50 dark:bg-slate-800/60 border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800"
+            }`}
+          >
+            <TreePine
+              size={18}
+              className={
+                activeSubTab === "agacHesap"
+                  ? "text-white"
+                  : "text-emerald-600 dark:text-emerald-400"
+              }
+            />
+            <span className="leading-tight">Meyve Ağacı Tazminatı</span>
+            <span
+              className={`text-[10px] font-normal ${
+                activeSubTab === "agacHesap" ? "text-emerald-100" : "text-slate-500"
+              }`}
+            >
+              ZMO 4-Devre Kuralı
+            </span>
+          </button>
+
+          <button
+            onClick={() => setActiveSubTab("ziraiYapi")}
+            className={`p-3 rounded-xl text-xs font-bold transition flex flex-col items-center justify-center gap-1.5 border text-center cursor-pointer ${
+              activeSubTab === "ziraiYapi"
+                ? "bg-emerald-600 text-white border-emerald-600 shadow-md"
+                : "bg-slate-50 dark:bg-slate-800/60 border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800"
+            }`}
+          >
+            <Building2
+              size={18}
+              className={
+                activeSubTab === "ziraiYapi"
+                  ? "text-white"
+                  : "text-emerald-600 dark:text-emerald-400"
+              }
+            />
+            <span className="leading-tight">Zirai Yapı & Amortisman</span>
+            <span
+              className={`text-[10px] font-normal ${
+                activeSubTab === "ziraiYapi" ? "text-emerald-100" : "text-slate-500"
+              }`}
+            >
+              ÇŞB & ZMO Normları
+            </span>
+          </button>
+
+          <button
+            onClick={() => setActiveSubTab("kismiKamulastirma")}
+            className={`p-3 rounded-xl text-xs font-bold transition flex flex-col items-center justify-center gap-1.5 border text-center cursor-pointer ${
+              activeSubTab === "kismiKamulastirma"
+                ? "bg-emerald-600 text-white border-emerald-600 shadow-md"
+                : "bg-slate-50 dark:bg-slate-800/60 border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800"
+            }`}
+          >
+            <Scissors
+              size={18}
+              className={
+                activeSubTab === "kismiKamulastirma"
+                  ? "text-white"
+                  : "text-emerald-600 dark:text-emerald-400"
+              }
+            />
+            <span className="leading-tight">Kısmi Kamulaştırma</span>
+            <span
+              className={`text-[10px] font-normal ${
+                activeSubTab === "kismiKamulastirma"
+                  ? "text-emerald-100"
+                  : "text-slate-500"
+              }`}
+            >
+              m.12 Değer Düşüklüğü
+            </span>
+          </button>
+
+          <button
+            onClick={() => setActiveSubTab("adaletIlkeleri")}
+            className={`p-3 rounded-xl text-xs font-bold transition flex flex-col items-center justify-center gap-1.5 border text-center cursor-pointer ${
+              activeSubTab === "adaletIlkeleri"
+                ? "bg-emerald-600 text-white border-emerald-600 shadow-md"
+                : "bg-slate-50 dark:bg-slate-800/60 border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800"
+            }`}
+          >
+            <ShieldCheck
+              size={18}
+              className={
+                activeSubTab === "adaletIlkeleri"
+                  ? "text-white"
+                  : "text-emerald-600 dark:text-emerald-400"
+              }
+            />
+            <span className="leading-tight">Adalet 32 İlke</span>
+            <span
+              className={`text-[10px] font-normal ${
+                activeSubTab === "adaletIlkeleri" ? "text-emerald-100" : "text-slate-500"
+              }`}
+            >
+              Kusur Yasağı & Usul
+            </span>
+          </button>
+        </div>
+      </div>
+
+      {activeSubTab === "kokRapor" && (
+        <>
+          {/* ADIM İLERLEME ÇUBUĞU (WIZARD STEPS) */}
       <div className="bg-white dark:bg-slate-900 rounded-2xl p-4 shadow-sm border border-slate-200 dark:border-slate-800">
         <div className="grid grid-cols-2 md:grid-cols-6 gap-2">
           {[
@@ -1916,6 +2102,58 @@ ${
           </div>
         </div>
       )}
+    </>
+  )}
+
+  {activeSubTab === "ekRapor" && (
+    <EkRaporModule
+      showToast={showToast}
+      defaultMahkeme={mahkemeAdi}
+      defaultDosyaNo={dosyaNo}
+      defaultDavaci={davaci}
+      defaultDavali={davali}
+    />
+  )}
+
+  {activeSubTab === "agacHesap" && (
+    <MeyveAgaciModule
+      showToast={showToast}
+      onSendToReport={(text) => {
+        setFiiliDurumAciklamasi((prev) => (prev ? prev + "\n\n" + text : text));
+        setActiveSubTab("kokRapor");
+        setCurrentStep(3);
+        showToast("🌳 Ağaç tazminatı hesaplaması Kök Rapor Keşif bölümüne aktarıldı");
+      }}
+    />
+  )}
+
+  {activeSubTab === "ziraiYapi" && (
+    <ZiraiYapiModule
+      showToast={showToast}
+      onSendToReport={(text) => {
+        setFiiliDurumAciklamasi((prev) => (prev ? prev + "\n\n" + text : text));
+        setActiveSubTab("kokRapor");
+        setCurrentStep(3);
+        showToast("🏗️ Zirai yapı ve amortisman hesaplaması Kök Rapor Keşif bölümüne aktarıldı");
+      }}
+    />
+  )}
+
+  {activeSubTab === "kismiKamulastirma" && (
+    <KismiKamulastirmaModule
+      showToast={showToast}
+      onSendToReport={(text) => {
+        setFiiliDurumAciklamasi((prev) => (prev ? prev + "\n\n" + text : text));
+        setActiveSubTab("kokRapor");
+        setCurrentStep(3);
+        showToast("📐 Kısmi kamulaştırma değer düşüklüğü hesaplaması Kök Rapor'a aktarıldı");
+      }}
+    />
+  )}
+
+  {activeSubTab === "adaletIlkeleri" && (
+    <AdaletIlkeleriModule showToast={showToast} />
+  )}
     </div>
   );
 }
