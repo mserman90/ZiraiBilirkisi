@@ -15,7 +15,7 @@
 export interface ItirazSenaryosu {
   id: string;
   baslik: string;
-  itirazEden: "Davacı / İdare" | "Davalı / Malik" | "Her İki Taraf";
+  itirazEden: "Davacı / İdare" | "Davalı / Malik" | "Davacı / Malik" | "Her İki Taraf";
   ozetItiraz: string;
   mahkemeAraKarari: string;
   tarafIddialari: {

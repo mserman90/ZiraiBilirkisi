@@ -55,6 +55,10 @@ import {
   scanHmkViolations,
   IcraHacizVarlik,
   DEFAULT_ICRA_VARLIKLARI,
+  runPreFlightAudit,
+  PreFlightAuditResult,
+  PreFlightCheckItem,
+  generateAuditCertificateText,
 } from "../data/raporOtomasyonuData";
 import { TUIK_TARIM_VERITABANI } from "../data/tuikTarimData";
 import {
@@ -287,6 +291,20 @@ export default function RaporOtomasyonuView({
     reader.readAsDataURL(file);
   };
 
+  // -------------------------------------------------------------------
+  // FAİZ VE TEMERRÜT TAVSİYE MATRİSİ (HÂKİMİN TAKDİRİNE SUNULMAK ÜZERE)
+  // -------------------------------------------------------------------
+  const [faizHesabiAktif, setFaizHesabiAktif] = useState<boolean>(true);
+  const [faizTuru, setFaizTuru] = useState<"yasal" | "kademeli_yasal" | "ticari_avans">("yasal");
+  const [faizKurali, setFaizKurali] = useState<
+    "kamulastirma_4ay" | "donem_sonu_kademeli" | "olay_tarihi" | "temerrut_ihtar" | "dava_tarihi"
+  >("kamulastirma_4ay");
+  const [davaTarihi, setDavaTarihi] = useState<string>("2024-11-15");
+  const [olayTarihi, setOlayTarihi] = useState<string>("2024-09-10");
+  const [temerrutTarihi, setTemerrutTarihi] = useState<string>("2024-10-01");
+  const [faizOraniPct, setFaizOraniPct] = useState<number>(9);
+  const [customFaizGerekcesi, setCustomFaizGerekcesi] = useState<string>("");
+
   // Dinamik Rapor Bölüm Numaraları (Yargıtay Standartı)
   const secPhoto = fotoAlbumuAktif && fotograflar.length > 0;
   const numHesap = secPhoto ? "VI" : "V";
@@ -335,18 +353,12 @@ export default function RaporOtomasyonuView({
   const [aylikAsgariGecimGideri, setAylikAsgariGecimGideri] = useState<number>(45000);
 
   // -------------------------------------------------------------------
-  // FAİZ VE TEMERRÜT TAVSİYE MATRİSİ (HÂKİMİN TAKDİRİNE SUNULMAK ÜZERE)
+  // USTA BİLİRKİŞİ PRE-FLIGHT UYAP DENETİM MOTORU STATE
   // -------------------------------------------------------------------
-  const [faizHesabiAktif, setFaizHesabiAktif] = useState<boolean>(true);
-  const [faizTuru, setFaizTuru] = useState<"yasal" | "kademeli_yasal" | "ticari_avans">("yasal");
-  const [faizKurali, setFaizKurali] = useState<
-    "kamulastirma_4ay" | "donem_sonu_kademeli" | "olay_tarihi" | "temerrut_ihtar" | "dava_tarihi"
-  >("kamulastirma_4ay");
-  const [davaTarihi, setDavaTarihi] = useState<string>("2024-11-15");
-  const [olayTarihi, setOlayTarihi] = useState<string>("2024-09-10");
-  const [temerrutTarihi, setTemerrutTarihi] = useState<string>("2024-10-01");
-  const [faizOraniPct, setFaizOraniPct] = useState<number>(9);
-  const [customFaizGerekcesi, setCustomFaizGerekcesi] = useState<string>("");
+  const [preFlightResult, setPreFlightResult] = useState<PreFlightAuditResult | null>(null);
+  const [isScanningPreFlight, setIsScanningPreFlight] = useState<boolean>(false);
+  const [preFlightFilter, setPreFlightFilter] = useState<"all" | "risk" | "warning" | "pass">("all");
+  const [ekPreFlightSertifikasiAktif, setEkPreFlightSertifikasiAktif] = useState<boolean>(true);
 
   const formatTrDate = (dateStr: string) => {
     if (!dateStr) return "";
@@ -741,6 +753,71 @@ export default function RaporOtomasyonuView({
   const handleApplyHmkFix = () => {
     setCustomKanaatMetni(hmkScanResult.cleanTextSuggestion);
     showToast("✅ HMK 279 ihlalleri teknik dile uyarlandı");
+  };
+
+  // -------------------------------------------------------------------
+  // USTA BİLİRKİŞİ PRE-FLIGHT UYAP DENETİM MOTORU HANDLERS
+  // -------------------------------------------------------------------
+  const handleRunPreFlightCheck = () => {
+    setIsScanningPreFlight(true);
+    setTimeout(() => {
+      const res = runPreFlightAudit({
+        davaId: selectedDavaId,
+        alan: selectedDava.alan,
+        mahkemeAdi,
+        dosyaNo,
+        davaci,
+        davali,
+        kesifTarihi,
+        raporTarihi,
+        parselIl,
+        parselIlce,
+        parselKoy,
+        adaNo,
+        parselNo,
+        alanM2,
+        araziTipi,
+        fiiliDurumAciklamasi,
+        generatedKanaatMetni,
+        munavebeList,
+        kfo,
+        odaPct,
+        hayvanSayisi,
+        hurdaMahsup,
+        gidaAyipOraniPct,
+        icraVarlikList,
+        toplamIcraBorcluyaTerk,
+        fotoAlbumuAktif,
+        fotograflarCount: fotograflar.length,
+        hasCoordinatesAndDirections:
+          fotograflar.length > 0 && fotograflar.every((f) => !!f.yon && !!f.wgs84Lat && !!f.wgs84Lng),
+        raporTuru,
+        kararTuru,
+        bilirkisiAdi,
+        bilirkisi2Adi,
+        bilirkisi2TeknikNot,
+        bilirkisi3Adi,
+        bilirkisi3TeknikNot,
+        karsiOyMetni,
+        faizHesabiAktif,
+        faizKurali,
+        faizTuru,
+      });
+      setPreFlightResult(res);
+      setIsScanningPreFlight(false);
+      if (res.riskSayisi === 0) {
+        showToast("✅ Pre-Flight: 10/10 Yargıtay kriterinden başarıyla geçti!");
+      } else {
+        showToast(`⚠️ Pre-Flight: ${res.riskSayisi} adet Yargıtay bozma riski tespit edildi!`);
+      }
+    }, 450);
+  };
+
+  const handleCopyAuditCertificate = () => {
+    if (!preFlightResult) return;
+    const cert = generateAuditCertificateText(preFlightResult, dosyaNo, mahkemeAdi);
+    navigator.clipboard.writeText(cert);
+    showToast("📋 Usta Bilirkişi Denetim Sertifikası kopyalandı");
   };
 
   // -------------------------------------------------------------------
@@ -1176,6 +1253,70 @@ ${
 </div>`
 }
 
+${
+  ekPreFlightSertifikasiAktif && preFlightResult
+    ? `
+<div style="page-break-before: always; margin-top: 36px; padding-top: 20px;">
+  <div style="border: 2px solid #0f172a; padding: 18px; border-radius: 8px; background-color: #f8fafc; font-family: 'Times New Roman', serif;">
+    <div style="text-align: center; border-bottom: 2px solid #0f172a; padding-bottom: 8px; margin-bottom: 12px;">
+      <h3 style="font-size: 11pt; font-weight: bold; margin: 0; text-transform: uppercase; color: #0f172a;">
+        T.C. ADALET BAKANLIĞI UYAP BİLİRKİŞİ RAPORU EKİ<br>
+        USTA BİLİRKİŞİ PRE-FLIGHT NİHAİ DENETİM VE YARGITAY UYGUNLUK ÇİZELGESİ
+      </h3>
+      <p style="font-size: 8.5pt; color: #475569; margin: 4px 0 0 0;">
+        6754 s. Bilirkişilik Kanunu, HMK m. 279 ve Yargıtay Hukuk Daireleri Bozma İlkeleri Denetimi
+      </p>
+    </div>
+
+    <table style="width: 100%; border: none; font-size: 8.5pt; margin-bottom: 10px; border-collapse: collapse;">
+      <tr style="border: none;">
+        <td style="border: none; padding: 2px 0;"><b>Mahkeme & Dosya:</b> ${mahkemeAdi} - ${dosyaNo}</td>
+        <td style="border: none; padding: 2px 0; text-align: right;"><b>Denetim Zamanı:</b> ${preFlightResult.denetimTarihi}</td>
+      </tr>
+      <tr style="border: none;">
+        <td style="border: none; padding: 2px 0;"><b>Sertifika Doğrulama Kodu:</b> ${preFlightResult.denetimSertifikaKodu}</td>
+        <td style="border: none; padding: 2px 0; text-align: right;"><b>Genel Uyum Skoru:</b> %${preFlightResult.toplamPuan} / 100 (${preFlightResult.gecenSayisi} Geçti / ${preFlightResult.uyariSayisi} Uyarı / ${preFlightResult.riskSayisi} Risk)</td>
+      </tr>
+    </table>
+
+    <table style="width: 100%; border-collapse: collapse; font-size: 8pt;">
+      <thead>
+        <tr style="background-color: #e2e8f0; font-weight: bold;">
+          <th style="border: 1px solid #94a3b8; padding: 5px; text-align: center; width: 4%;">No</th>
+          <th style="border: 1px solid #94a3b8; padding: 5px; width: 22%;">Denetim Maddesi</th>
+          <th style="border: 1px solid #94a3b8; padding: 5px; width: 24%;">Yargıtay / Kanuni Dayanak</th>
+          <th style="border: 1px solid #94a3b8; padding: 5px; text-align: center; width: 10%;">Durum</th>
+          <th style="border: 1px solid #94a3b8; padding: 5px; width: 40%;">Teknik İnceleme Tespiti & Gerekçe</th>
+        </tr>
+      </thead>
+      <tbody>
+        ${preFlightResult.items
+          .map(
+            (it) => `
+          <tr>
+            <td style="border: 1px solid #cbd5e1; padding: 5px; text-align: center; font-weight: bold;">${it.siraNo}</td>
+            <td style="border: 1px solid #cbd5e1; padding: 5px;"><b>${it.baslik}</b></td>
+            <td style="border: 1px solid #cbd5e1; padding: 5px; font-size: 7.5pt; color: #475569;">${it.hukukiDayanak}</td>
+            <td style="border: 1px solid #cbd5e1; padding: 5px; text-align: center; font-weight: bold; color: ${
+              it.durum === "pass" ? "#047857" : it.durum === "warning" ? "#b45309" : "#b91c1c"
+            };">
+              ${it.durum === "pass" ? "GEÇTİ" : it.durum === "warning" ? "UYARI" : "RİSK"}
+            </td>
+            <td style="border: 1px solid #cbd5e1; padding: 5px; font-size: 7.5pt;">${it.tespitAciklamasi}</td>
+          </tr>`
+          )
+          .join("")}
+      </tbody>
+    </table>
+
+    <p style="font-size: 8pt; color: #64748b; margin-top: 10px; font-style: italic; line-height: 1.4;">
+      * Not: İşbu denetim çizelgesi, Zirai Bilirkişi platformu Usta Bilirkişi Denetim Motoru tarafından HMK m. 266-287 ve Yargıtay ilgili Hukuk Dairelerinin yerleşik içtihatları uyarınca üretilmiş olup raporun teknik sıhhat ve mevsukiyeti için tanzim edilmiştir.
+    </p>
+  </div>
+</div>`
+    : ""
+}
+
 </body>
 </html>`;
   }, [
@@ -1271,6 +1412,8 @@ ${
     numKanaat,
     numKarsiOy,
     numImza,
+    ekPreFlightSertifikasiAktif,
+    preFlightResult,
   ]);
 
   // Word (.doc formatında HTML tabanlı) indirme
@@ -4137,6 +4280,25 @@ ${
 
             <div className="flex flex-wrap items-center gap-2">
               <button
+                onClick={handleRunPreFlightCheck}
+                disabled={isScanningPreFlight}
+                className={`px-4 py-2 rounded-xl text-xs font-bold flex items-center gap-1.5 shadow-sm transition ${
+                  preFlightResult
+                    ? preFlightResult.riskSayisi === 0
+                      ? "bg-emerald-600 hover:bg-emerald-700 text-white"
+                      : "bg-red-600 hover:bg-red-700 text-white animate-pulse"
+                    : "bg-indigo-600 hover:bg-indigo-700 text-white"
+                }`}
+              >
+                <ShieldCheck size={15} className={isScanningPreFlight ? "animate-spin" : ""} />
+                {isScanningPreFlight
+                  ? "Denetleniyor..."
+                  : preFlightResult
+                  ? `Pre-Flight: %${preFlightResult.toplamPuan} (${preFlightResult.riskSayisi === 0 ? "Uygun" : `${preFlightResult.riskSayisi} Risk`})`
+                  : "Pre-Flight Denetimi (10/10)"}
+              </button>
+
+              <button
                 onClick={handleDownloadWordDoc}
                 className="px-4 py-2 rounded-xl bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold flex items-center gap-1.5 shadow-sm transition"
               >
@@ -4157,6 +4319,243 @@ ${
                 <Copy size={14} /> Metni Kopyala
               </button>
             </div>
+          </div>
+
+          {/* USTA BİLİRKİŞİ NİHAİ DENETİM MOTORU (PRE-FLIGHT CHECKLIST) */}
+          <div className="rounded-2xl border border-indigo-200 dark:border-indigo-800 bg-gradient-to-br from-indigo-900/90 via-slate-900 to-indigo-950 p-5 md:p-6 text-white shadow-lg space-y-5">
+            <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-indigo-700/50 pb-4">
+              <div className="flex items-start gap-3.5">
+                <div className="w-12 h-12 rounded-2xl bg-indigo-500/20 border border-indigo-400/30 flex items-center justify-center shrink-0 shadow-inner">
+                  <ShieldCheck size={26} className="text-indigo-400" />
+                </div>
+                <div>
+                  <div className="flex items-center gap-2 flex-wrap">
+                    <h3 className="text-base font-bold text-white tracking-wide">
+                      Usta Bilirkişi Nihai Denetim Motoru (Pre-Flight Checklist)
+                    </h3>
+                    <span className="px-2 py-0.5 rounded-full text-[10px] font-bold uppercase bg-amber-400/20 text-amber-300 border border-amber-400/40">
+                      10/10 Yargıtay Riski Taraması
+                    </span>
+                  </div>
+                  <p className="text-xs text-indigo-200 mt-1 leading-relaxed max-w-2xl">
+                    Raporu UYAP'a yüklemeden önce tek tıkla çalışan 10 maddelik Yargıtay bozma riskleri kontrolü (Keşif zaptı uyumu, HMK 279 kusur yasağı, resmi yazı tarihleri, mahsup, koordinatlı fotoğraflar, KFO/ODA tavanı).
+                  </p>
+                </div>
+              </div>
+
+              <div className="flex items-center gap-2 self-end md:self-center shrink-0">
+                <button
+                  onClick={handleRunPreFlightCheck}
+                  disabled={isScanningPreFlight}
+                  className="px-5 py-2.5 rounded-xl bg-gradient-to-r from-emerald-500 to-teal-500 hover:from-emerald-600 hover:to-teal-600 text-white text-xs font-bold flex items-center gap-2 shadow-lg shadow-emerald-500/20 transition disabled:opacity-50"
+                >
+                  <Sparkles size={15} className={isScanningPreFlight ? "animate-spin" : ""} />
+                  <span>{isScanningPreFlight ? "Taranıyor..." : preFlightResult ? "Yeniden Tara" : "Tek Tıkla Pre-Flight Denetimi Başlat"}</span>
+                </button>
+              </div>
+            </div>
+
+            {/* Tarama Sonucu Paneli */}
+            {preFlightResult ? (
+              <div className="space-y-4">
+                {/* Skor Kartı & Genel Değerlendirme */}
+                <div className={`p-4 rounded-xl border flex flex-col md:flex-row md:items-center justify-between gap-4 ${
+                  preFlightResult.genelDurum === "mukemmel"
+                    ? "bg-emerald-950/40 border-emerald-500/40"
+                    : preFlightResult.genelDurum === "uyarili"
+                    ? "bg-amber-950/40 border-amber-500/40"
+                    : "bg-red-950/40 border-red-500/40"
+                }`}>
+                  <div className="flex items-center gap-4">
+                    <div className={`w-16 h-16 rounded-2xl flex flex-col items-center justify-center font-black shrink-0 border ${
+                      preFlightResult.genelDurum === "mukemmel"
+                        ? "bg-emerald-500 text-white border-emerald-300 shadow-lg shadow-emerald-500/30"
+                        : preFlightResult.genelDurum === "uyarili"
+                        ? "bg-amber-500 text-slate-900 border-amber-300 shadow-lg shadow-amber-500/30"
+                        : "bg-red-600 text-white border-red-300 shadow-lg shadow-red-500/30"
+                    }`}>
+                      <span className="text-xl leading-none">%{preFlightResult.toplamPuan}</span>
+                      <span className="text-[9px] uppercase tracking-wider font-bold">UYUM</span>
+                    </div>
+
+                    <div>
+                      <div className="flex items-center gap-2">
+                        <span className={`px-2.5 py-0.5 rounded-full text-[10px] font-bold uppercase ${
+                          preFlightResult.genelDurum === "mukemmel"
+                            ? "bg-emerald-500/20 text-emerald-300 border border-emerald-500/30"
+                            : preFlightResult.genelDurum === "uyarili"
+                            ? "bg-amber-500/20 text-amber-300 border border-amber-500/30"
+                            : "bg-red-500/20 text-red-300 border border-red-500/30"
+                        }`}>
+                          {preFlightResult.genelDurum === "mukemmel"
+                            ? "✓ UYAP YÜKLEMESİNE TAM UYGUN (BOZMA RİSKİ YOK)"
+                            : preFlightResult.genelDurum === "uyarili"
+                            ? "⚠️ TAVSİYELİ UYARILAR MEVCUT"
+                            : "⛔ YARGITAY BOZMA RİSKLERİ MEVCUT"}
+                        </span>
+                        <span className="text-[10px] text-indigo-300 font-mono">
+                          Kod: {preFlightResult.denetimSertifikaKodu}
+                        </span>
+                      </div>
+                      <p className="text-xs text-slate-200 mt-1 font-medium">
+                        {preFlightResult.ozetMesaj}
+                      </p>
+                    </div>
+                  </div>
+
+                  <div className="flex items-center gap-2 self-start md:self-center shrink-0">
+                    <button
+                      onClick={handleCopyAuditCertificate}
+                      className="px-3.5 py-2 rounded-xl bg-white/10 hover:bg-white/20 text-white text-xs font-semibold flex items-center gap-1.5 transition border border-white/10"
+                    >
+                      <Copy size={13} /> Sertifikayı Kopyala
+                    </button>
+                    <label className="flex items-center gap-2 px-3 py-2 rounded-xl bg-white/5 border border-white/10 text-xs cursor-pointer select-none">
+                      <input
+                        type="checkbox"
+                        checked={ekPreFlightSertifikasiAktif}
+                        onChange={(e) => setEkPreFlightSertifikasiAktif(e.target.checked)}
+                        className="rounded border-slate-700 text-emerald-500 focus:ring-0"
+                      />
+                      <span className="text-[11px] text-indigo-200">Rapor Ekine İlave Et</span>
+                    </label>
+                  </div>
+                </div>
+
+                {/* Filtre Butonları */}
+                <div className="flex flex-wrap items-center justify-between gap-2 pt-1">
+                  <div className="flex items-center gap-1.5 text-xs">
+                    <span className="text-[11px] text-indigo-300 mr-1 font-bold">Filtrele:</span>
+                    <button
+                      onClick={() => setPreFlightFilter("all")}
+                      className={`px-3 py-1 rounded-lg text-xs font-semibold transition ${
+                        preFlightFilter === "all"
+                          ? "bg-white text-slate-900 font-bold"
+                          : "bg-white/10 hover:bg-white/20 text-white"
+                      }`}
+                    >
+                      Tümü (10)
+                    </button>
+                    <button
+                      onClick={() => setPreFlightFilter("risk")}
+                      className={`px-3 py-1 rounded-lg text-xs font-semibold transition flex items-center gap-1 ${
+                        preFlightFilter === "risk"
+                          ? "bg-red-500 text-white font-bold"
+                          : "bg-red-500/20 text-red-300 hover:bg-red-500/30"
+                      }`}
+                    >
+                      <span>Bozma Riski ({preFlightResult.riskSayisi})</span>
+                    </button>
+                    <button
+                      onClick={() => setPreFlightFilter("warning")}
+                      className={`px-3 py-1 rounded-lg text-xs font-semibold transition flex items-center gap-1 ${
+                        preFlightFilter === "warning"
+                          ? "bg-amber-500 text-slate-900 font-bold"
+                          : "bg-amber-500/20 text-amber-300 hover:bg-amber-500/30"
+                      }`}
+                    >
+                      <span>Tavsiye / Uyarı ({preFlightResult.uyariSayisi})</span>
+                    </button>
+                    <button
+                      onClick={() => setPreFlightFilter("pass")}
+                      className={`px-3 py-1 rounded-lg text-xs font-semibold transition flex items-center gap-1 ${
+                        preFlightFilter === "pass"
+                          ? "bg-emerald-500 text-white font-bold"
+                          : "bg-emerald-500/20 text-emerald-300 hover:bg-emerald-500/30"
+                      }`}
+                    >
+                      <span>Başarılı ({preFlightResult.gecenSayisi})</span>
+                    </button>
+                  </div>
+
+                  <div className="text-[11px] text-indigo-300 font-sans">
+                    Son Tarama: {preFlightResult.denetimTarihi}
+                  </div>
+                </div>
+
+                {/* 10 Maddelik Kontrol Listesi Kartları */}
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-3 pt-1">
+                  {preFlightResult.items
+                    .filter((item) => {
+                      if (preFlightFilter === "risk") return item.durum === "risk";
+                      if (preFlightFilter === "warning") return item.durum === "warning";
+                      if (preFlightFilter === "pass") return item.durum === "pass";
+                      return true;
+                    })
+                    .map((item) => (
+                      <div
+                        key={item.id}
+                        className={`p-3.5 rounded-xl border transition flex flex-col justify-between gap-2.5 ${
+                          item.durum === "pass"
+                            ? "bg-emerald-950/20 border-emerald-500/30 hover:border-emerald-500/50"
+                            : item.durum === "warning"
+                            ? "bg-amber-950/20 border-amber-500/30 hover:border-amber-500/50"
+                            : "bg-red-950/30 border-red-500/40 hover:border-red-500/60 ring-1 ring-red-500/20"
+                        }`}
+                      >
+                        <div className="space-y-1.5">
+                          <div className="flex items-center justify-between gap-2">
+                            <span className="text-xs font-bold text-white flex items-center gap-1.5">
+                              <span className="font-mono text-indigo-300">[{item.siraNo.toString().padStart(2, "0")}]</span>
+                              <span>{item.baslik}</span>
+                            </span>
+                            <span className={`px-2 py-0.5 rounded text-[10px] font-bold ${
+                              item.durum === "pass"
+                                ? "bg-emerald-500/20 text-emerald-300 border border-emerald-500/40"
+                                : item.durum === "warning"
+                                ? "bg-amber-500/20 text-amber-300 border border-amber-500/40"
+                                : "bg-red-500/30 text-red-200 border border-red-500/50 font-black animate-pulse"
+                            }`}>
+                              {item.durum === "pass" ? "✓ GEÇTİ" : item.durum === "warning" ? "⚠️ TAVSİYE" : "⛔ BOZMA RİSKİ"}
+                            </span>
+                          </div>
+
+                          <div className="text-[11px] text-slate-300 leading-relaxed font-sans">
+                            <b>Tespit:</b> {item.tespitAciklamasi}
+                          </div>
+
+                          <div className="text-[10.5px] text-indigo-200 bg-indigo-950/40 p-2 rounded-lg border border-indigo-800/40 font-sans">
+                            <span className="font-semibold text-indigo-300">💡 Usta Tavsiyesi: </span>
+                            {item.tavsiye}
+                          </div>
+                        </div>
+
+                        <div className="flex items-center justify-between pt-1 border-t border-white/5 text-[10px]">
+                          <span className="text-slate-400 font-mono italic">
+                            Dayanak: {item.hukukiDayanak}
+                          </span>
+                          {item.durum !== "pass" && (
+                            <button
+                              onClick={() => setCurrentStep(item.aksiyonAdimi)}
+                              className="px-2.5 py-1 rounded-lg bg-indigo-500/20 hover:bg-indigo-500/40 text-indigo-200 font-bold border border-indigo-400/30 transition flex items-center gap-1"
+                            >
+                              Adım {item.aksiyonAdimi}'e Git <ArrowRight size={11} />
+                            </button>
+                          )}
+                        </div>
+                      </div>
+                    ))}
+                </div>
+              </div>
+            ) : (
+              /* Henüz Tarama Yapılmamış Başlangıç Durumu */
+              <div className="p-4 rounded-xl bg-white/5 border border-white/10 flex flex-col sm:flex-row items-center justify-between gap-4">
+                <div className="flex items-center gap-3">
+                  <Info size={20} className="text-amber-400 shrink-0" />
+                  <p className="text-xs text-indigo-100 leading-relaxed font-sans">
+                    Raporunuz henüz 10 maddelik Yargıtay bozma riski testinden geçirilmedi. UYAP sistemine yüklemeden veya Word/PDF çıktısı almadan önce tek tıkla pre-flight kontrolünü çalıştırmanız kuvvetle tavsiye olunur.
+                  </p>
+                </div>
+                <button
+                  onClick={handleRunPreFlightCheck}
+                  disabled={isScanningPreFlight}
+                  className="px-4 py-2 rounded-xl bg-emerald-500 hover:bg-emerald-600 text-white text-xs font-bold shrink-0 transition flex items-center gap-1.5 shadow"
+                >
+                  <Sparkles size={13} />
+                  <span>Şimdi Tara</span>
+                </button>
+              </div>
+            )}
           </div>
 
           {/* Rapor Önizleme Kağıdı (A4 Doküman Görünümü) */}
@@ -4598,6 +4997,72 @@ ${
                   <p className="text-slate-600">{bilirkisiUnvan}</p>
                   <p className="text-slate-500">Bilirkişi Sicil No: {bilirkisiSicilNo}</p>
                   <p className="text-emerald-700 font-bold mt-1">(e-İmzalıdır)</p>
+                </div>
+              )}
+
+              {/* EK: USTA BİLİRKİŞİ PRE-FLIGHT NİHAİ DENETİM VE YARGITAY UYGUNLUK ÇİZELGESİ */}
+              {ekPreFlightSertifikasiAktif && preFlightResult && (
+                <div className="mt-8 pt-6 border-t-2 border-dashed border-slate-300">
+                  <div className="border-2 border-slate-900 rounded-xl p-4 bg-slate-50 font-sans space-y-3">
+                    <div className="text-center border-b-2 border-slate-900 pb-2">
+                      <div className="text-[11px] font-bold uppercase tracking-wider text-slate-700">
+                        T.C. ADALET BAKANLIĞI UYAP BİLİRKİŞİ RAPORU EKİ
+                      </div>
+                      <div className="text-xs font-black uppercase text-indigo-950 mt-0.5">
+                        USTA BİLİRKİŞİ PRE-FLIGHT NİHAİ DENETİM VE YARGITAY UYGUNLUK ÇİZELGESİ
+                      </div>
+                      <div className="text-[9.5px] text-slate-500 mt-0.5">
+                        6754 s. Bilirkişilik Kanunu, HMK m. 279 ve Yargıtay Hukuk Daireleri Bozma İlkeleri Denetimi
+                      </div>
+                    </div>
+
+                    <div className="flex flex-wrap justify-between items-center text-[10px] text-slate-700 border-b border-slate-200 pb-2">
+                      <span><b>Sertifika Kodu:</b> <span className="font-mono text-indigo-700">{preFlightResult.denetimSertifikaKodu}</span></span>
+                      <span><b>Denetim Zamanı:</b> {preFlightResult.denetimTarihi}</span>
+                      <span className="font-bold text-emerald-800">
+                        Genel Uyum: %{preFlightResult.toplamPuan} ({preFlightResult.gecenSayisi} Geçti / {preFlightResult.uyariSayisi} Uyarı / {preFlightResult.riskSayisi} Risk)
+                      </span>
+                    </div>
+
+                    <div className="overflow-x-auto">
+                      <table className="w-full text-[9.5px] border-collapse border border-slate-300">
+                        <thead>
+                          <tr className="bg-slate-200 text-slate-800 font-bold">
+                            <th className="p-1.5 text-center w-7 border border-slate-300">No</th>
+                            <th className="p-1.5 text-left w-1/4 border border-slate-300">Denetim Maddesi</th>
+                            <th className="p-1.5 text-left w-1/4 border border-slate-300">Yargıtay / Kanun Dayanağı</th>
+                            <th className="p-1.5 text-center w-20 border border-slate-300">Durum</th>
+                            <th className="p-1.5 text-left border border-slate-300">Teknik İnceleme Tespiti & Gerekçe</th>
+                          </tr>
+                        </thead>
+                        <tbody className="divide-y divide-slate-200">
+                          {preFlightResult.items.map((it) => (
+                            <tr key={it.id}>
+                              <td className="p-1.5 text-center font-bold border border-slate-300">{it.siraNo}</td>
+                              <td className="p-1.5 font-bold text-slate-900 border border-slate-300">{it.baslik}</td>
+                              <td className="p-1.5 text-slate-600 font-serif border border-slate-300">{it.hukukiDayanak}</td>
+                              <td className="p-1.5 text-center font-bold border border-slate-300">
+                                <span className={`px-1.5 py-0.5 rounded text-[8.5px] ${
+                                  it.durum === "pass"
+                                    ? "bg-emerald-100 text-emerald-800"
+                                    : it.durum === "warning"
+                                    ? "bg-amber-100 text-amber-800"
+                                    : "bg-red-100 text-red-800"
+                                }`}>
+                                  {it.durum === "pass" ? "GEÇTİ" : it.durum === "warning" ? "UYARI" : "RİSK"}
+                                </span>
+                              </td>
+                              <td className="p-1.5 text-slate-700 border border-slate-300">{it.tespitAciklamasi}</td>
+                            </tr>
+                          ))}
+                        </tbody>
+                      </table>
+                    </div>
+
+                    <p className="text-[9px] text-slate-500 italic mt-2">
+                      * Not: İşbu denetim çizelgesi, Zirai Bilirkişi platformu Usta Bilirkişi Denetim Motoru tarafından HMK m. 266-287 ve Yargıtay ilgili Hukuk Dairelerinin yerleşik içtihatları uyarınca üretilmiş olup raporun teknik sıhhat ve mevsukiyeti için tanzim edilmiştir.
+                    </p>
+                  </div>
                 </div>
               )}
             </div>

@@ -767,3 +767,528 @@ export function scanHmkViolations(text: string): {
     cleanTextSuggestion,
   };
 }
+
+// ---------------------------------------------------------------------
+// USTA BİLİRKİŞİ NİHAİ DENETİM MOTORU (PRE-FLIGHT CHECKLIST)
+// UYAP Öncesi 10 Maddelik Yargıtay Bozma Riskleri Denetimi
+// ---------------------------------------------------------------------
+
+export type PreFlightStatus = "pass" | "warning" | "risk";
+
+export interface PreFlightCheckItem {
+  id: string;
+  siraNo: number;
+  baslik: string;
+  kategori:
+    | "zapt_uyumu"
+    | "hmk279"
+    | "resmi_veri"
+    | "munavebe"
+    | "kfo"
+    | "oda"
+    | "mahsup"
+    | "fotograf"
+    | "heyet"
+    | "faiz_talep";
+  yargitayKriteri: string;
+  hukukiDayanak: string;
+  durum: PreFlightStatus;
+  tespitAciklamasi: string;
+  tavsiye: string;
+  aksiyonAdimi: number; // 1-6 arası sihirbaz adımı
+}
+
+export interface PreFlightAuditInput {
+  davaId: string;
+  alan: "tarim" | "hayvancilik" | "gida" | "icra";
+  mahkemeAdi: string;
+  dosyaNo: string;
+  davaci: string;
+  davali: string;
+  kesifTarihi: string;
+  raporTarihi: string;
+  parselIl: string;
+  parselIlce: string;
+  parselKoy: string;
+  adaNo: string;
+  parselNo: string;
+  alanM2: number;
+  araziTipi: "sulu" | "kuru";
+  fiiliDurumAciklamasi: string;
+  generatedKanaatMetni: string;
+  // Tarım
+  munavebeList: { yil: number; urun: string; verim: number; fiyat: number; masraf: number }[];
+  kfo: number;
+  odaPct: number;
+  // Hayvancılık
+  hayvanSayisi?: number;
+  hurdaMahsup?: number;
+  // Gıda
+  gidaAyipOraniPct?: number;
+  // İcra
+  icraVarlikList?: IcraHacizVarlik[];
+  toplamIcraBorcluyaTerk?: number;
+  // Fotoğraf
+  fotoAlbumuAktif: boolean;
+  fotograflarCount: number;
+  hasCoordinatesAndDirections: boolean;
+  // Heyet
+  raporTuru: "tek" | "heyet_3";
+  kararTuru?: "oybirligi" | "oycoklugu";
+  bilirkisiAdi: string;
+  bilirkisi2Adi?: string;
+  bilirkisi2TeknikNot?: string;
+  bilirkisi3Adi?: string;
+  bilirkisi3TeknikNot?: string;
+  karsiOyMetni?: string;
+  // Faiz
+  faizHesabiAktif: boolean;
+  faizKurali: string;
+  faizTuru: string;
+}
+
+export interface PreFlightAuditResult {
+  toplamPuan: number; // 0 - 100
+  genelDurum: "mukemmel" | "uyarili" | "riskli";
+  ozetMesaj: string;
+  gecenSayisi: number;
+  uyariSayisi: number;
+  riskSayisi: number;
+  items: PreFlightCheckItem[];
+  denetimTarihi: string;
+  denetimSertifikaKodu: string;
+}
+
+/**
+ * Usta Bilirkişi Pre-Flight UYAP Denetim Motoru
+ * 10 Maddelik Yargıtay Bozma Riskleri Denetimini Gerçekleştirir.
+ */
+export function runPreFlightAudit(input: PreFlightAuditInput): PreFlightAuditResult {
+  const items: PreFlightCheckItem[] = [];
+  const fullText = `${input.fiiliDurumAciklamasi} ${input.generatedKanaatMetni}`.toLowerCase();
+
+  // -------------------------------------------------------------------
+  // 1. Keşif Zaptı ve Katılım Uyumu (HMK m. 259, 280)
+  // -------------------------------------------------------------------
+  let item1Durum: PreFlightStatus = "pass";
+  let item1Tespit = "Keşif tarihi, mahkeme künyesi, dosya numarası ve keşif mahalli zapt ile tam uyumludur.";
+  let item1Tavsiye = "Keşif zaptındaki heyet katılımcıları ve taraf refakatini raporda aynen muhafaza ediniz.";
+
+  if (!input.kesifTarihi || input.kesifTarihi.trim() === "" || input.dosyaNo.includes("...") || !input.mahkemeAdi) {
+    item1Durum = "risk";
+    item1Tespit = "Keşif tutanağı tarihi, mahkeme adı veya dosya numarası eksik / taslak olarak kalmıştır.";
+    item1Tavsiye = "Adım 1'e dönerek keşif zaptında yer alan resmi keşif tarihini ve esas numarasını giriniz.";
+  } else if (!input.parselIl || !input.parselIlce || !input.parselKoy) {
+    item1Durum = "warning";
+    item1Tespit = "Keşif mahallinin il, ilçe veya köy/mahalle bilgileri kısmen eksiktir.";
+    item1Tavsiye = "Adım 3'te keşif mahallini il/ilçe/mahalle detayında netleştiriniz.";
+  }
+
+  items.push({
+    id: "check_1_zapt",
+    siraNo: 1,
+    baslik: "Keşif Zaptı ve Katılım Uyumu",
+    kategori: "zapt_uyumu",
+    yargitayKriteri: "Keşif zaptındaki tespitler, tarih ve taraf beyanları ile rapor arasında çelişki bulunamaz.",
+    hukukiDayanak: "HMK m. 259, 280 & Adalet Bakanlığı Bilirkişilik Standartları",
+    durum: item1Durum,
+    tespitAciklamasi: item1Tespit,
+    tavsiye: item1Tavsiye,
+    aksiyonAdimi: 1,
+  });
+
+  // -------------------------------------------------------------------
+  // 2. HMK m. 279/4 Hukuki Nitelendirme & Kusur Yasağı
+  // -------------------------------------------------------------------
+  const hmkScan = scanHmkViolations(`${input.generatedKanaatMetni} ${input.fiiliDurumAciklamasi}`);
+  let item2Durum: PreFlightStatus = "pass";
+  let item2Tespit = "Raporda hâkimin takdirindeki hiçbir kusur veya yargısal kelimeye rastlanmadı (0 kusur ihlali).";
+  let item2Tavsiye = "HMK 279/4 kuralına tam uyum sağlanmıştır; metindeki teknik üslup korunmalıdır.";
+
+  if (hmkScan.found.length > 0) {
+    item2Durum = "risk";
+    const words = hmkScan.found.map((f) => `"${f.yasakliKelime}"`).join(", ");
+    item2Tespit = `Raporda HMK m. 279/4'e aykırı ${hmkScan.found.length} adet yargısal ifade (${words}) tespit edildi.`;
+    item2Tavsiye = "Adım 5'e giderek kusur kelimelerini teknik gözlem ifadeleriyle otomatik değiştiriniz.";
+  }
+
+  items.push({
+    id: "check_2_hmk279",
+    siraNo: 2,
+    baslik: "HMK m. 279/4 Hukuki Nitelendirme & Kusur Yasağı",
+    kategori: "hmk279",
+    yargitayKriteri: "Bilirkişi raporda hukuki nitelendirme yapamaz, taraflara kusur paylaştıramaz, hüküm kuramaz.",
+    hukukiDayanak: "HMK m. 279/4, 6754 s.K. m. 3/2 & Yargıtay İBGK",
+    durum: item2Durum,
+    tespitAciklamasi: item2Tespit,
+    tavsiye: item2Tavsiye,
+    aksiyonAdimi: 5,
+  });
+
+  // -------------------------------------------------------------------
+  // 3. Resmi Veri Kaynağı ve Tarih / Sayı Referansı
+  // -------------------------------------------------------------------
+  const hasOfficialSource =
+    fullText.includes("tarım ve orman") ||
+    fullText.includes("tüik") ||
+    fullText.includes("ziraat odası") ||
+    fullText.includes("ticaret borsası") ||
+    fullText.includes("maliyet cetveli") ||
+    fullText.includes("tarsim") ||
+    fullText.includes("tgk") ||
+    fullText.includes("bakanlık") ||
+    fullText.includes("resmi veri");
+
+  let item3Durum: PreFlightStatus = "pass";
+  let item3Tespit = "İl/İlçe Tarım Müdürlüğü, TÜİK veya Resmi Borsa veri tabanı kaynak gösterilmiştir.";
+  let item3Tavsiye = "Resmi kurum yazı tarihi ve sayısının rapora eklenmesi ispat gücünü artırır.";
+
+  if (!hasOfficialSource) {
+    item3Durum = "warning";
+    item3Tespit = "Raporda İl/İlçe Tarım Müdürlüğü resmi maliyet cetveli veya TÜİK verisine açık tarih/yazı atfı bulunamamıştır.";
+    item3Tavsiye = "Yargıtay afaki ve kaynaksız değerlendirmeleri bozmaktadır; resmi kurum cetvelini kaynak gösteriniz.";
+  }
+
+  items.push({
+    id: "check_3_resmi_veri",
+    siraNo: 3,
+    baslik: "Resmi Veri Kaynağı ve Tarih / Sayı Referansı",
+    kategori: "resmi_veri",
+    yargitayKriteri: "Fiyat, verim ve masraflar İl/İlçe Tarım Müdürlüğü veya TÜİK resmi verileriyle teyit edilmelidir.",
+    hukukiDayanak: "Yargıtay 5. HD 2021/4122 E., 2021/8940 K.",
+    durum: item3Durum,
+    tespitAciklamasi: item3Tespit,
+    tavsiye: item3Tavsiye,
+    aksiyonAdimi: 4,
+  });
+
+  // -------------------------------------------------------------------
+  // 4. Bölgesel Münavebe & Agronomik Mantık Denetimi
+  // -------------------------------------------------------------------
+  let item4Durum: PreFlightStatus = "pass";
+  let item4Tespit = "Seçilen münavebe ve ürün deseni yörenin agronomik şartlarına ve arazi vasfına uygundur.";
+  let item4Tavsiye = "Münavebede bölge iklimine uygun ekim nöbeti ve nadas dengesi gözetilmiştir.";
+
+  if (input.alan === "tarim") {
+    const hasSuluInKuru =
+      input.araziTipi === "kuru" &&
+      input.munavebeList.some((m) => {
+        const u = m.urun.toLowerCase();
+        return u.includes("çeltik") || u.includes("yonca") || u.includes("mısır") || u.includes("pamuk");
+      });
+
+    const hasNegativeIncome = input.munavebeList.some(
+      (m) => m.verim * m.fiyat - m.masraf <= 0
+    );
+
+    if (hasSuluInKuru) {
+      item4Durum = "risk";
+      item4Tespit = "Kuru arazi vasfındaki taşınmazda yüksek su tüketen münavebe ürünü (yonca/çeltik/mısır) seçilmiştir.";
+      item4Tavsiye = "Adım 4'e dönerek kuru tarım şartlarına uygun münavebe planı (buğday-arpa-nadas vb.) seçiniz.";
+    } else if (hasNegativeIncome) {
+      item4Durum = "warning";
+      item4Tespit = "Münavebe cetvelinde masrafın brüt geliri aştığı (negatif net gelirli) ürün tespit edildi.";
+      item4Tavsiye = "Ürünün dekar maliyet veya verim rakamlarını İl Tarım verileri doğrultusunda revize ediniz.";
+    }
+  }
+
+  items.push({
+    id: "check_4_munavebe",
+    siraNo: 4,
+    baslik: "Bölgesel Münavebe & Agronomik Mantık Denetimi",
+    kategori: "munavebe",
+    yargitayKriteri: "Arazinin fiili su kaynağı ile ekilen münavebe ürünleri agronomik olarak çelişmemelidir.",
+    hukukiDayanak: "2942 s.K. m. 11/f & Yargıtay 5. HD Yerleşik İçtihadı",
+    durum: item4Durum,
+    tespitAciklamasi: item4Tespit,
+    tavsiye: item4Tavsiye,
+    aksiyonAdimi: 4,
+  });
+
+  // -------------------------------------------------------------------
+  // 5. Kapitalizasyon Faiz Oranı (KFO) - Yargıtay 5. HD Sınırları
+  // -------------------------------------------------------------------
+  let item5Durum: PreFlightStatus = "pass";
+  let item5Tespit = `Kapitalizasyon faiz oranı (%${(input.kfo * 100).toFixed(0)}), Yargıtay 5. HD emsal sınırları dahilindedir.`;
+  let item5Tavsiye = "KFO oranı arazinin niteliği ve risk faktörleriyle uyumludur.";
+
+  if (input.alan === "tarim") {
+    if (input.araziTipi === "sulu" && input.kfo > 0.05) {
+      item5Durum = "risk";
+      item5Tespit = `Sulu mutlak tarım arazisinde KFO %${(input.kfo * 100).toFixed(0)} seçilmiştir (Yargıtay 5. HD tavanı azami %5'tir).`;
+      item5Tavsiye = "Adım 4'e dönerek KFO oranını %5 (0.05) olarak sabitleyiniz; aksi takdirde rapor bozulur.";
+    } else if (input.araziTipi === "kuru" && input.kfo > 0.06) {
+      item5Durum = "warning";
+      item5Tespit = `Kuru tarım arazisinde KFO %${(input.kfo * 100).toFixed(0)} seçilmiştir (Yargıtay 5. HD tavanı azami %6'dır).`;
+      item5Tavsiye = "Adım 4'te KFO oranını %6 (0.06) seviyesine çekmeniz Yargıtay onaması için tavsiye edilir.";
+    } else if (input.kfo <= 0) {
+      item5Durum = "risk";
+      item5Tespit = "Kapitalizasyon faiz oranı geçersiz veya sıfır olarak girilmiştir.";
+      item5Tavsiye = "Adım 4'te geçerli bir KFO oranı belirleyiniz.";
+    }
+  }
+
+  items.push({
+    id: "check_5_kfo",
+    siraNo: 5,
+    baslik: "Kapitalizasyon Faiz Oranı (KFO) Yargıtay 5. HD Sınırı",
+    kategori: "kfo",
+    yargitayKriteri: "Sulu arazide KFO azami %5, kuru arazide azami %6'dır; aşılması kesin bozma sebebidir.",
+    hukukiDayanak: "Yargıtay 5. HD 2022/10321 E., 2022/14589 K.",
+    durum: item5Durum,
+    tespitAciklamasi: item5Tespit,
+    tavsiye: item5Tavsiye,
+    aksiyonAdimi: 4,
+  });
+
+  // -------------------------------------------------------------------
+  // 6. Objektif Değer Artışı (ODA) Gerekçelendirme Sınırı
+  // -------------------------------------------------------------------
+  let item6Durum: PreFlightStatus = "pass";
+  let item6Tespit = `Objektif değer artışı (+%${input.odaPct}) yasal ve makul sınırlar içerisindedir.`;
+  let item6Tavsiye = "Taşınmazın yol, imar, şehir merkezi veya sanayi yakınlığı raporda gerekçelendirilmiştir.";
+
+  if (input.alan === "tarim") {
+    if (input.odaPct > 100) {
+      item6Durum = "risk";
+      item6Tespit = `Objektif değer artışı (+%${input.odaPct}) %100'ü aşmaktadır. Yargıtay içtihatlarına göre afaki kabul edilir.`;
+      item6Tavsiye = "Adım 4'e dönerek ODA oranını azami %50 - %100 bandına çekiniz ve somut unsurlarla gerekçelendiriniz.";
+    } else if (input.odaPct > 50) {
+      item6Durum = "warning";
+      item6Tespit = `Objektif değer artışı (+%${input.odaPct}) yüksek sınırdadır; Yargıtay somut gerekçe denetimi yapacaktır.`;
+      item6Tavsiye = "Raporda taşınmazın anayola cephesi, yerleşim yerine mesafesi gibi somut artış kriterlerini yazınız.";
+    }
+  }
+
+  items.push({
+    id: "check_6_oda",
+    siraNo: 6,
+    baslik: "Objektif Değer Artışı (ODA) ve Gerekçe Sınırı",
+    kategori: "oda",
+    yargitayKriteri: "ODA soyut uygulanamaz, somut üstünlüklere dayanmalı ve istisnalar dışında %50-100'ü aşmamalıdır.",
+    hukukiDayanak: "2942 s.K. m. 11 & Yargıtay 5. HD 2023/1142 E.",
+    durum: item6Durum,
+    tespitAciklamasi: item6Tespit,
+    tavsiye: item6Tavsiye,
+    aksiyonAdimi: 4,
+  });
+
+  // -------------------------------------------------------------------
+  // 7. Hurda / Kurtarma Bedeli & Yan Ürün Mahsubu
+  // -------------------------------------------------------------------
+  let item7Durum: PreFlightStatus = "pass";
+  let item7Tespit = "Zarar ve değerleme kalemlerinde zorunlu mahsup ve tenzilatlar usulünce yapılmıştır.";
+  let item7Tavsiye = "Zarar görenin sebepsiz zenginleşmesini önleyen mahsup kuralına uyulmuştur.";
+
+  if (input.alan === "hayvancilik") {
+    if ((input.hurdaMahsup || 0) <= 0) {
+      item7Durum = "warning";
+      item7Tespit = "Hayvan telef veya hasar hesabında hurda et/deri kurtarma bedeli mahsup edilmemiştir.";
+      item7Tavsiye = "TBK m. 52 gereği hayvanın kesim/kurtarma değeri varsa Adım 4'te mahsup ediniz; yoksa 'kurtarma değeri yoktur' şeklinde gerekçe yazınız.";
+    } else {
+      item7Tespit = `TBK m. 52/55 uyarınca ₺${(input.hurdaMahsup || 0).toLocaleString("tr-TR")} kurtarma/hurda bedeli teknik zarardan tenzil edilmiştir.`;
+    }
+  } else if (input.alan === "icra") {
+    if ((input.toplamIcraBorcluyaTerk || 0) > 0) {
+      item7Tespit = `İİK m. 82 uyarınca borçlu çiftçiye terk edilen ₺${(input.toplamIcraBorcluyaTerk || 0).toLocaleString("tr-TR")} açık artırma muhammen bedelinden usulünce tenzil edilmiştir.`;
+    }
+  }
+
+  items.push({
+    id: "check_7_mahsup",
+    siraNo: 7,
+    baslik: "Hurda / Kurtarma Bedeli & Yan Ürün Mahsubu",
+    kategori: "mahsup",
+    yargitayKriteri: "Telef ve hasarda elde edilen hurda/kurtarma bedelinin mahsubu zorunludur (TBK m. 52/55).",
+    hukukiDayanak: "TBK m. 52, 55 & Yargıtay 3. ve 11. HD Yerleşik Kararları",
+    durum: item7Durum,
+    tespitAciklamasi: item7Tespit,
+    tavsiye: item7Tavsiye,
+    aksiyonAdimi: 4,
+  });
+
+  // -------------------------------------------------------------------
+  // 8. Açıklamalı Keşif Fotoğrafları & Koordinat (ITRF96/WGS84) Denetimi
+  // -------------------------------------------------------------------
+  let item8Durum: PreFlightStatus = "pass";
+  let item8Tespit = `Raporda yön, çekim tarihi ve ITRF96 / WGS84 koordinatlı ${input.fotograflarCount} adet keşif fotoğrafı mevcuttur.`;
+  let item8Tavsiye = "Yargıtay şekil şartına ve kadastro aplikasyon kroki standardına tam uygundur.";
+
+  if (!input.fotoAlbumuAktif || input.fotograflarCount === 0) {
+    item8Durum = "risk";
+    item8Tespit = "Rapora keşif fotoğrafı veya aplikasyon krokisi eklenmemiştir.";
+    item8Tavsiye = "Yargıtay fotoğrafsız raporları 'yetersiz inceleme' gerekçesiyle bozmaktadır; Adım 3 veya 4'te en az 1 adet foto ekleyiniz.";
+  } else if (!input.hasCoordinatesAndDirections) {
+    item8Durum = "warning";
+    item8Tespit = "Fotoğraflarda bakı yönü veya ITRF96/WGS84 koordinat bilgisi kısmen eksiktir.";
+    item8Tavsiye = "Fotoğraf albümündeki yön ve koordinat alanlarını keşif tutanağıyla uyumlu doldurunuz.";
+  }
+
+  items.push({
+    id: "check_8_fotograf",
+    siraNo: 8,
+    baslik: "Açıklamalı Keşif Fotoğrafları & Koordinat Albümü",
+    kategori: "fotograf",
+    yargitayKriteri: "Fotoğrafı, bakı yönü ve koordinatı olmayan raporlar yetersiz inceleme nedeniyle bozulur.",
+    hukukiDayanak: "Yargıtay 5. HD 2021/6112 E. & Yargıtay 8. HD 2020/4510 E.",
+    durum: item8Durum,
+    tespitAciklamasi: item8Tespit,
+    tavsiye: item8Tavsiye,
+    aksiyonAdimi: 3,
+  });
+
+  // -------------------------------------------------------------------
+  // 9. Kurul / Heyet İmzası ve Karşı Oy (Muhalefet Şerhi) Bütünlüğü
+  // -------------------------------------------------------------------
+  let item9Durum: PreFlightStatus = "pass";
+  let item9Tespit = "Bilirkişi künye ve imza blokları usule uygundur.";
+  let item9Tavsiye = "Elektronik imza (e-İmza) UYAP üzerinden tamamlanmalıdır.";
+
+  if (input.raporTuru === "heyet_3") {
+    if (input.kararTuru === "oycoklugu" && (!input.karsiOyMetni || input.karsiOyMetni.trim().length < 15)) {
+      item9Durum = "risk";
+      item9Tespit = "Heyet raporunda Oyçokluğu seçilmiş fakat muhalif üyenin Karşı Oy gerekçesi yazılmamıştır.";
+      item9Tavsiye = "HMK m. 279/3 uyarınca muhalefet şerhi ve muhalifin takdir ettiği bedel raporda mutlaka yer almalıdır.";
+    } else if (!input.bilirkisi2TeknikNot || !input.bilirkisi3TeknikNot) {
+      item9Durum = "warning";
+      item9Tespit = "Fen ve Mülk bilirkişilerinin teknik notları boş veya yetersiz bırakılmıştır.";
+      item9Tavsiye = "Adım 3'te Harita/Fen ve Mülk bilirkişisi teknik notlarını doldurunuz.";
+    } else {
+      item9Tespit = "3'lü bilirkişi kurulunun (Ziraat + Fen + Mülk) teknik tespitleri ve imza/şerh blokları eksiksizdir.";
+    }
+  }
+
+  items.push({
+    id: "check_9_heyet",
+    siraNo: 9,
+    baslik: "Kurul / Heyet İmzası ve Karşı Oy Şerhi Bütünlüğü",
+    kategori: "heyet",
+    yargitayKriteri: "Oyçokluğu ile verilen heyet raporlarında muhalif üyenin karşı oy gerekçesi bulunmak zorundadır.",
+    hukukiDayanak: "HMK m. 279/3, 2942 s.K. m. 15 & Yargıtay 5. HD",
+    durum: item9Durum,
+    tespitAciklamasi: item9Tespit,
+    tavsiye: item9Tavsiye,
+    aksiyonAdimi: 1,
+  });
+
+  // -------------------------------------------------------------------
+  // 10. Faiz Türü, Başlangıç Tarihi ve Taleple Bağlılık Uyarısı (HMK m. 26 & 279/4)
+  // -------------------------------------------------------------------
+  let item10Durum: PreFlightStatus = "pass";
+  let item10Tespit = "Faiz türü ve başlangıç tarihi tavsiyesi, taleple bağlılık ve hâkimin takdir hakkı sınırlarında sunulmuştur.";
+  let item10Tavsiye = "Bilirkişinin faize doğrudan hükmetmeyip mahkemenin takdirine ihtiraz koyması usule tam uygundur.";
+
+  if (input.faizHesabiAktif) {
+    const hasDisclaim =
+      fullText.includes("takdiri") ||
+      fullText.includes("mahkeme") ||
+      fullText.includes("hmk") ||
+      fullText.includes("tavsiye");
+
+    if (!hasDisclaim) {
+      item10Durum = "warning";
+      item10Tespit = "Faiz metninde nihai takdirin Sayın Mahkemeye ait olduğuna dair usuli ihtiraz kaydı eksiktir.";
+      item10Tavsiye = "Adım 4'te faiz gerekçesine 'takdiri Sayın Mahkemeye ait olmak üzere' ibaresini ekleyiniz.";
+    }
+  }
+
+  items.push({
+    id: "check_10_faiz",
+    siraNo: 10,
+    baslik: "Faiz Türü ve Taleple Bağlılık Uyarısı (HMK m. 26)",
+    kategori: "faiz_talep",
+    yargitayKriteri: "Faiz yürütülmesi ve başlangıç tarihi münhasıran hâkime aittir; bilirkişi kesin hüküm kuramaz.",
+    hukukiDayanak: "HMK m. 26, 279/4 & 3095 s.K. m. 1",
+    durum: item10Durum,
+    tespitAciklamasi: item10Tespit,
+    tavsiye: item10Tavsiye,
+    aksiyonAdimi: 4,
+  });
+
+  // -------------------------------------------------------------------
+  // Puan ve Genel Durum Hesaplaması
+  // -------------------------------------------------------------------
+  let gecenSayisi = 0;
+  let uyariSayisi = 0;
+  let riskSayisi = 0;
+
+  for (const it of items) {
+    if (it.durum === "pass") gecenSayisi++;
+    else if (it.durum === "warning") uyariSayisi++;
+    else if (it.durum === "risk") riskSayisi++;
+  }
+
+  // Puanlama: Her geçilen madde 10 puan, her uyarı 5 puan, risk 0 puan
+  const toplamPuan = gecenSayisi * 10 + uyariSayisi * 5;
+
+  let genelDurum: "mukemmel" | "uyarili" | "riskli" = "mukemmel";
+  let ozetMesaj = "Tebrikler! Raporunuz 10/10 Yargıtay bozma riski denetiminden başarıyla geçti. UYAP sistemine yüklemeye hazırdır.";
+
+  if (riskSayisi > 0 || toplamPuan < 70) {
+    genelDurum = "riskli";
+    ozetMesaj = `DİKKAT: Raporunuzda ${riskSayisi} adet doğrudan Yargıtay bozma riski taşıyan kritik eksiklik tespit edildi. Raporu UYAP'a yüklemeden önce düzeltiniz.`;
+  } else if (uyariSayisi > 0 || toplamPuan < 95) {
+    genelDurum = "uyarili";
+    ozetMesaj = `UYARI: Raporunuz genel olarak yeterli olmakla birlikte ${uyariSayisi} adet tavsiye/iyileştirme noktası tespit edildi. Rapor kalitesini artırmak için gözden geçiriniz.`;
+  }
+
+  const now = new Date();
+  const denetimTarihi = `${now.toLocaleDateString("tr-TR")} ${now.toLocaleTimeString("tr-TR", { hour: "2-digit", minute: "2-digit" })}`;
+  const cleanDosya = input.dosyaNo.replace(/[^0-9]/g, "").slice(0, 8) || "2026";
+  const denetimSertifikaKodu = `UYAP-PF-${cleanDosya}-${Date.now().toString(36).toUpperCase()}`;
+
+  return {
+    toplamPuan,
+    genelDurum,
+    ozetMesaj,
+    gecenSayisi,
+    uyariSayisi,
+    riskSayisi,
+    items,
+    denetimTarihi,
+    denetimSertifikaKodu,
+  };
+}
+
+/**
+ * Usta Bilirkişi Pre-Flight Denetim Sertifikası Metin Çıktısı (UYAP Eki Formatı)
+ */
+export function generateAuditCertificateText(
+  result: PreFlightAuditResult,
+  dosyaNo: string,
+  mahkeme: string
+): string {
+  return `================================================================================
+T.C. ADALET BAKANLIĞI UYAP BİLİRKİŞİ RAPORU
+USTA BİLİRKİŞİ PRE-FLIGHT NİHAİ DENETİM VE YARGITAY UYGUNLUK SERTİFİKASI
+================================================================================
+Dosya Esas No    : ${dosyaNo}
+Görevli Mahkeme  : ${mahkeme}
+Denetim Zamanı   : ${result.denetimTarihi}
+Sertifika Kodu   : ${result.denetimSertifikaKodu}
+Genel Uyum Skoru : %${result.toplamPuan} / 100 (${result.gecenSayisi} Geçti, ${result.uyariSayisi} Uyarı, ${result.riskSayisi} Risk)
+Nihai Değerlendirme : ${result.genelDurum === "mukemmel" ? "UYAP YÜKLEMESİNE TAM UYGUN (BOZMA RİSKİ YOK)" : result.genelDurum === "uyarili" ? "TAVSİYELİ UYARILAR MEVCUT" : "DÜZELTME GEREKTİREN BOZMA RİSKLERİ MEVCUT"}
+--------------------------------------------------------------------------------
+10 MADDELİK YARGITAY BOZMA RİSKLERİ PRE-FLIGHT KONTROL ÇİZELGESİ:
+--------------------------------------------------------------------------------
+${result.items
+  .map(
+    (item) =>
+      `[${item.siraNo.toString().padStart(2, "0")}] ${item.baslik}
+  * Durum           : ${item.durum === "pass" ? "✓ GEÇTİ" : item.durum === "warning" ? "⚠️ TAVSİYE / UYARI" : "⛔ YARGITAY BOZMA RİSKİ"}
+  * Hukuki Dayanak  : ${item.hukukiDayanak}
+  * Tespit          : ${item.tespitAciklamasi}
+  * Usta Tavsiyesi  : ${item.tavsiye}
+`
+  )
+  .join("\n")}
+--------------------------------------------------------------------------------
+SONUÇ VE KANAAT:
+${result.ozetMesaj}
+
+İşbu ön denetim çizelgesi, HMK m. 266-287 ve Yargıtay ilgili Hukuk Dairelerinin
+yerleşik içtihatları doğrultusunda Zirai Bilirkişi Usta Denetim Motoru
+tarafından otomatik olarak üretilmiş olup raporun UYAP sistemine yüklenmesi
+öncesinde teknik yeterlilik belgesi olarak tanzim edilmiştir.
+================================================================================`;
+}

@@ -122,6 +122,10 @@ export default function App() {
     egitim: true,
   });
 
+  const toggleSection = (section: string) => {
+    setOpenSections((prev) => ({ ...prev, [section]: !prev[section] }));
+  };
+
   // Gece / Gündüz Modu (Dark / Light Mode)
   const [theme, setTheme] = useState<"light" | "dark">(() => {
     if (typeof window !== "undefined") {
@@ -591,7 +595,7 @@ export default function App() {
         // Select crop and net income from verified TÜİK database
         const cropMatch = TUIK_TARIM_VERITABANI.find(t => t.urun.toLowerCase().includes("buğday") || t.urun.toLowerCase().includes("bugday")) || TUIK_TARIM_VERITABANI[0];
         setUyduCrop(cropMatch.urun);
-        setUyduNetGelir(cropMatch.netGelir);
+        setUyduNetGelir(cropMatch.netGelirTlDa);
         showToast("✅ AI sınır tespiti tamamlandı (Sentinel-2 L2A 10m)");
       } else {
         setUyduScanProgress(Math.floor(prog));
