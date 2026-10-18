@@ -5,9 +5,124 @@
  * Bilirkişilik Rehberi standartlarına uygun olarak hazırlanmıştır.
  */
 
+export interface IcraHacizVarlik {
+  id: string;
+  ad: string;
+  kategori: "traktor_ekipman" | "canli_hayvan" | "tohumluk_mahsul" | "tarim_arazisi";
+  miktar: number;
+  birim: string; // "Adet", "Kg", "Dekar", "Takım"
+  sifirRayicBedel: number; // Sıfır/emsal piyasa fiyatı (TL)
+  amortismanPct: number; // Yıpranma/eskime payı (%)
+  brutPiyasaDegeri: number; // Amortisman sonrası piyasa değeri (TL)
+  iik82Durumu: "haczedilebilir" | "haczedilemez_tam" | "fark_haczi";
+  borcluyaTerkTutari: number; // İİK m. 82 uyarınca geçim için zorunlu bırakılacak pay (TL)
+  netMuhammenBedel: number; // İhaleye/satışa esas net muhammen bedel (TL)
+  tavsiyeKdvPct: number; // Tavsiye KDV oranı (%1, %10, %20)
+  tespitVeGerekce: string; // Yargıtay 12. HD uygunluk ve teknik gerekçe
+}
+
+export const DEFAULT_ICRA_VARLIKLARI: IcraHacizVarlik[] = [
+  {
+    id: "icra_1",
+    ad: "New Holland TD90D 4WD Traktör (2018 Model, Kabinli, Klimalı, 4.200 Saat)",
+    kategori: "traktor_ekipman",
+    miktar: 1,
+    birim: "Adet",
+    sifirRayicBedel: 2400000,
+    amortismanPct: 40,
+    brutPiyasaDegeri: 1440000,
+    iik82Durumu: "fark_haczi",
+    borcluyaTerkTutari: 600000,
+    netMuhammenBedel: 840000,
+    tavsiyeKdvPct: 10,
+    tespitVeGerekce:
+      "İİK m. 82/son ve Yargıtay 12. HD yerleşik içtihatları: Borçlunun fiilen işlediği 65 da kuru hububat arazisi için 90 HP lüks traktör fazla olup, ziraatini sürdürmesi için 50-60 HP gücünde ortalama ₺600.000 bedelli traktör kifayet eder. Traktörün satılarak ₺600.000'nin borçluya terk edilmesi, kalan ₺840.000'nin alacaklıya tahsisi teknik kanaatimizdir.",
+  },
+  {
+    id: "icra_2",
+    ad: "Güngör 4 Sıralı Pnömatik Hassas Ekim Mibzeri (2020 Model, Diskli)",
+    kategori: "traktor_ekipman",
+    miktar: 1,
+    birim: "Adet",
+    sifirRayicBedel: 280000,
+    amortismanPct: 30,
+    brutPiyasaDegeri: 196000,
+    iik82Durumu: "haczedilemez_tam",
+    borcluyaTerkTutari: 196000,
+    netMuhammenBedel: 0,
+    tavsiyeKdvPct: 10,
+    tespitVeGerekce:
+      "İİK m. 82/4 gereği borçlu çiftçinin ziraatini icra edebilmesi için arazinin ekiminde zorunlu tek mibzer olup borçlunun başkaca ekim aleti bulunmadığından haczi caiz değildir.",
+  },
+  {
+    id: "icra_3",
+    ad: "Damızlık Süt İneği (Holstein Irkı, Küpe No: TR06-98124, 3. Laktasyonda)",
+    kategori: "canli_hayvan",
+    miktar: 1,
+    birim: "Adet",
+    sifirRayicBedel: 115000,
+    amortismanPct: 10,
+    brutPiyasaDegeri: 103500,
+    iik82Durumu: "haczedilemez_tam",
+    borcluyaTerkTutari: 103500,
+    netMuhammenBedel: 0,
+    tavsiyeKdvPct: 1,
+    tespitVeGerekce:
+      "İİK m. 82/5 açık amir hükmü: Borçlu ve 4 kişilik ailesinin idaresi için lüzumlu 1 adet süt ineği ve 3 aylık yemi haczedilemez.",
+  },
+  {
+    id: "icra_4",
+    ad: "Simental Melezi Besi Danaları (14 Aylık, Ortalama 480 kg Canlı Ağırlık)",
+    kategori: "canli_hayvan",
+    miktar: 3,
+    birim: "Adet",
+    sifirRayicBedel: 85000,
+    amortismanPct: 0,
+    brutPiyasaDegeri: 255000,
+    iik82Durumu: "haczedilebilir",
+    borcluyaTerkTutari: 0,
+    netMuhammenBedel: 255000,
+    tavsiyeKdvPct: 1,
+    tespitVeGerekce:
+      "İİK m. 82/5 yalnızca süt ineği/geçim hayvanını korur; ticari besi amaçlı erkek danalar haczedilmezlik koruması dışındadır, açık artırma ile satışa arzı uygundur.",
+  },
+  {
+    id: "icra_5",
+    ad: "Sertifikalı Tohumluk Ekmeklik Buğday (Bayraktar-2000 Çeşidi, Çuvallı)",
+    kategori: "tohumluk_mahsul",
+    miktar: 1500,
+    birim: "Kg",
+    sifirRayicBedel: 18,
+    amortismanPct: 0,
+    brutPiyasaDegeri: 27000,
+    iik82Durumu: "haczedilemez_tam",
+    borcluyaTerkTutari: 27000,
+    netMuhammenBedel: 0,
+    tavsiyeKdvPct: 1,
+    tespitVeGerekce:
+      "İİK m. 82/7 uyarınca borçlunun gelecek mahsul için lüzumlu tohumluğu haczedilemez. 65 dekar ekili alan x 22 kg/da tohum ekim normu = 1.430 kg tohumluk gerekmekte olup mevcut 1.500 kg tohumluk yasal sınır içindedir.",
+  },
+  {
+    id: "icra_6",
+    ad: "Tarımsal Sulama Amaçlı 10 HP Dalgıç Pompa ve Dizel Jeneratör Takımı",
+    kategori: "traktor_ekipman",
+    miktar: 1,
+    birim: "Takım",
+    sifirRayicBedel: 160000,
+    amortismanPct: 35,
+    brutPiyasaDegeri: 104000,
+    iik82Durumu: "haczedilebilir",
+    borcluyaTerkTutari: 0,
+    netMuhammenBedel: 104000,
+    tavsiyeKdvPct: 20,
+    tespitVeGerekce:
+      "Taşınmaz tapu ve keşif kayıtlarında kuru tarım arazisi olup, pompaj tesisatı yedek ziraat aleti niteliğinde olduğundan ve zorunlu asgari tarım aleti sayılmadığından haczi caizdir.",
+  },
+];
+
 export interface DavaTuruSablonu {
   id: string;
-  alan: "tarim" | "hayvancilik" | "gida";
+  alan: "tarim" | "hayvancilik" | "gida" | "icra";
   ad: string;
   kisaltma: string;
   mahkemeTuru: string;
@@ -58,6 +173,14 @@ export interface DavaTuruSablonu {
     gidaTGKParametre?: string;
     gidaAnalizDegeri?: string;
     gidaStandartDeger?: string;
+    // İcra ve Haciz (İİK m. 82 & 128) özel alanları
+    icraDairesi?: string;
+    icraDosyaNo?: string;
+    borcluCiftcilikDurumu?: string;
+    islenenToplamAraziDa?: number;
+    aileNufusu?: number;
+    aylikAsgariGecimGideri?: number;
+    icraVarliklari?: IcraHacizVarlik[];
     teknikIncelemeMetni: string;
   };
 }
@@ -447,6 +570,78 @@ export const DAVA_TURLERI_DB: DavaTuruSablonu[] = [
       gidaStandartDeger: "Azami % 0.5 (TGK Tebliğ No: 2017/26)",
       teknikIncelemeMetni:
         "T.C. Tarım ve Orman Bakanlığı İzmir Gıda Kontrol Laboratuvar Müdürlüğü'nün 2025/112 sayılı resmi muayene ve analiz raporu incelendiğinde; davacı tarafından satın alınan 5.000 Litre 'Natürel Sızma Zeytinyağı' parti/lotlu üründen usulüne uygun alınan numunede Delta-7-Stigmastenol değerinin %1.82 tespit edildiği, TGK Zeytinyağı Tebliği Madde 5 Ek-1 tablosuna göre bu oranın en fazla %0.50 olabileceği, mezkur oranın aşılması sebebiyle ürüne bitkisel tohum yağı (ayçiçek/kanola) karıştırıldığı (tağşiş) ve ürünün sızma zeytinyağı vasfını taşımadığı teknik olarak belirlenmiştir.",
+    },
+  },
+  // ----------------------------------------------------
+  // 07 İCRA & HACİZ: İİK m. 82 Haczedilmezlik ve m. 128 Kıymet Takdiri
+  // ----------------------------------------------------
+  {
+    id: "icra_haciz_kiymet_takdiri",
+    alan: "icra",
+    ad: "İcra & Haciz Kıymet Takdiri ve Haczedilmezlik Denetimi (İİK m. 82 & 128)",
+    kisaltma: "İcra Kıymet Takdiri (İİK 82)",
+    mahkemeTuru: "İcra Hukuk Mahkemesi / İcra Dairesi",
+    kanunMaddesi: "2004 sayılı İcra ve İflas Kanunu m. 82 (b. 4, 5, 7 ve son fıkra), m. 114, 118, 128",
+    aciklama:
+      "İcra daireleri ve mahkemelerinin talebi üzerine; borçlu çiftçinin tarımsal menkul ve gayrimenkul mallarının yerinde kıymet takdiri, açık artırmaya esas muhammen bedel tespiti, yıpranma payı ve İİK m. 82 (4, 5 ve 7. bentler ile son fıkra fark haczi) kapsamında haczedilmezlik sınırlarının teknik denetimi.",
+    varsayilanSorular: [
+      "Borçlunun fiilen çiftçilik yapıp yapmadığı, ÇKS kaydı ve tarımsal gelirinin irdelenmesi,",
+      "Haczedilen traktör ve tarım aletlerinin borçlunun işlediği arazi genişliği ve niteliğine göre İİK m. 82/4 kapsamında 'zorunlu ziraat aleti' niteliğinde olup olmadığı,",
+      "Traktörün kıymetinin yüksek olması halinde İİK m. 82/son uyarınca daha mütevazı bir araçla karşılanıp karşılanamayacağı ve borçluya terk edilecek bedel ile satışa esas fark bedelinin belirlenmesi,",
+      "Haczedilen hayvanların İİK m. 82/5 kapsamında süt ineği/geçimlik hayvan vasfında olup olmadığı veya ticari besi hayvanı sayılıp sayılmayacağı,",
+      "Haczedilen mahsul ve tohumluğun İİK m. 82/7 kapsamında gelecek ekim dönemi için dekara tohum ekim normlarına göre zorunlu tohumluk miktarının tespiti,",
+      "Tüm menkul ve ziraat mallarının fiziki yıpranma, amortisman oranları ve İİK m. 114/128 uyarınca açık artırmaya esas KDV dahil/hariç net muhammen bedellerinin tespiti.",
+    ],
+    kesifRehberi: {
+      baslik: "İcra & Haciz Kıymet Takdiri ve Haczedilmezlik Keşif Rehberi",
+      yapilacaklar: [
+        "İcra müdürü veya icra memuru refakatinde haciz mahalline gidilerek haciz zaptındaki mallar tek tek fiziken görülüp teyit edilmelidir.",
+        "Traktör ve motorlu ziraat araçlarında marka, model yılı, çalışma saati (saat göstergesi), şasi ve motor numaraları tescil belgesiyle karşılaştırılmalıdır.",
+        "Ziraat makinelerinin (pulluk, mibzer, römork, pleyt) mekanik aşınma, paslanma, hidrolik kaçakları ve çalışır vaziyette olup olmadığı tutanağa yazılmalıdır.",
+        "Büyükbaş/küçükbaş hayvanların kulak küpe numaraları İlçe Tarım TÜRKVET sistemi ile sorgulanmalı, yaş, ırk, gebelik ve damızlık/süt vasfı yerinde veteriner kriterleriyle incelenmelidir.",
+        "Tohumluk ve hububat ambarında kantar tartımı yapılmalı, tohumluğun çimlenme ve sertifikasyon durumu gözlemlenmelidir.",
+        "Borçlunun fiilen işlediği arazilerin tapu ve ÇKS kayıtları, kira sözleşmeleri ve sulama durumu tetkik edilmelidir.",
+      ],
+      gerekliBelgeler: [
+        "İcra Dairesi Haciz Zaptı ve Kıymet Takdiri Müzekkeresi",
+        "İlçe Tarım ve Orman Müdürlüğü Çiftçi Kayıt Sistemi (ÇKS) ve TÜRKVET Hayvan Varlığı Dökümü",
+        "Traktör ve Römork Trafik Tescil Belgeleri (Ruhsatlar)",
+        "Türkiye Ziraat Odaları Birliği (TZOB) ve Mahalli Ziraat Odası Traktör & Ekipman İkinci El Rayiç Cetveli",
+        "TÜİK ve Mahalli Ticaret Borsası Canlı Hayvan ve Hububat Bülten Fiyatları",
+      ],
+      dikkatEdilecekler: [
+        "İİK m. 82/4 uyarınca borçlunun 'çiftçi' sayılabilmesi için ziraat işlerini bizzat yapması ve tarımsal faaliyetinin ana geçim kaynağı olması gerekir; hobi bahçesi veya tali uğraşılar bu korumadan yararlanamaz.",
+        "Lüks ve arazi kapasitesinin çok üzerindeki traktörlerde 'tam haczedilmezlik' verilemez! Yargıtay 12. HD kararları gereği 'İİK m. 82/son - Satış Suretiyle Karşılama (Fark Haczi)' formülü uygulanmalı, borçlunun arazisine yetecek emsal traktör bedeli (terk edilecek pay) ve icraya tahsis edilecek fark açıkça yazılmalıdır.",
+        "Bilirkişi 'haciz kaldırılsın' veya 'haczedilemez' şeklinde nihai hukuki hüküm kuramaz; '... aletin İİK m. 82/4 kapsamında borçlunun zorunlu geçimi için teknik olarak zaruri olduğu ve borçluya terk edilecek bedelin ₺... olduğu kanaatiyle takdiri Sayın İcra Memurluğuna / Mahkemesine aittir' şeklinde yazmalıdır.",
+      ],
+    },
+    ornekVeriler: {
+      mahkeme: "Polatlı İcra Hukuk Mahkemesi",
+      dosyaNo: "2025/184 Esas (İcra Dosya No: 2024/3110)",
+      davaci: "Anadolu Tarım Kredi Kooperatifi",
+      davaciVekili: "Av. Burak Yılmaz",
+      davali: "Hasan ÇELİK (Borçlu Çiftçi)",
+      davaliVekili: "Av. Gökhan Özdemir",
+      konu: "İİK m. 82 Uyarınca Haczedilmezlik Şikayeti ve Tarımsal Malların Muhammen Bedel Tespiti",
+      parselIl: "Ankara",
+      parselIlce: "Polatlı",
+      parselKoy: "Temelli",
+      ada: "108",
+      parsel: "14",
+      alanM2: 65000,
+      araziTipi: "kuru",
+      kfo: 0.06,
+      odaPct: 0,
+      munavebe: [],
+      icraDairesi: "Polatlı İcra Dairesi",
+      icraDosyaNo: "2024/3110 Esas",
+      borcluCiftcilikDurumu: "Fiilen Çiftçilik Yapıyor (ÇKS Kayıtlı Hububat Üreticisi)",
+      islenenToplamAraziDa: 65,
+      aileNufusu: 4,
+      aylikAsgariGecimGideri: 45000,
+      icraVarliklari: DEFAULT_ICRA_VARLIKLARI,
+      teknikIncelemeMetni:
+        "Polatlı İcra Hukuk Mahkemesi'nin 2025/184 Esas sayılı dosyası ile Polatlı İcra Dairesi'nin 2024/3110 Esas sayılı takip dosyasında; borçlu Hasan ÇELİK'in Ankara İli, Polatlı İlçesi, Temelli Mahallesi'nde bulunan çiftlik ve ambar mahallinde icra memuru refakatinde keşif icra edilmiştir. Yapılan fiili tespitte; borçlunun ÇKS kayıtlarında toplam 65 da kuru hububat arazisi işlediği, 4 kişilik ailesinin geçimini bu tarımsal faaliyetle temin ettiği, haczedilen New Holland TD90D marka traktörün çalışma saatinin 4.200 saat ve genel teknik durumunun iyi olduğu, ancak 65 da arazi için 90 HP gücün yüksek olduğu ve İİK m. 82/son kapsamında değerlendirilmesi gerektiği; 4 sıralı Güngör mibzerin zorunlu tek ekim aleti olduğu; 1 adet Holstein süt ineğinin aile süt tüketimi için zorunlu olduğu; 3 adet besi danasının ticari nitelikte olup haczedilebilir olduğu; 1.500 kg tohumluğun ekim normları dahilinde kaldığı belirlenmiştir.",
     },
   },
 ];

@@ -46,12 +46,15 @@ import {
   Camera,
   Compass,
   Upload,
+  Truck,
 } from "lucide-react";
 import {
   DAVA_TURLERI_DB,
   DavaTuruSablonu,
   HMK_279_YASAKLI_KELIMELER,
   scanHmkViolations,
+  IcraHacizVarlik,
+  DEFAULT_ICRA_VARLIKLARI,
 } from "../data/raporOtomasyonuData";
 import { TUIK_TARIM_VERITABANI } from "../data/tuikTarimData";
 import {
@@ -96,6 +99,11 @@ export default function RaporOtomasyonuView({
     () => DAVA_TURLERI_DB.find((d) => d.id === selectedDavaId) || DAVA_TURLERI_DB[0],
     [selectedDavaId]
   );
+
+  // Dava Şablonu Kategori Filtresi (Adım 2)
+  const [davaFiltreAlani, setDavaFiltreAlani] = useState<
+    "hepsi" | "tarim" | "hayvancilik" | "gida" | "icra"
+  >("hepsi");
 
   // -------------------------------------------------------------------
   // ADIM 1: MAHKEME VE GÖREVLENDİRME KÜNYESİ
@@ -315,6 +323,17 @@ export default function RaporOtomasyonuView({
   const [gidaAnalizDegeri, setGidaAnalizDegeri] = useState(selectedDava.ornekVeriler.gidaAnalizDegeri || "% 1.82");
   const [gidaStandartDeger, setGidaStandartDeger] = useState(selectedDava.ornekVeriler.gidaStandartDeger || "Azami % 0.50 (TGK)");
 
+  // İcra & Haciz Kıymet Takdiri (İİK m. 82) Parametreleri
+  const [icraVarlikList, setIcraVarlikList] = useState<IcraHacizVarlik[]>(DEFAULT_ICRA_VARLIKLARI);
+  const [icraDairesi, setIcraDairesi] = useState<string>("Polatlı İcra Dairesi");
+  const [icraDosyaNo, setIcraDosyaNo] = useState<string>("2024/3110 Esas");
+  const [borcluCiftcilikDurumu, setBorcluCiftcilikDurumu] = useState<string>(
+    "Fiilen Çiftçilik Yapıyor (ÇKS Kayıtlı Hububat Üreticisi)"
+  );
+  const [islenenToplamAraziDa, setIslenenToplamAraziDa] = useState<number>(65);
+  const [aileNufusu, setAileNufusu] = useState<number>(4);
+  const [aylikAsgariGecimGideri, setAylikAsgariGecimGideri] = useState<number>(45000);
+
   // -------------------------------------------------------------------
   // FAİZ VE TEMERRÜT TAVSİYE MATRİSİ (HÂKİMİN TAKDİRİNE SUNULMAK ÜZERE)
   // -------------------------------------------------------------------
@@ -430,6 +449,97 @@ export default function RaporOtomasyonuView({
     return Math.round(toplamMaliyet * (gidaAyipOraniPct / 100));
   }, [gidaPartiMiktar, gidaBirimMaliyet, gidaAyipOraniPct]);
 
+  // -------------------------------------------------------------------
+  // İCRA & HACİZ HESAPLAMALARI (İİK m. 82 & 128)
+  // -------------------------------------------------------------------
+  const toplamIcraBrut = useMemo(() => {
+    return icraVarlikList.reduce((acc, v) => acc + (v.brutPiyasaDegeri || 0), 0);
+  }, [icraVarlikList]);
+
+  const toplamIcraBorcluyaTerk = useMemo(() => {
+    return icraVarlikList.reduce((acc, v) => acc + (v.borcluyaTerkTutari || 0), 0);
+  }, [icraVarlikList]);
+
+  const toplamIcraNetMuhammen = useMemo(() => {
+    return icraVarlikList.reduce((acc, v) => acc + (v.netMuhammenBedel || 0), 0);
+  }, [icraVarlikList]);
+
+  const icraIstatistik = useMemo(() => {
+    const tamHaczedilemez = icraVarlikList.filter((v) => v.iik82Durumu === "haczedilemez_tam").length;
+    const farkHaczi = icraVarlikList.filter((v) => v.iik82Durumu === "fark_haczi").length;
+    const haczedilebilir = icraVarlikList.filter((v) => v.iik82Durumu === "haczedilebilir").length;
+    return { tamHaczedilemez, farkHaczi, haczedilebilir };
+  }, [icraVarlikList]);
+
+  const handleUpdateIcraVarlik = (id: string, field: keyof IcraHacizVarlik, value: any) => {
+    setIcraVarlikList((prev) =>
+      prev.map((v) => {
+        if (v.id !== id) return v;
+        const updated = { ...v, [field]: value };
+        if (field === "miktar" || field === "sifirRayicBedel" || field === "amortismanPct") {
+          const qty = field === "miktar" ? Number(value) : v.miktar;
+          const sifir = field === "sifirRayicBedel" ? Number(value) : v.sifirRayicBedel;
+          const amort = field === "amortismanPct" ? Number(value) : v.amortismanPct;
+          const brut = Math.round(qty * sifir * (1 - amort / 100));
+          updated.brutPiyasaDegeri = brut;
+          if (updated.iik82Durumu === "haczedilemez_tam") {
+            updated.borcluyaTerkTutari = brut;
+            updated.netMuhammenBedel = 0;
+          } else if (updated.iik82Durumu === "haczedilebilir") {
+            updated.borcluyaTerkTutari = 0;
+            updated.netMuhammenBedel = brut;
+          } else {
+            updated.netMuhammenBedel = Math.max(0, brut - updated.borcluyaTerkTutari);
+          }
+        } else if (field === "iik82Durumu") {
+          if (value === "haczedilemez_tam") {
+            updated.borcluyaTerkTutari = updated.brutPiyasaDegeri;
+            updated.netMuhammenBedel = 0;
+          } else if (value === "haczedilebilir") {
+            updated.borcluyaTerkTutari = 0;
+            updated.netMuhammenBedel = updated.brutPiyasaDegeri;
+          } else if (value === "fark_haczi") {
+            if (updated.borcluyaTerkTutari === 0 || updated.borcluyaTerkTutari === updated.brutPiyasaDegeri) {
+              updated.borcluyaTerkTutari = Math.round(updated.brutPiyasaDegeri * 0.45);
+            }
+            updated.netMuhammenBedel = Math.max(0, updated.brutPiyasaDegeri - updated.borcluyaTerkTutari);
+          }
+        } else if (field === "borcluyaTerkTutari") {
+          const terk = Number(value);
+          updated.borcluyaTerkTutari = terk;
+          updated.netMuhammenBedel = Math.max(0, updated.brutPiyasaDegeri - terk);
+        }
+        return updated;
+      })
+    );
+  };
+
+  const handleDeleteIcraVarlik = (id: string) => {
+    setIcraVarlikList((prev) => prev.filter((v) => v.id !== id));
+    showToast("Varlık listeden silindi");
+  };
+
+  const handleAddIcraPreset = (preset: Partial<IcraHacizVarlik>) => {
+    const newId = `icra_${Date.now()}`;
+    const newItem: IcraHacizVarlik = {
+      id: newId,
+      ad: preset.ad || "Yeni Zirai Alet / Varlık",
+      kategori: preset.kategori || "traktor_ekipman",
+      miktar: preset.miktar || 1,
+      birim: preset.birim || "Adet",
+      sifirRayicBedel: preset.sifirRayicBedel || 100000,
+      amortismanPct: preset.amortismanPct ?? 25,
+      brutPiyasaDegeri: preset.brutPiyasaDegeri || 75000,
+      iik82Durumu: preset.iik82Durumu || "haczedilebilir",
+      borcluyaTerkTutari: preset.borcluyaTerkTutari || 0,
+      netMuhammenBedel: preset.netMuhammenBedel || 75000,
+      tavsiyeKdvPct: preset.tavsiyeKdvPct || 10,
+      tespitVeGerekce: preset.tespitVeGerekce || "İİK m. 82 ve 128 uyarınca yerinde yapılan teknik tespit.",
+    };
+    setIcraVarlikList((prev) => [...prev, newItem]);
+    showToast(`✅ ${newItem.ad} eklendi`);
+  };
+
   // Şablon değiştiğinde örnek verileri yükle
   const handleSelectDavaTuru = (davaId: string) => {
     setSelectedDavaId(davaId);
@@ -473,29 +583,45 @@ export default function RaporOtomasyonuView({
     if (d.ornekVeriler.gidaAnalizDegeri) setGidaAnalizDegeri(d.ornekVeriler.gidaAnalizDegeri);
     if (d.ornekVeriler.gidaStandartDeger) setGidaStandartDeger(d.ornekVeriler.gidaStandartDeger);
 
+    if (d.ornekVeriler.icraDairesi) setIcraDairesi(d.ornekVeriler.icraDairesi);
+    if (d.ornekVeriler.icraDosyaNo) setIcraDosyaNo(d.ornekVeriler.icraDosyaNo);
+    if (d.ornekVeriler.borcluCiftcilikDurumu) setBorcluCiftcilikDurumu(d.ornekVeriler.borcluCiftcilikDurumu);
+    if (d.ornekVeriler.islenenToplamAraziDa) setIslenenToplamAraziDa(d.ornekVeriler.islenenToplamAraziDa);
+    if (d.ornekVeriler.aileNufusu) setAileNufusu(d.ornekVeriler.aileNufusu);
+    if (d.ornekVeriler.aylikAsgariGecimGideri) setAylikAsgariGecimGideri(d.ornekVeriler.aylikAsgariGecimGideri);
+    if (d.ornekVeriler.icraVarliklari) setIcraVarlikList(d.ornekVeriler.icraVarliklari);
+
     if (davaId === "kamulastirma_tarla" || davaId === "irtifak_hakki") {
       setRaporTuru("heyet_3");
       setFaizKurali("kamulastirma_4ay");
       setFaizTuru("yasal");
       setFaizOraniPct(9);
       setCustomFaizGerekcesi("");
+      setFaizHesabiAktif(true);
     } else if (davaId === "ecrimisil_tarim") {
       setRaporTuru("tek");
       setFaizKurali("donem_sonu_kademeli");
       setFaizTuru("kademeli_yasal");
       setFaizOraniPct(9);
       setCustomFaizGerekcesi("");
+      setFaizHesabiAktif(true);
     } else if (davaId === "tarimsal_zarar" || davaId === "hayvan_telef") {
       setRaporTuru("tek");
       setFaizKurali("olay_tarihi");
       setFaizTuru("yasal");
       setFaizOraniPct(9);
       setCustomFaizGerekcesi("");
+      setFaizHesabiAktif(true);
     } else if (davaId === "gida_ayip_tagsis") {
       setRaporTuru("tek");
       setFaizKurali("temerrut_ihtar");
       setFaizTuru("ticari_avans");
       setFaizOraniPct(48);
+      setCustomFaizGerekcesi("");
+      setFaizHesabiAktif(true);
+    } else if (davaId === "icra_haciz_kiymet_takdiri") {
+      setRaporTuru("tek");
+      setFaizHesabiAktif(false);
       setCustomFaizGerekcesi("");
     } else {
       setRaporTuru("tek");
@@ -503,6 +629,7 @@ export default function RaporOtomasyonuView({
       setFaizTuru("yasal");
       setFaizOraniPct(9);
       setCustomFaizGerekcesi("");
+      setFaizHesabiAktif(true);
     }
 
     setFotograflar(
@@ -563,8 +690,11 @@ export default function RaporOtomasyonuView({
       return `Sayın Mahkemenizin ara kararı ve tevdi ettiği teknik sorular doğrultusunda yapılan yerinde keşif, İlçe Tarım ve Orman Müdürlüğü resmi münavebe maliyet cetvelleri ile bilimsel ve yerleşik Yargıtay 5. HD içtihatları çerçevesinde;\n\n1. Dava konusu ${parselIl} İli, ${parselIlce} İlçesi, ${parselKoy} Köyü ${adaNo} ada ${parselNo} parsel sayılı taşınmazın ${araziTipi === "sulu" ? "1. sınıf sulu mutlak tarım arazisi" : "kuru tarım arazisi"} vasfında olduğu,\n2. Yıllık ortalama net gelirinin ₺${ortalamaNetGelir.toLocaleString("tr-TR")}/da, kapitalizasyon faiz oranının %${(kfo * 100).toFixed(0)} olduğu,\n3. Taşınmazın geometrik yapısı, ana yola cephesi ve ulaşım olanakları sebebiyle %${odaPct} objektif değer artışı (ODA) takdir edildiği,\n4. Taşınmazın m² çıplak birim değerinin ₺${ciplakM2Degeri.toFixed(2)}, ODA dahil m² birim değerinin ₺${nihaiM2Degeri.toFixed(2)} olduğu,\n5. Taşınmazın toplam kamulaştırma / mülkiyet değerinin ₺${toplamAraziDegeri.toLocaleString("tr-TR")} olarak hesaplandığı,\n\nHususları, HMK m. 279/4 gereğince takdiri Sayın Mahkemenize ait olmak üzere teknik kanaat olarak arz olunur.`;
     } else if (selectedDava.alan === "hayvancilik") {
       return `Sayın Mahkemenizin ara kararı uyarınca yapılan dosya ve kayıt incelemesinde;\n\n1. Olay günü meydana gelen elektrik kaçağı / telef hadisesinde 4 baş yüksek verimli damızlık Holstein ırkı ineğin telef olduğu,\n2. Hayvanların canlı ağırlık rayiç değerinin ₺${(hayvanSayisi * canliAgirlikKg * canliKgFiyat).toLocaleString("tr-TR")}, damızlık vasıf farkının ₺${(hayvanSayisi * damizlikFark).toLocaleString("tr-TR")} olduğu,\n3. Yoksun kalınan kâr tutarının ₺${yoksunKar.toLocaleString("tr-TR")} olduğu,\n4. TBK m. 52 ve 55 uyarınca kesimhaneden elde edilen hurda (kurtarma) et bedeli olan ₺${hurdaMahsup.toLocaleString("tr-TR")}'nin mahsup edildiği,\n5. Sonuç olarak davacı işletmenin net teknik zararının ₺${toplamHayvanTazminat.toLocaleString("tr-TR")} olarak hesaplandığı,\n\nHususları teknik kanaat olarak Sayın Mahkemenize saygıyla arz olunur.`;
-    } else {
+    } else if (selectedDava.alan === "gida") {
       return `Sayın Mahkemenizin ara kararı uyarınca akredite gıda laboratuvarı analiz raporları üzerinde yapılan incelemede;\n\n1. Teslim edilen ${gidaPartiMiktar.toLocaleString("tr-TR")} Litrelik natürel sızma zeytinyağı partisinden alınan şahit numunede ${gidaTGKParametre} değerinin ${gidaAnalizDegeri} tespit edildiği,\n2. Bu değerin Türk Gıda Kodeksi Zeytinyağı Tebliği'nde yer alan azami ${gidaStandartDeger} sınırını aştığı ve üründe tohum yağı tağşişi bulunduğu,\n3. Ürünün sızma zeytinyağı vasfını yitirdiği ve ayıp oranının %${gidaAyipOraniPct} olduğu,\n4. Toplam teknik ayıp zararının ₺${toplamGidaZarari.toLocaleString("tr-TR")} olduğu,\n\nHususları HMK m. 279/4 kapsamında teknik tespit olarak takdirlerinize sunulur.`;
+    } else {
+      // İcra & Haciz (İİK m. 82 & 128)
+      return `Sayın İcra Hukuk Mahkemesi'nin / İcra Dairesi'nin görevlendirme ara kararı uyarınca mahallinde icra memuru refakatinde yapılan keşif, ÇKS kayıtları ve Yargıtay 12. Hukuk Dairesi'nin yerleşik içtihatları çerçevesinde;\n\n1. Borçlu ${davali}'in ÇKS kayıtlarında toplam ${islenenToplamAraziDa} dekar kuru hububat arazisi işlediği ve fiilen çiftçilik mesleğini icra ettiği,\n2. Haciz mahallinde tespit edilen ${icraVarlikList.length} kalem tarımsal makine, canlı hayvan ve tohumluğun toplam brüt piyasa rayiç değerinin ₺${toplamIcraBrut.toLocaleString("tr-TR")} olduğu,\n3. İİK m. 82/4, 82/5 ve 82/7 uyarınca borçlunun ve ailesinin geçimi için zorunlu olan tek mibzer, 1 adet süt ineği ve ekim normu dahilindeki tohumluğun TAMAMEN HACZEDİLEMEZ olduğu,\n4. Borçlunun arazisine nispeten lüks ve büyük olan New Holland TD90D traktör için İİK m. 82/son uyarınca daha mütevazı emsal traktör bedeli olarak ₺600.000'nin borçluya terk edilmesi (Fark Haczi),\n5. Toplamda ₺${toplamIcraBorcluyaTerk.toLocaleString("tr-TR")}'lik kısmın İİK m. 82 uyarınca borçlunun ve ailesinin geçimi için terkinin gerektiği,\n6. İİK m. 114, 118 ve 128 gereğince satışa arz edilecek malların AÇIK ARTIRMAYA ESAS TOPLAM NET MUHAMMEN BEDELİNİN ₺${toplamIcraNetMuhammen.toLocaleString("tr-TR")} olarak takdir edildiği,\n\nHususları, HMK m. 279/4 ve İİK m. 82/son hükümleri gereğince takdiri Sayın Merciiye ait olmak üzere teknik kanaat olarak arz olunur.`;
     }
   }, [
     customKanaatMetni,
@@ -594,6 +724,12 @@ export default function RaporOtomasyonuView({
     gidaStandartDeger,
     gidaAyipOraniPct,
     toplamGidaZarari,
+    davali,
+    islenenToplamAraziDa,
+    icraVarlikList,
+    toplamIcraBrut,
+    toplamIcraBorcluyaTerk,
+    toplamIcraNetMuhammen,
   ]);
 
   // HMK 279 denetimi taraması
@@ -704,7 +840,18 @@ ${
     : ""
 }
 
-<table>
+${
+  selectedDava.alan === "icra"
+    ? `<table>
+  <tr><th colspan="2">İCRA TAKİP VE BORÇLU ÇİFTÇİ TESPİT BİLGİLERİ</th></tr>
+  <tr><td class="bold" style="width: 35%;">İcra Dairesi / Dosya No</td><td>${icraDairesi} / ${icraDosyaNo}</td></tr>
+  <tr><td class="bold">Alacaklı / Borçlu</td><td>Alacaklı: ${davaci} / Borçlu: ${davali}</td></tr>
+  <tr><td class="bold">Borçlunun Çiftçilik Durumu</td><td>${borcluCiftcilikDurumu}</td></tr>
+  <tr><td class="bold">Fiilen İşlenen Arazi</td><td>${islenenToplamAraziDa} Dekar (${parselIl} / ${parselIlce} / ${parselKoy})</td></tr>
+  <tr><td class="bold">Aile Nüfusu & Geçim Sınırı</td><td>${aileNufusu} Kişi (Aylık Zorunlu Geçim Gideri: ₺${aylikAsgariGecimGideri.toLocaleString("tr-TR")})</td></tr>
+  <tr><td class="bold">Haczedilen Varlık Kalemi</td><td>Toplam ${icraVarlikList.length} Kalem Zirai Menkul Varlık</td></tr>
+</table>`
+    : `<table>
   <tr><th colspan="2">TAŞINMAZ / VARLIK TESPİT BİLGİLERİ</th></tr>
   <tr><td class="bold" style="width: 35%;">İli / İlçesi / Köyü</td><td>${parselIl} / ${parselIlce} / ${parselKoy}</td></tr>
   <tr><td class="bold">Ada / Parsel No</td><td>${adaNo} Ada / ${parselNo} Parsel</td></tr>
@@ -712,7 +859,8 @@ ${
   <tr><td class="bold">Tarımsal Niteliği</td><td>${araziTipi === "sulu" ? "Sulu Mutlak Tarım Arazisi" : "Kuru Tarım Arazisi"}</td></tr>
   <tr><td class="bold">Toprak Profili ve Eğim</td><td>${toprakOzelligi} (Eğim: %${egimPct})</td></tr>
   <tr><td class="bold">Sulama Durumu</td><td>${sulamaKaynagi}</td></tr>
-</table>
+</table>`
+}
 
 ${
   fotoAlbumuAktif && fotograflar.length > 0
@@ -821,7 +969,8 @@ ${
       <tr><td class="bold">TBK m.52/55 Hurda (Kurtarma) Et Mahsubu</td><td class="text-right" style="color: #dc2626;">- ₺${hurdaMahsup.toLocaleString("tr-TR")}</td></tr>
       <tr style="background-color: #fef2f2;"><td class="bold" style="font-size: 12pt;">NET TEKNİK TAZMİNAT TUTARI</td><td class="bold text-right" style="font-size: 13pt; color: #b91c1c;">₺${toplamHayvanTazminat.toLocaleString("tr-TR")}</td></tr>
     </table>`
-    : `<p>5996 sayılı Kanun ve ilgili Türk Gıda Kodeksi tebliğleri kapsamında yapılan incelemede, akredite laboratuvar test sonuçları gıda standartlarıyla karşılaştırılmıştır.</p>
+    : selectedDava.alan === "gida"
+    ? `<p>5996 sayılı Kanun ve ilgili Türk Gıda Kodeksi tebliğleri kapsamında yapılan incelemede, akredite laboratuvar test sonuçları gıda standartlarıyla karşılaştırılmıştır.</p>
     <table>
       <tr><th colspan="2">GIDA AYIP VE ZAYİAT HESAP CETVELİ</th></tr>
       <tr><td class="bold" style="width: 50%;">Uyuşmazlık Konusu Ürün Partisi</td><td>${gidaPartiMiktar.toLocaleString("tr-TR")} Litre / kg</td></tr>
@@ -832,6 +981,58 @@ ${
       <tr><td class="bold">Teknik Ayıp Oranı</td><td>%${gidaAyipOraniPct} (İmha / İade Zorunluluğu)</td></tr>
       <tr style="background-color: #fff7ed;"><td class="bold" style="font-size: 12pt;">HESAPLANAN AYIP VE ZAYİAT TUTARI</td><td class="bold text-right" style="font-size: 13pt; color: #c2410c;">₺${toplamGidaZarari.toLocaleString("tr-TR")}</td></tr>
     </table>`
+    : `<p>2004 sayılı İcra ve İflas Kanunu'nun 82. maddesi (b. 4, 5, 7 ve son fıkra) ile 114, 118 ve 128. maddeleri ve Yargıtay 12. Hukuk Dairesi'nin yerleşik içtihatları uyarınca; borçlu çiftçinin tarımsal faaliyetini sürdürebilmesi için zorunlu olan ziraat alet ve edevatları, geçim hayvanı ve tohumluğunun haczedilmezlik sınırları denetlenmiş ve açık artırmaya esas muhammen bedeller tespit edilmiştir.</p>
+    
+    <div style="background-color: #f1f5f9; padding: 10px 14px; border-radius: 4px; margin-bottom: 12px; border: 1px solid #cbd5e1; font-size: 10pt;">
+      <b>Borçlunun Çiftçilik Statüsü ve Geçim Analizi:</b> ${borcluCiftcilikDurumu} | <b>İşlenen Toplam Arazi:</b> ${islenenToplamAraziDa} Dekar | <b>Aile Nüfusu:</b> ${aileNufusu} Kişi | <b>İcra Dairesi / Dosya:</b> ${icraDairesi} - ${icraDosyaNo}
+    </div>
+
+    <table>
+      <thead>
+        <tr>
+          <th>No</th>
+          <th>Haczedilen Malın Cinsi ve Nitelikleri</th>
+          <th>Miktar</th>
+          <th>0 Km / Rayiç</th>
+          <th>Yıpranma</th>
+          <th>Brüt Değer</th>
+          <th>İİK m. 82 Statüsü</th>
+          <th>Borçluya Terk (TL)</th>
+          <th>Satışa Esas Muhammen</th>
+          <th>KDV</th>
+        </tr>
+      </thead>
+      <tbody>
+        ${icraVarlikList.map((v, i) => `
+          <tr>
+            <td class="text-center">${i + 1}</td>
+            <td><b>${v.ad}</b><br><span style="font-size: 8.5pt; color: #475569;">${v.tespitVeGerekce}</span></td>
+            <td class="text-center">${v.miktar} ${v.birim}</td>
+            <td class="text-right">₺${v.sifirRayicBedel.toLocaleString("tr-TR")}</td>
+            <td class="text-center">%${v.amortismanPct}</td>
+            <td class="text-right">₺${v.brutPiyasaDegeri.toLocaleString("tr-TR")}</td>
+            <td class="text-center" style="font-weight: bold; font-size: 9pt; color: ${v.iik82Durumu === "haczedilemez_tam" ? "#047857" : v.iik82Durumu === "fark_haczi" ? "#b45309" : "#b91c1c"};">
+              ${v.iik82Durumu === "haczedilemez_tam" ? "HACZEDİLEMEZ (Zorunlu)" : v.iik82Durumu === "fark_haczi" ? "FARK HACZİ (İİK 82/son)" : "HACZEDİLEBİLİR"}
+            </td>
+            <td class="text-right" style="color: #047857; font-weight: bold;">₺${v.borcluyaTerkTutari.toLocaleString("tr-TR")}</td>
+            <td class="text-right bold" style="color: #1e293b;">₺${v.netMuhammenBedel.toLocaleString("tr-TR")}</td>
+            <td class="text-center">%${v.tavsiyeKdvPct}</td>
+          </tr>
+        `).join("")}
+      </tbody>
+    </table>
+
+    <table>
+      <tr><th colspan="2">İİK m. 82 VE 128 İCRA KIYMET TAKDİRİ İCMAL CETVELİ</th></tr>
+      <tr><td class="bold" style="width: 55%;">Toplam Haczedilen Varlıkların Brüt Rayiç Değeri</td><td class="text-right bold">₺${toplamIcraBrut.toLocaleString("tr-TR")}</td></tr>
+      <tr style="background-color: #ecfdf5;"><td class="bold">İİK m. 82 Gereğince Borçluya Terk Edilmesi Gereken Zorunlu Geçimlik Tutar</td><td class="text-right bold" style="color: #047857;">₺${toplamIcraBorcluyaTerk.toLocaleString("tr-TR")}</td></tr>
+      <tr style="background-color: #eff6ff;"><td class="bold" style="font-size: 12pt;">AÇIK ARTIRMAYA / SATIŞA ESAS TOPLAM NET MUHAMMEN BEDEL</td><td class="bold text-right" style="font-size: 13pt; color: #1d4ed8;">₺${toplamIcraNetMuhammen.toLocaleString("tr-TR")}</td></tr>
+      <tr><td class="bold">Haczedilmezlik ve Fark Haczi Oranı</td><td class="text-right">%${toplamIcraBrut > 0 ? ((toplamIcraBorcluyaTerk / toplamIcraBrut) * 100).toFixed(1) : 0} (Borçlu Koruması) / %${toplamIcraBrut > 0 ? ((toplamIcraNetMuhammen / toplamIcraBrut) * 100).toFixed(1) : 0} (Satışa Arz)</td></tr>
+    </table>
+
+    <div style="background-color: #f8fafc; border-left: 4px solid #2563eb; padding: 8px 12px; margin: 10px 0; font-size: 9.5pt; color: #334155;">
+      <b>Yargıtay 12. Hukuk Dairesi İlkesi (İİK m. 82/son - Satış Suretiyle Karşılama):</b> Borçlunun işlediği ${islenenToplamAraziDa} da kuru arazi kapasitesinin üzerinde olan New Holland TD90D marka traktörün satılarak, çiftçinin ziraatini icra edebileceği 50-60 HP gücünde emsal bir traktör bedeli olan <b>₺600.000</b> tutarın borçluya terk edilmesi, satıştan elde edilecek kalan meblağın haciz dosyasına aktarılması teknik ve hakkaniyet gereği olarak tespit edilmiştir.
+    </div>`
 }
 
 ${
@@ -1043,6 +1244,16 @@ ${
     gidaStandartDeger,
     gidaAyipOraniPct,
     toplamGidaZarari,
+    icraDairesi,
+    icraDosyaNo,
+    borcluCiftcilikDurumu,
+    islenenToplamAraziDa,
+    aileNufusu,
+    aylikAsgariGecimGideri,
+    icraVarlikList,
+    toplamIcraBrut,
+    toplamIcraBorcluyaTerk,
+    toplamIcraNetMuhammen,
     faizHesabiAktif,
     faizTuru,
     faizKurali,
@@ -1154,8 +1365,10 @@ ${
                   <Sprout size={13} className="text-emerald-300" />
                 ) : dava.alan === "hayvancilik" ? (
                   <Beef size={13} className="text-amber-300" />
-                ) : (
+                ) : dava.alan === "gida" ? (
                   <FlaskConical size={13} className="text-teal-300" />
+                ) : (
+                  <Truck size={13} className="text-indigo-300" />
                 )}
                 <span>{dava.kisaltma}</span>
               </button>
@@ -1910,10 +2123,69 @@ ${
             <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">
               Raporunuzun yasal dayanağını ve metodolojisini belirleyin. Her şablon ilgili mevzuat ve yerleşik içtihatlara göre özel formüller içerir.
             </p>
+
+            {/* Kategori Filtre Butonları */}
+            <div className="flex flex-wrap items-center gap-1.5 mt-4 pt-3 border-t border-slate-100 dark:border-slate-800">
+              <button
+                type="button"
+                onClick={() => setDavaFiltreAlani("hepsi")}
+                className={`px-3 py-1.5 rounded-xl text-xs font-bold transition flex items-center gap-1.5 cursor-pointer ${
+                  davaFiltreAlani === "hepsi"
+                    ? "bg-slate-900 dark:bg-white text-white dark:text-slate-900 shadow-xs"
+                    : "bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:bg-slate-200"
+                }`}
+              >
+                Tümü ({DAVA_TURLERI_DB.length})
+              </button>
+              <button
+                type="button"
+                onClick={() => setDavaFiltreAlani("tarim")}
+                className={`px-3 py-1.5 rounded-xl text-xs font-bold transition flex items-center gap-1.5 cursor-pointer ${
+                  davaFiltreAlani === "tarim"
+                    ? "bg-emerald-600 text-white shadow-xs"
+                    : "bg-emerald-50 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-300 hover:bg-emerald-100"
+                }`}
+              >
+                <Wheat size={13} /> 01 Tarım ({DAVA_TURLERI_DB.filter((d) => d.alan === "tarim").length})
+              </button>
+              <button
+                type="button"
+                onClick={() => setDavaFiltreAlani("hayvancilik")}
+                className={`px-3 py-1.5 rounded-xl text-xs font-bold transition flex items-center gap-1.5 cursor-pointer ${
+                  davaFiltreAlani === "hayvancilik"
+                    ? "bg-amber-600 text-white shadow-xs"
+                    : "bg-amber-50 dark:bg-amber-950/40 text-amber-700 dark:text-amber-300 hover:bg-amber-100"
+                }`}
+              >
+                <Beef size={13} /> 02 Hayvancılık ({DAVA_TURLERI_DB.filter((d) => d.alan === "hayvancilik").length})
+              </button>
+              <button
+                type="button"
+                onClick={() => setDavaFiltreAlani("gida")}
+                className={`px-3 py-1.5 rounded-xl text-xs font-bold transition flex items-center gap-1.5 cursor-pointer ${
+                  davaFiltreAlani === "gida"
+                    ? "bg-teal-600 text-white shadow-xs"
+                    : "bg-teal-50 dark:bg-teal-950/40 text-teal-700 dark:text-teal-300 hover:bg-teal-100"
+                }`}
+              >
+                <FlaskConical size={13} /> 26 Gıda ({DAVA_TURLERI_DB.filter((d) => d.alan === "gida").length})
+              </button>
+              <button
+                type="button"
+                onClick={() => setDavaFiltreAlani("icra")}
+                className={`px-3 py-1.5 rounded-xl text-xs font-bold transition flex items-center gap-1.5 cursor-pointer ${
+                  davaFiltreAlani === "icra"
+                    ? "bg-indigo-600 text-white shadow-xs"
+                    : "bg-indigo-50 dark:bg-indigo-950/40 text-indigo-700 dark:text-indigo-300 hover:bg-indigo-100"
+                }`}
+              >
+                <Gavel size={13} /> İcra & Haciz (İİK 82) ({DAVA_TURLERI_DB.filter((d) => d.alan === "icra").length})
+              </button>
+            </div>
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-            {DAVA_TURLERI_DB.map((dava) => (
+            {DAVA_TURLERI_DB.filter((dava) => davaFiltreAlani === "hepsi" || dava.alan === davaFiltreAlani).map((dava) => (
               <div
                 key={dava.id}
                 onClick={() => handleSelectDavaTuru(dava.id)}
@@ -1931,14 +2203,18 @@ ${
                           ? "bg-emerald-100 dark:bg-emerald-900/50 text-emerald-800 dark:text-emerald-300"
                           : dava.alan === "hayvancilik"
                           ? "bg-amber-100 dark:bg-amber-900/50 text-amber-800 dark:text-amber-300"
-                          : "bg-teal-100 dark:bg-teal-900/50 text-teal-800 dark:text-teal-300"
+                          : dava.alan === "gida"
+                          ? "bg-teal-100 dark:bg-teal-900/50 text-teal-800 dark:text-teal-300"
+                          : "bg-indigo-100 dark:bg-indigo-900/50 text-indigo-800 dark:text-indigo-300 border border-indigo-200 dark:border-indigo-800"
                       }`}
                     >
                       {dava.alan === "tarim"
                         ? "01 Tarım"
                         : dava.alan === "hayvancilik"
                         ? "02 Hayvancılık"
-                        : "26 Gıda"}
+                        : dava.alan === "gida"
+                        ? "26 Gıda"
+                        : "İcra & Haciz (İİK 82)"}
                     </span>
                     {selectedDavaId === dava.id && (
                       <span className="text-emerald-600 dark:text-emerald-400">
@@ -2038,127 +2314,271 @@ ${
           </div>
 
           {/* Saha Giriş Formu */}
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-            <div>
-              <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">
-                İl
-              </label>
-              <input
-                type="text"
-                value={parselIl}
-                onChange={(e) => setParselIl(e.target.value)}
-                className="w-full px-3 py-2 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-xs font-medium text-slate-800 dark:text-slate-100 outline-none"
-              />
-            </div>
+          {selectedDava.alan === "icra" ? (
+            <div className="space-y-4">
+              {/* İcra & Borçlu Sosyo-Ekonomik Durum Kartı */}
+              <div className="p-4 rounded-xl border border-indigo-200 dark:border-indigo-800 bg-indigo-50/40 dark:bg-indigo-950/20 space-y-3">
+                <div className="flex items-center justify-between">
+                  <h4 className="text-xs font-bold text-indigo-900 dark:text-indigo-200 uppercase tracking-wider flex items-center gap-1.5">
+                    <Truck size={15} className="text-indigo-600" />
+                    İcra Takip & Borçlu Çiftçi Sosyo-Ekonomik Durum Tespiti (İİK m. 82)
+                  </h4>
+                  <span className="text-[10px] bg-indigo-100 dark:bg-indigo-900/60 text-indigo-800 dark:text-indigo-300 font-bold px-2 py-0.5 rounded">
+                    Yargıtay 12. HD Standartı
+                  </span>
+                </div>
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
+                  <div>
+                    <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">
+                      İcra Dairesi / Mahkemesi
+                    </label>
+                    <input
+                      type="text"
+                      value={icraDairesi}
+                      onChange={(e) => setIcraDairesi(e.target.value)}
+                      className="w-full px-3 py-2 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-xs font-medium text-slate-800 dark:text-slate-100 outline-none"
+                    />
+                  </div>
 
-            <div>
-              <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">
-                İlçe
-              </label>
-              <input
-                type="text"
-                value={parselIlce}
-                onChange={(e) => setParselIlce(e.target.value)}
-                className="w-full px-3 py-2 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-xs font-medium text-slate-800 dark:text-slate-100 outline-none"
-              />
-            </div>
+                  <div>
+                    <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">
+                      İcra Dosya No
+                    </label>
+                    <input
+                      type="text"
+                      value={icraDosyaNo}
+                      onChange={(e) => setIcraDosyaNo(e.target.value)}
+                      className="w-full px-3 py-2 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-xs font-medium text-slate-800 dark:text-slate-100 outline-none"
+                    />
+                  </div>
 
-            <div>
-              <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">
-                Köy / Mahalle
-              </label>
-              <input
-                type="text"
-                value={parselKoy}
-                onChange={(e) => setParselKoy(e.target.value)}
-                className="w-full px-3 py-2 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-xs font-medium text-slate-800 dark:text-slate-100 outline-none"
-              />
-            </div>
+                  <div>
+                    <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">
+                      Borçlu Çiftçilik Durumu & Mesleki Statü
+                    </label>
+                    <input
+                      type="text"
+                      value={borcluCiftcilikDurumu}
+                      onChange={(e) => setBorcluCiftcilikDurumu(e.target.value)}
+                      className="w-full px-3 py-2 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-xs font-medium text-slate-800 dark:text-slate-100 outline-none"
+                    />
+                  </div>
 
-            <div>
-              <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">
-                Ada / Parsel
-              </label>
-              <div className="grid grid-cols-2 gap-2">
-                <input
-                  type="text"
-                  placeholder="Ada"
-                  value={adaNo}
-                  onChange={(e) => setAdaNo(e.target.value)}
-                  className="px-3 py-2 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-xs font-medium text-slate-800 dark:text-slate-100 outline-none"
-                />
-                <input
-                  type="text"
-                  placeholder="Parsel"
-                  value={parselNo}
-                  onChange={(e) => setParselNo(e.target.value)}
-                  className="px-3 py-2 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-xs font-medium text-slate-800 dark:text-slate-100 outline-none"
-                />
+                  <div>
+                    <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">
+                      İşlenen Toplam Tarım Arazisi (Dekar)
+                    </label>
+                    <input
+                      type="number"
+                      value={islenenToplamAraziDa}
+                      onChange={(e) => setIslenenToplamAraziDa(Number(e.target.value))}
+                      className="w-full px-3 py-2 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-xs font-medium text-slate-800 dark:text-slate-100 outline-none"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">
+                      Aile Nüfusu (Kişi)
+                    </label>
+                    <input
+                      type="number"
+                      value={aileNufusu}
+                      onChange={(e) => setAileNufusu(Number(e.target.value))}
+                      className="w-full px-3 py-2 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-xs font-medium text-slate-800 dark:text-slate-100 outline-none"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">
+                      Aylık Asgari / Zorunlu Geçim Gideri (₺)
+                    </label>
+                    <input
+                      type="number"
+                      value={aylikAsgariGecimGideri}
+                      onChange={(e) => setAylikAsgariGecimGideri(Number(e.target.value))}
+                      className="w-full px-3 py-2 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-xs font-medium text-slate-800 dark:text-slate-100 outline-none"
+                    />
+                  </div>
+                </div>
+              </div>
+
+              {/* Haciz ve Keşif Mahalli Konum Bilgileri */}
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+                <div>
+                  <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">
+                    İl
+                  </label>
+                  <input
+                    type="text"
+                    value={parselIl}
+                    onChange={(e) => setParselIl(e.target.value)}
+                    className="w-full px-3 py-2 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-xs font-medium text-slate-800 dark:text-slate-100 outline-none"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">
+                    İlçe
+                  </label>
+                  <input
+                    type="text"
+                    value={parselIlce}
+                    onChange={(e) => setParselIlce(e.target.value)}
+                    className="w-full px-3 py-2 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-xs font-medium text-slate-800 dark:text-slate-100 outline-none"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">
+                    Köy / Mahalle
+                  </label>
+                  <input
+                    type="text"
+                    value={parselKoy}
+                    onChange={(e) => setParselKoy(e.target.value)}
+                    className="w-full px-3 py-2 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-xs font-medium text-slate-800 dark:text-slate-100 outline-none"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">
+                    İşletme / Çiftlik / Parsel Mevkii
+                  </label>
+                  <input
+                    type="text"
+                    value={parselNo}
+                    onChange={(e) => setParselNo(e.target.value)}
+                    placeholder="Örn: Köy içi ev ve müştemilatı, 102/5"
+                    className="w-full px-3 py-2 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-xs font-medium text-slate-800 dark:text-slate-100 outline-none"
+                  />
+                </div>
               </div>
             </div>
+          ) : (
+            <>
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+                <div>
+                  <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">
+                    İl
+                  </label>
+                  <input
+                    type="text"
+                    value={parselIl}
+                    onChange={(e) => setParselIl(e.target.value)}
+                    className="w-full px-3 py-2 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-xs font-medium text-slate-800 dark:text-slate-100 outline-none"
+                  />
+                </div>
 
-            <div>
-              <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">
-                Yüzölçümü (m²)
-              </label>
-              <input
-                type="number"
-                value={alanM2}
-                onChange={(e) => setAlanM2(Number(e.target.value))}
-                className="w-full px-3 py-2 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-xs font-medium text-slate-800 dark:text-slate-100 outline-none"
-              />
-            </div>
+                <div>
+                  <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">
+                    İlçe
+                  </label>
+                  <input
+                    type="text"
+                    value={parselIlce}
+                    onChange={(e) => setParselIlce(e.target.value)}
+                    className="w-full px-3 py-2 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-xs font-medium text-slate-800 dark:text-slate-100 outline-none"
+                  />
+                </div>
 
-            <div>
-              <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">
-                Tarımsal Vasıf
-              </label>
-              <select
-                value={araziTipi}
-                onChange={(e) => setAraziTipi(e.target.value as "sulu" | "kuru")}
-                className="w-full px-3 py-2 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-xs font-medium text-slate-800 dark:text-slate-100 outline-none"
-              >
-                <option value="sulu">Sulu Mutlak Tarım Arazisi</option>
-                <option value="kuru">Kuru Tarım Arazisi</option>
-              </select>
-            </div>
+                <div>
+                  <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">
+                    Köy / Mahalle
+                  </label>
+                  <input
+                    type="text"
+                    value={parselKoy}
+                    onChange={(e) => setParselKoy(e.target.value)}
+                    className="w-full px-3 py-2 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-xs font-medium text-slate-800 dark:text-slate-100 outline-none"
+                  />
+                </div>
 
-            <div>
-              <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">
-                Eğim (%)
-              </label>
-              <input
-                type="number"
-                value={egimPct}
-                onChange={(e) => setEgimPct(Number(e.target.value))}
-                className="w-full px-3 py-2 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-xs font-medium text-slate-800 dark:text-slate-100 outline-none"
-              />
-            </div>
+                <div>
+                  <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">
+                    Ada / Parsel
+                  </label>
+                  <div className="grid grid-cols-2 gap-2">
+                    <input
+                      type="text"
+                      placeholder="Ada"
+                      value={adaNo}
+                      onChange={(e) => setAdaNo(e.target.value)}
+                      className="px-3 py-2 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-xs font-medium text-slate-800 dark:text-slate-100 outline-none"
+                    />
+                    <input
+                      type="text"
+                      placeholder="Parsel"
+                      value={parselNo}
+                      onChange={(e) => setParselNo(e.target.value)}
+                      className="px-3 py-2 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-xs font-medium text-slate-800 dark:text-slate-100 outline-none"
+                    />
+                  </div>
+                </div>
 
-            <div>
-              <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">
-                Sulama Kaynağı
-              </label>
-              <input
-                type="text"
-                value={sulamaKaynagi}
-                onChange={(e) => setSulamaKaynagi(e.target.value)}
-                className="w-full px-3 py-2 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-xs font-medium text-slate-800 dark:text-slate-100 outline-none"
-              />
-            </div>
-          </div>
+                <div>
+                  <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">
+                    Yüzölçümü (m²)
+                  </label>
+                  <input
+                    type="number"
+                    value={alanM2}
+                    onChange={(e) => setAlanM2(Number(e.target.value))}
+                    className="w-full px-3 py-2 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-xs font-medium text-slate-800 dark:text-slate-100 outline-none"
+                  />
+                </div>
 
-          <div>
-            <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">
-              Toprak Profili & Agronomik Özellikler
-            </label>
-            <input
-              type="text"
-              value={toprakOzelligi}
-              onChange={(e) => setToprakOzelligi(e.target.value)}
-              className="w-full px-3 py-2 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-xs font-medium text-slate-800 dark:text-slate-100 outline-none"
-            />
-          </div>
+                <div>
+                  <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">
+                    Tarımsal Vasıf
+                  </label>
+                  <select
+                    value={araziTipi}
+                    onChange={(e) => setAraziTipi(e.target.value as "sulu" | "kuru")}
+                    className="w-full px-3 py-2 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-xs font-medium text-slate-800 dark:text-slate-100 outline-none"
+                  >
+                    <option value="sulu">Sulu Mutlak Tarım Arazisi</option>
+                    <option value="kuru">Kuru Tarım Arazisi</option>
+                  </select>
+                </div>
+
+                <div>
+                  <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">
+                    Eğim (%)
+                  </label>
+                  <input
+                    type="number"
+                    value={egimPct}
+                    onChange={(e) => setEgimPct(Number(e.target.value))}
+                    className="w-full px-3 py-2 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-xs font-medium text-slate-800 dark:text-slate-100 outline-none"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">
+                    Sulama Kaynağı
+                  </label>
+                  <input
+                    type="text"
+                    value={sulamaKaynagi}
+                    onChange={(e) => setSulamaKaynagi(e.target.value)}
+                    className="w-full px-3 py-2 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-xs font-medium text-slate-800 dark:text-slate-100 outline-none"
+                  />
+                </div>
+              </div>
+
+              <div>
+                <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">
+                  Toprak Profili & Agronomik Özellikler
+                </label>
+                <input
+                  type="text"
+                  value={toprakOzelligi}
+                  onChange={(e) => setToprakOzelligi(e.target.value)}
+                  className="w-full px-3 py-2 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-xs font-medium text-slate-800 dark:text-slate-100 outline-none"
+                />
+              </div>
+            </>
+          )}
 
           <div>
             <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">
@@ -2486,7 +2906,9 @@ ${
                 ? "2942 s.K. m. 11/f gereği Net Gelir Kapitalizasyonu formülü ile hesaplama."
                 : selectedDava.alan === "hayvancilik"
                 ? "TBK m. 49, 52 ve 55 uyarınca Piyasa Rayici, Yoksun Kalınan Kâr ve Hurda Et Mahsubu."
-                : "TGK standart sınırları, laboratuvar sapma derecesi ve ayıp zayiat hesabı."}
+                : selectedDava.alan === "gida"
+                ? "TGK standart sınırları, laboratuvar sapma derecesi ve ayıp zayiat hesabı."
+                : "2004 s. İİK m. 82 Haczedilmezlik sınırlarının denetimi ve açık artırma muhammen bedel tespiti."}
             </p>
           </div>
 
@@ -2897,6 +3319,400 @@ ${
                   <div className="text-xl font-extrabold text-teal-700 dark:text-teal-400">
                     ₺{toplamGidaZarari.toLocaleString("tr-TR")}
                   </div>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* İCRA & HACİZ KIYMET TAKDİRİ VE İİK m. 82 HACZEDİLMEZLİK DENETİMİ BÖLÜMÜ */}
+          {selectedDava.alan === "icra" && (
+            <div className="space-y-6">
+              {/* Üst KPI Gösterge Kartları */}
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                <div className="p-4 rounded-2xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700">
+                  <div className="text-[11px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">
+                    Toplam Brüt Rayiç
+                  </div>
+                  <div className="text-lg md:text-xl font-extrabold text-slate-900 dark:text-white mt-1">
+                    ₺{toplamIcraBrut.toLocaleString("tr-TR")}
+                  </div>
+                  <div className="text-[10px] text-slate-500 mt-0.5">
+                    {icraVarlikList.length} Kalem Zirai Varlık
+                  </div>
+                </div>
+
+                <div className="p-4 rounded-2xl bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-800">
+                  <div className="text-[11px] font-bold text-emerald-800 dark:text-emerald-300 uppercase tracking-wider flex items-center justify-between">
+                    <span>İİK 82 Haczedilemez Pay</span>
+                    <ShieldCheck size={14} className="text-emerald-600" />
+                  </div>
+                  <div className="text-lg md:text-xl font-extrabold text-emerald-700 dark:text-emerald-300 mt-1">
+                    ₺{toplamIcraBorcluyaTerk.toLocaleString("tr-TR")}
+                  </div>
+                  <div className="text-[10px] text-emerald-600 dark:text-emerald-400 mt-0.5 font-semibold">
+                    Borçluya Bırakılacak Tutar
+                  </div>
+                </div>
+
+                <div className="p-4 rounded-2xl bg-indigo-50 dark:bg-indigo-950/40 border border-indigo-200 dark:border-indigo-800">
+                  <div className="text-[11px] font-bold text-indigo-800 dark:text-indigo-300 uppercase tracking-wider flex items-center justify-between">
+                    <span>Net Muhammen Bedel</span>
+                    <Gavel size={14} className="text-indigo-600" />
+                  </div>
+                  <div className="text-lg md:text-xl font-extrabold text-indigo-700 dark:text-indigo-300 mt-1">
+                    ₺{toplamIcraNetMuhammen.toLocaleString("tr-TR")}
+                  </div>
+                  <div className="text-[10px] text-indigo-600 dark:text-indigo-400 mt-0.5 font-semibold">
+                    Açık Artırma Satışına Esas
+                  </div>
+                </div>
+
+                <div className="p-4 rounded-2xl bg-amber-50 dark:bg-amber-950/40 border border-amber-200 dark:border-amber-800">
+                  <div className="text-[11px] font-bold text-amber-800 dark:text-amber-300 uppercase tracking-wider">
+                    Haczedilmezlik Denetimi
+                  </div>
+                  <div className="text-xs font-bold text-slate-800 dark:text-slate-100 mt-1.5 space-y-0.5">
+                    <div className="text-emerald-600 dark:text-emerald-400">
+                      ✓ {icraIstatistik.tamHaczedilemez} Kalem Tam Muaf
+                    </div>
+                    <div className="text-amber-600 dark:text-amber-400">
+                      ⚖️ {icraIstatistik.farkHaczi} Kalem Fark Haczi (İİK 82/son)
+                    </div>
+                    <div className="text-indigo-600 dark:text-indigo-400">
+                      🔨 {icraIstatistik.haczedilebilir} Kalem Haczedilebilir
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              {/* Yargıtay 12. HD Bilgilendirme ve Hukuki İlke Kutusu */}
+              <div className="p-4 rounded-2xl bg-blue-50/70 dark:bg-blue-950/20 border border-blue-200 dark:border-blue-800 text-xs text-blue-950 dark:text-blue-200 space-y-2">
+                <div className="flex items-center gap-2 font-bold text-blue-900 dark:text-blue-300">
+                  <Info size={16} className="text-blue-600 shrink-0" />
+                  <span>2004 s. İİK m. 82 ve Yargıtay 12. Hukuk Dairesi Bilirkişi Değerlendirme İlkeleri:</span>
+                </div>
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-3 text-[11px] text-blue-900/90 dark:text-blue-300/90 font-sans leading-relaxed">
+                  <div className="bg-white/80 dark:bg-slate-900/80 p-2.5 rounded-xl border border-blue-100 dark:border-blue-900/50">
+                    <b className="text-blue-950 dark:text-blue-200">İİK m. 82/4 (Zaruri Ziraat Aletleri):</b> Borçlunun fiilen işlediği {islenenToplamAraziDa} da arazi için zorunlu olan tek pulluk, mibzer vb. haczedilemez.
+                  </div>
+                  <div className="bg-white/80 dark:bg-slate-900/80 p-2.5 rounded-xl border border-blue-100 dark:border-blue-900/50">
+                    <b className="text-blue-950 dark:text-blue-200">İİK m. 82/son (Fark Haczi):</b> İşlenen araziye kıyasla yüksek modelli/güçlü traktörler satılarak, ihtiyaca yetecek mütevazı traktör parası borçluya terk edilir, artanı icraya tahsis edilir.
+                  </div>
+                  <div className="bg-white/80 dark:bg-slate-900/80 p-2.5 rounded-xl border border-blue-100 dark:border-blue-900/50">
+                    <b className="text-blue-950 dark:text-blue-200">İİK m. 82/5 & 7 (Hayvan & Tohumluk):</b> 1 süt ineği + 3 aylık yemi ile gelecek mahsul için dekara tohum ekim normu dahilindeki tohumluk haczedilemez.
+                  </div>
+                </div>
+              </div>
+
+              {/* Hızlı Ön Tanımlı Zirai Varlık Ekleme Butonları */}
+              <div className="space-y-2">
+                <div className="flex items-center justify-between">
+                  <span className="text-xs font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wider flex items-center gap-2">
+                    <Layers size={14} className="text-indigo-600" />
+                    Haczedilen Menkul & Ziraat Malları Cetveli
+                  </span>
+                  <div className="flex flex-wrap gap-1.5">
+                    <button
+                      type="button"
+                      onClick={() =>
+                        handleAddIcraPreset({
+                          ad: "Tümosan 8105 Traktör (2019 Model)",
+                          kategori: "traktor_ekipman",
+                          miktar: 1,
+                          birim: "Adet",
+                          sifirRayicBedel: 1900000,
+                          amortismanPct: 35,
+                          brutPiyasaDegeri: 1235000,
+                          iik82Durumu: "fark_haczi",
+                          borcluyaTerkTutari: 550000,
+                          netMuhammenBedel: 685000,
+                          tavsiyeKdvPct: 10,
+                          tespitVeGerekce:
+                            "İİK m. 82/son uyarınca arazisine yetecek mütevazı traktör karşılığı ₺550.000 terk edilmek üzere satışa arzı uygundur.",
+                        })
+                      }
+                      className="px-2.5 py-1 rounded-lg bg-indigo-50 dark:bg-indigo-950 text-indigo-700 dark:text-indigo-300 text-[11px] font-bold hover:bg-indigo-100 transition flex items-center gap-1 cursor-pointer"
+                    >
+                      <Plus size={12} /> + Traktör
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() =>
+                        handleAddIcraPreset({
+                          ad: "Ünlü 4'lü 14 No Dönerli Profil Pulluk",
+                          kategori: "traktor_ekipman",
+                          miktar: 1,
+                          birim: "Adet",
+                          sifirRayicBedel: 140000,
+                          amortismanPct: 20,
+                          brutPiyasaDegeri: 112000,
+                          iik82Durumu: "haczedilemez_tam",
+                          borcluyaTerkTutari: 112000,
+                          netMuhammenBedel: 0,
+                          tavsiyeKdvPct: 10,
+                          tespitVeGerekce:
+                            "İİK m. 82/4 gereği çiftçinin toprak işlemesi için lüzumlu tek pulluk olduğundan haczedilemez.",
+                        })
+                      }
+                      className="px-2.5 py-1 rounded-lg bg-emerald-50 dark:bg-emerald-950 text-emerald-700 dark:text-emerald-300 text-[11px] font-bold hover:bg-emerald-100 transition flex items-center gap-1 cursor-pointer"
+                    >
+                      <Plus size={12} /> + Pulluk/Alet
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() =>
+                        handleAddIcraPreset({
+                          ad: "Süt İneği (Simental Irkı, Küpeli)",
+                          kategori: "canli_hayvan",
+                          miktar: 1,
+                          birim: "Adet",
+                          sifirRayicBedel: 110000,
+                          amortismanPct: 10,
+                          brutPiyasaDegeri: 99000,
+                          iik82Durumu: "haczedilemez_tam",
+                          borcluyaTerkTutari: 99000,
+                          netMuhammenBedel: 0,
+                          tavsiyeKdvPct: 1,
+                          tespitVeGerekce:
+                            "İİK m. 82/5 gereği ailenin süt ihtiyacı için 1 adet süt ineği haczedilemez.",
+                        })
+                      }
+                      className="px-2.5 py-1 rounded-lg bg-teal-50 dark:bg-teal-950 text-teal-700 dark:text-teal-300 text-[11px] font-bold hover:bg-teal-100 transition flex items-center gap-1 cursor-pointer"
+                    >
+                      <Plus size={12} /> + Süt İneği
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() =>
+                        handleAddIcraPreset({
+                          ad: "Tohumluk Arpa (Aydanhanım Çeşidi)",
+                          kategori: "tohumluk_mahsul",
+                          miktar: 1000,
+                          birim: "Kg",
+                          sifirRayicBedel: 14,
+                          amortismanPct: 0,
+                          brutPiyasaDegeri: 14000,
+                          iik82Durumu: "haczedilemez_tam",
+                          borcluyaTerkTutari: 14000,
+                          netMuhammenBedel: 0,
+                          tavsiyeKdvPct: 1,
+                          tespitVeGerekce:
+                            "İİK m. 82/7 kapsamında gelecek ekim için lüzumlu tohumluk miktarı dahilindedir.",
+                        })
+                      }
+                      className="px-2.5 py-1 rounded-lg bg-amber-50 dark:bg-amber-950 text-amber-700 dark:text-amber-300 text-[11px] font-bold hover:bg-amber-100 transition flex items-center gap-1 cursor-pointer"
+                    >
+                      <Plus size={12} /> + Tohumluk
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() =>
+                        handleAddIcraPreset({
+                          ad: "Özel Tarımsal Ekipman / Mahsul",
+                          kategori: "traktor_ekipman",
+                          miktar: 1,
+                          birim: "Adet",
+                          sifirRayicBedel: 50000,
+                          amortismanPct: 20,
+                          brutPiyasaDegeri: 40000,
+                          iik82Durumu: "haczedilebilir",
+                          borcluyaTerkTutari: 0,
+                          netMuhammenBedel: 40000,
+                          tavsiyeKdvPct: 10,
+                          tespitVeGerekce: "Zorunlu geçim aletlerinden olmayıp haczi caizdir.",
+                        })
+                      }
+                      className="px-2.5 py-1 rounded-lg bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 text-[11px] font-bold hover:bg-slate-200 transition flex items-center gap-1 cursor-pointer"
+                    >
+                      <Plus size={12} /> + Serbest Kalem
+                    </button>
+                  </div>
+                </div>
+
+                {/* Varlık Kartları / Tablosu */}
+                <div className="space-y-3">
+                  {icraVarlikList.map((item, idx) => (
+                    <div
+                      key={item.id}
+                      className={`p-4 rounded-2xl border transition ${
+                        item.iik82Durumu === "haczedilemez_tam"
+                          ? "border-emerald-300 dark:border-emerald-800 bg-emerald-50/30 dark:bg-emerald-950/20"
+                          : item.iik82Durumu === "fark_haczi"
+                          ? "border-amber-300 dark:border-amber-800 bg-amber-50/30 dark:bg-amber-950/20"
+                          : "border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800"
+                      }`}
+                    >
+                      <div className="flex flex-col md:flex-row md:items-start justify-between gap-3 mb-3">
+                        <div className="flex items-start gap-2 flex-1">
+                          <span className="w-6 h-6 rounded-full bg-indigo-600 text-white flex items-center justify-center text-xs font-bold shrink-0 mt-1">
+                            {idx + 1}
+                          </span>
+                          <div className="flex-1 space-y-1">
+                            <input
+                              type="text"
+                              value={item.ad}
+                              onChange={(e) => handleUpdateIcraVarlik(item.id, "ad", e.target.value)}
+                              placeholder="Malın cinsi, marka, model, motor/şasi/küpe no..."
+                              className="w-full px-3 py-1.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-xs font-bold text-slate-900 dark:text-white outline-none"
+                            />
+                            <div className="flex flex-wrap items-center gap-2 text-[11px]">
+                              <span className="text-slate-500">Kategori:</span>
+                              <select
+                                value={item.kategori}
+                                onChange={(e) => handleUpdateIcraVarlik(item.id, "kategori", e.target.value)}
+                                className="px-2 py-0.5 rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-xs font-semibold"
+                              >
+                                <option value="traktor_ekipman">Traktör & Ziraat Aleti</option>
+                                <option value="canli_hayvan">Büyükbaş / Küçükbaş Hayvan</option>
+                                <option value="tohumluk_mahsul">Tohumluk & Depolanmış Mahsul</option>
+                                <option value="tarim_arazisi">Tarım Arazisi / Parsel</option>
+                              </select>
+                            </div>
+                          </div>
+                        </div>
+
+                        {/* İİK m. 82 Statü Seçici */}
+                        <div className="flex items-center gap-2 shrink-0">
+                          <div className="flex flex-col items-end">
+                            <span className="text-[10px] text-slate-500 font-semibold mb-0.5">İİK m. 82 Statüsü</span>
+                            <select
+                              value={item.iik82Durumu}
+                              onChange={(e) => handleUpdateIcraVarlik(item.id, "iik82Durumu", e.target.value)}
+                              className={`px-3 py-1.5 rounded-xl text-xs font-bold border outline-none cursor-pointer ${
+                                item.iik82Durumu === "haczedilemez_tam"
+                                  ? "bg-emerald-100 dark:bg-emerald-950 text-emerald-800 dark:text-emerald-200 border-emerald-300 dark:border-emerald-700"
+                                  : item.iik82Durumu === "fark_haczi"
+                                  ? "bg-amber-100 dark:bg-amber-950 text-amber-800 dark:text-amber-200 border-amber-300 dark:border-amber-700"
+                                  : "bg-red-100 dark:bg-red-950 text-red-800 dark:text-red-200 border-red-300 dark:border-red-700"
+                              }`}
+                            >
+                              <option value="haczedilemez_tam">🟢 Haczedilemez (Geçim İçin Zorunlu)</option>
+                              <option value="fark_haczi">🟡 Fark Haczi (İİK 82/son - Satış Suretiyle)</option>
+                              <option value="haczedilebilir">🔴 Haczedilebilir (Açık Artırmaya Arz)</option>
+                            </select>
+                          </div>
+
+                          <button
+                            type="button"
+                            onClick={() => handleDeleteIcraVarlik(item.id)}
+                            className="p-1.5 text-slate-400 hover:text-red-500 transition rounded-lg hover:bg-red-50 dark:hover:bg-red-950/30 mt-3"
+                            title="Kalemi Sil"
+                          >
+                            <Trash2 size={16} />
+                          </button>
+                        </div>
+                      </div>
+
+                      {/* Değerleme ve Muhammen Bedel Parametreleri Grid */}
+                      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3 pt-2 border-t border-slate-100 dark:border-slate-800 text-xs">
+                        <div>
+                          <label className="block text-[10px] font-bold text-slate-600 dark:text-slate-400 mb-0.5">
+                            Miktar & Birim
+                          </label>
+                          <div className="flex gap-1">
+                            <input
+                              type="number"
+                              value={item.miktar}
+                              onChange={(e) => handleUpdateIcraVarlik(item.id, "miktar", Number(e.target.value))}
+                              className="w-16 px-2 py-1 rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-xs font-semibold text-center"
+                            />
+                            <input
+                              type="text"
+                              value={item.birim}
+                              onChange={(e) => handleUpdateIcraVarlik(item.id, "birim", e.target.value)}
+                              className="w-16 px-2 py-1 rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-xs font-semibold text-center"
+                            />
+                          </div>
+                        </div>
+
+                        <div>
+                          <label className="block text-[10px] font-bold text-slate-600 dark:text-slate-400 mb-0.5">
+                            0 Km / Sıfır Rayiç (₺)
+                          </label>
+                          <input
+                            type="number"
+                            value={item.sifirRayicBedel}
+                            onChange={(e) => handleUpdateIcraVarlik(item.id, "sifirRayicBedel", Number(e.target.value))}
+                            className="w-full px-2 py-1 rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-xs font-semibold text-right"
+                          />
+                        </div>
+
+                        <div>
+                          <label className="block text-[10px] font-bold text-slate-600 dark:text-slate-400 mb-0.5">
+                            Yıpranma / Amortisman (%)
+                          </label>
+                          <input
+                            type="number"
+                            min="0"
+                            max="90"
+                            value={item.amortismanPct}
+                            onChange={(e) => handleUpdateIcraVarlik(item.id, "amortismanPct", Number(e.target.value))}
+                            className="w-full px-2 py-1 rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-xs font-semibold text-center text-amber-600"
+                          />
+                        </div>
+
+                        <div>
+                          <label className="block text-[10px] font-bold text-slate-600 dark:text-slate-400 mb-0.5">
+                            Brüt Rayiç Değeri (₺)
+                          </label>
+                          <div className="px-2 py-1 rounded-lg bg-slate-100 dark:bg-slate-700/60 text-xs font-bold text-slate-800 dark:text-slate-200 text-right">
+                            ₺{item.brutPiyasaDegeri.toLocaleString("tr-TR")}
+                          </div>
+                        </div>
+
+                        <div>
+                          <label className="block text-[10px] font-bold text-emerald-700 dark:text-emerald-400 mb-0.5">
+                            Borçluya Terk (İİK 82)
+                          </label>
+                          <input
+                            type="number"
+                            disabled={item.iik82Durumu === "haczedilebilir"}
+                            value={item.borcluyaTerkTutari}
+                            onChange={(e) => handleUpdateIcraVarlik(item.id, "borcluyaTerkTutari", Number(e.target.value))}
+                            className={`w-full px-2 py-1 rounded-lg border text-xs font-bold text-right outline-none ${
+                              item.iik82Durumu === "haczedilebilir"
+                                ? "bg-slate-100 text-slate-400 border-slate-200"
+                                : "bg-emerald-50 dark:bg-emerald-950/40 text-emerald-800 dark:text-emerald-200 border-emerald-300 dark:border-emerald-700"
+                            }`}
+                          />
+                        </div>
+
+                        <div>
+                          <label className="block text-[10px] font-bold text-indigo-700 dark:text-indigo-400 mb-0.5">
+                            Satışa Esas Muhammen
+                          </label>
+                          <div className="px-2 py-1 rounded-lg bg-indigo-50 dark:bg-indigo-950/40 border border-indigo-200 dark:border-indigo-800 text-xs font-extrabold text-indigo-700 dark:text-indigo-300 text-right">
+                            ₺{item.netMuhammenBedel.toLocaleString("tr-TR")}
+                          </div>
+                        </div>
+                      </div>
+
+                      {/* Gerekçe & KDV Oranı */}
+                      <div className="mt-2.5 pt-2 border-t border-slate-100 dark:border-slate-800/60 flex flex-col sm:flex-row items-center gap-2">
+                        <div className="flex-1 w-full">
+                          <input
+                            type="text"
+                            value={item.tespitVeGerekce}
+                            onChange={(e) => handleUpdateIcraVarlik(item.id, "tespitVeGerekce", e.target.value)}
+                            placeholder="Yargıtay 12. HD kriteri, çalışma saati, fiili durum ve teknik gerekçe..."
+                            className="w-full px-2.5 py-1 rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-[11px] text-slate-700 dark:text-slate-300 outline-none"
+                          />
+                        </div>
+                        <div className="flex items-center gap-1.5 shrink-0 text-xs">
+                          <span className="text-[10px] text-slate-500 font-semibold">Tavsiye KDV:</span>
+                          <select
+                            value={item.tavsiyeKdvPct}
+                            onChange={(e) => handleUpdateIcraVarlik(item.id, "tavsiyeKdvPct", Number(e.target.value))}
+                            className="px-2 py-0.5 rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-xs font-bold"
+                          >
+                            <option value={1}>%1 (Canlı Hayvan / Tohumluk)</option>
+                            <option value={10}>%10 (Traktör & Zirai Ekipman)</option>
+                            <option value={20}>%20 (Genel Mal & Hizmet)</option>
+                          </select>
+                        </div>
+                      </div>
+                    </div>
+                  ))}
                 </div>
               </div>
             </div>
@@ -3467,9 +4283,23 @@ ${
                   </div>
                 )}
 
-                <div className="mt-2 bg-slate-50 p-2.5 rounded border border-slate-200 text-xs">
-                  <b>Konum:</b> {parselIl} / {parselIlce} / {parselKoy} | <b>Ada/Parsel:</b> {adaNo}/{parselNo} | <b>Alan:</b> {alanM2.toLocaleString("tr-TR")} m² | <b>Vasıf:</b> {araziTipi === "sulu" ? "Sulu Tarla" : "Kuru Tarla"} (Eğim: %{egimPct})
-                </div>
+                {selectedDava.alan === "icra" ? (
+                  <div className="mt-2 bg-slate-50 p-2.5 rounded border border-slate-200 text-xs space-y-1">
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-1.5">
+                      <div><b>İcra Mercii / Dosya No:</b> {icraDairesi} - {icraDosyaNo}</div>
+                      <div><b>Borçlu / Mesleki Statü:</b> {davali} ({borcluCiftcilikDurumu})</div>
+                      <div><b>Fiilen İşlenen Arazi:</b> {islenenToplamAraziDa} Dekar ({parselIl} / {parselIlce} / {parselKoy})</div>
+                      <div><b>Aile Nüfusu & Geçim Gideri:</b> {aileNufusu} Kişi (Aylık Asgari: ₺{aylikAsgariGecimGideri.toLocaleString("tr-TR")})</div>
+                    </div>
+                    <div className="text-[11px] text-slate-600 border-t border-slate-200 pt-1">
+                      <b>Haciz & Keşif Mahalli:</b> {parselIl} / {parselIlce} / {parselKoy} ({parselNo}) | <b>İncelenen Varlık:</b> {icraVarlikList.length} Kalem Zirai Menkul Varlık
+                    </div>
+                  </div>
+                ) : (
+                  <div className="mt-2 bg-slate-50 p-2.5 rounded border border-slate-200 text-xs">
+                    <b>Konum:</b> {parselIl} / {parselIlce} / {parselKoy} | <b>Ada/Parsel:</b> {adaNo}/{parselNo} | <b>Alan:</b> {alanM2.toLocaleString("tr-TR")} m² | <b>Vasıf:</b> {araziTipi === "sulu" ? "Sulu Tarla" : "Kuru Tarla"} (Eğim: %{egimPct})
+                  </div>
+                )}
               </div>
 
               {/* Bölüm IV: AÇIKLAMALI KEŞİF FOTOĞRAFLARI VE KROKİ ALBÜMÜ */}
@@ -3536,12 +4366,98 @@ ${
                       NET TEKNİK ZARAR: ₺{toplamHayvanTazminat.toLocaleString("tr-TR")}
                     </span>
                   </div>
-                ) : (
+                ) : selectedDava.alan === "gida" ? (
                   <div className="p-3 bg-teal-50 rounded border border-teal-200 font-sans text-xs flex justify-between items-center">
                     <span>TGK Standardı Aşımı & Ayıp Oranı (%{gidaAyipOraniPct})</span>
                     <span className="font-bold text-teal-800 text-sm">
                       ZAYİAT BEDELİ: ₺{toplamGidaZarari.toLocaleString("tr-TR")}
                     </span>
+                  </div>
+                ) : (
+                  /* İCRA & HACİZ (İİK m. 82 & 128) */
+                  <div className="space-y-3 font-sans">
+                    <p className="text-xs text-slate-700 leading-relaxed font-serif">
+                      2004 sayılı İcra ve İflas Kanunu'nun 82. maddesi ve Yargıtay 12. Hukuk Dairesi'nin yerleşik içtihatları uyarınca; borçlunun ziraat mesleğini sürdürebilmesi ve ailesinin asgari geçimi için zorunlu olan mallar ile satış suretiyle paraya çevrilecek lüks/kapasite fazlası mallar denetlenmiş, İİK m. 114, 118 ve 128 hükümleri gereğince açık artırmaya esas net muhammen bedeller aşağıda takdir edilmiştir:
+                    </p>
+
+                    {/* İİK 82 Muhammen Bedel Tablosu (Önizleme) */}
+                    <div className="overflow-x-auto border border-slate-300 rounded">
+                      <table className="w-full text-[10px] text-left border-collapse">
+                        <thead>
+                          <tr className="bg-slate-100 text-slate-800 border-b border-slate-300 font-bold">
+                            <th className="p-1.5 text-center w-8">No</th>
+                            <th className="p-1.5">Varlık Adı ve Teknik Özelliği</th>
+                            <th className="p-1.5 text-center">Miktar</th>
+                            <th className="p-1.5 text-right">Sıfır Rayiç</th>
+                            <th className="p-1.5 text-center">Yıpr. %</th>
+                            <th className="p-1.5 text-right">Brüt Değer</th>
+                            <th className="p-1.5 text-center">İİK m. 82 Durumu</th>
+                            <th className="p-1.5 text-right">Borçluya Terk</th>
+                            <th className="p-1.5 text-right">Net Muhammen</th>
+                            <th className="p-1.5 text-center">KDV</th>
+                          </tr>
+                        </thead>
+                        <tbody className="divide-y divide-slate-200">
+                          {icraVarlikList.map((v, i) => (
+                            <tr key={v.id} className={v.iik82Durumu === "haczedilemez_tam" ? "bg-emerald-50/50" : v.iik82Durumu === "fark_haczi" ? "bg-amber-50/50" : ""}>
+                              <td className="p-1.5 text-center font-bold">{i + 1}</td>
+                              <td className="p-1.5">
+                                <div className="font-bold text-slate-900">{v.ad}</div>
+                                <div className="text-[9px] text-slate-500">{v.tespitVeGerekce}</div>
+                              </td>
+                              <td className="p-1.5 text-center">{v.miktar} {v.birim}</td>
+                              <td className="p-1.5 text-right font-mono">₺{v.sifirRayicBedel.toLocaleString("tr-TR")}</td>
+                              <td className="p-1.5 text-center font-mono">%{v.amortismanPct}</td>
+                              <td className="p-1.5 text-right font-mono font-bold">₺{v.brutPiyasaDegeri.toLocaleString("tr-TR")}</td>
+                              <td className="p-1.5 text-center">
+                                <span className={`px-1.5 py-0.5 rounded text-[9px] font-bold ${
+                                  v.iik82Durumu === "haczedilemez_tam"
+                                    ? "bg-emerald-100 text-emerald-800"
+                                    : v.iik82Durumu === "fark_haczi"
+                                    ? "bg-amber-100 text-amber-800"
+                                    : "bg-blue-100 text-blue-800"
+                                }`}>
+                                  {v.iik82Durumu === "haczedilemez_tam" ? "Tam Haczedilemez" : v.iik82Durumu === "fark_haczi" ? "Fark Haczi (İİK 82/son)" : "Haczedilebilir"}
+                                </span>
+                              </td>
+                              <td className="p-1.5 text-right font-mono text-emerald-800 font-bold">
+                                {v.borcluyaTerkTutari > 0 ? `₺${v.borcluyaTerkTutari.toLocaleString("tr-TR")}` : "-"}
+                              </td>
+                              <td className="p-1.5 text-right font-mono text-blue-900 font-bold">
+                                {v.netMuhammenBedel > 0 ? `₺${v.netMuhammenBedel.toLocaleString("tr-TR")}` : "₺0 (Haczedilemez)"}
+                              </td>
+                              <td className="p-1.5 text-center font-mono">%{v.tavsiyeKdvPct}</td>
+                            </tr>
+                          ))}
+                        </tbody>
+                        <tfoot>
+                          <tr className="bg-slate-100 border-t-2 border-slate-300 font-bold text-slate-900">
+                            <td colSpan={5} className="p-2 text-right">TOPLAM İCMAL:</td>
+                            <td className="p-2 text-right font-mono">₺{toplamIcraBrut.toLocaleString("tr-TR")}</td>
+                            <td className="p-2 text-center text-[9px] text-slate-600">İİK m. 82 Terk</td>
+                            <td className="p-2 text-right font-mono text-emerald-800">₺{toplamIcraBorcluyaTerk.toLocaleString("tr-TR")}</td>
+                            <td className="p-2 text-right font-mono text-blue-900">₺{toplamIcraNetMuhammen.toLocaleString("tr-TR")}</td>
+                            <td className="p-2"></td>
+                          </tr>
+                        </tfoot>
+                      </table>
+                    </div>
+
+                    {/* Özet Kartları */}
+                    <div className="grid grid-cols-3 gap-2 pt-1">
+                      <div className="p-2 rounded bg-slate-50 border border-slate-200 text-center">
+                        <div className="text-[10px] text-slate-500 uppercase font-bold">Toplam Brüt Piyasa Değeri</div>
+                        <div className="text-xs font-mono font-bold text-slate-800">₺{toplamIcraBrut.toLocaleString("tr-TR")}</div>
+                      </div>
+                      <div className="p-2 rounded bg-emerald-50 border border-emerald-200 text-center">
+                        <div className="text-[10px] text-emerald-700 uppercase font-bold">İİK m. 82 Borçluya Terk Edilen</div>
+                        <div className="text-xs font-mono font-bold text-emerald-800">₺{toplamIcraBorcluyaTerk.toLocaleString("tr-TR")}</div>
+                      </div>
+                      <div className="p-2 rounded bg-blue-50 border border-blue-200 text-center">
+                        <div className="text-[10px] text-blue-700 uppercase font-bold">Açık Artırma Muhammen Bedeli</div>
+                        <div className="text-xs font-mono font-bold text-blue-800">₺{toplamIcraNetMuhammen.toLocaleString("tr-TR")}</div>
+                      </div>
+                    </div>
                   </div>
                 )}
               </div>
