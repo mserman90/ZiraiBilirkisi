@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="tr">
+<html lang="tr" class="dark">
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, viewport-fit=cover" />
@@ -10,14 +10,14 @@
     <meta property="og:type" content="website" />
     
     <!-- PWA & Mobile Meta Tags -->
-    <meta name="theme-color" content="#0f172a" />
+    <meta name="theme-color" content="#060911" />
     <meta name="mobile-web-app-capable" content="yes" />
     <meta name="application-name" content="Zirai Bilirkişi" />
     <meta name="apple-mobile-web-app-capable" content="yes" />
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
     <meta name="apple-mobile-web-app-title" content="Zirai Bilirkişi" />
     <meta name="format-detection" content="telephone=no" />
-    <meta name="msapplication-TileColor" content="#0f172a" />
+    <meta name="msapplication-TileColor" content="#060911" />
 
     <link rel="manifest" href="/ZiraiBilirkisi/manifest.json" />
     <link rel="icon" type="image/svg+xml" href="/ZiraiBilirkisi/icon.svg" />
@@ -30,7 +30,7 @@
       (function() {
         try {
           var t = localStorage.getItem('zirai_theme');
-          var dark = t === 'dark' || (!t && window.matchMedia('(prefers-color-scheme: dark)').matches);
+          var dark = t === 'light' ? false : true; // Default tema gece (dark)
           if (dark) {
             document.documentElement.classList.add('dark');
           } else {
@@ -40,7 +40,7 @@
       })();
     </script>
   </head>
-  <body class="bg-slate-50 antialiased select-none md:select-auto">
+  <body class="bg-[#060911] text-slate-100 antialiased select-none md:select-auto">
     <div id="root"></div>
     <script type="module" src="/src/main.tsx"></script>
     <script>

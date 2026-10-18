@@ -160,14 +160,14 @@ export default function App() {
     setOpenSections((prev) => ({ ...prev, [section]: !prev[section] }));
   };
 
-  // Gece / Gündüz Modu (Dark / Light Mode)
+  // Gece / Gündüz Modu (Dark / Light Mode) - Varsayılan Gece (Dark)
   const [theme, setTheme] = useState<"light" | "dark">(() => {
     if (typeof window !== "undefined") {
       const stored = localStorage.getItem("zirai_theme");
       if (stored === "dark" || stored === "light") return stored;
-      return window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light";
+      return "dark"; // Default tema gece
     }
-    return "light";
+    return "dark";
   });
 
   useEffect(() => {
@@ -176,7 +176,7 @@ export default function App() {
       root.classList.add("dark");
       localStorage.setItem("zirai_theme", "dark");
       const meta = document.querySelector('meta[name="theme-color"]');
-      if (meta) meta.setAttribute("content", "#080c14");
+      if (meta) meta.setAttribute("content", "#060911");
     } else {
       root.classList.remove("dark");
       localStorage.setItem("zirai_theme", "light");
@@ -188,7 +188,7 @@ export default function App() {
   const toggleTheme = () => {
     setTheme((prev) => {
       const next = prev === "dark" ? "light" : "dark";
-      showToast(next === "dark" ? "🌙 Gece Modu Açıldı" : "☀️ Gündüz Modu Açıldı");
+      showToast(next === "dark" ? "Gece Modu Açıldı" : "Gündüz Modu Açıldı");
       return next;
     });
   };
