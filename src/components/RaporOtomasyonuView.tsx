@@ -43,6 +43,9 @@ import {
   Scissors,
   Users,
   UserCheck,
+  Camera,
+  Compass,
+  Upload,
 } from "lucide-react";
 import {
   DAVA_TURLERI_DB,
@@ -51,6 +54,13 @@ import {
   scanHmkViolations,
 } from "../data/raporOtomasyonuData";
 import { TUIK_TARIM_VERITABANI } from "../data/tuikTarimData";
+import {
+  KesifFotografi,
+  FOTO_KATEGORILERI,
+  FOTO_YONLERI,
+  generateDefaultKesifFotograflari,
+} from "../data/kesifFotograflariData";
+import { wgs84ToItrf96 } from "../utils/geo";
 import EkRaporModule from "./EkRaporModule";
 import MeyveAgaciModule from "./MeyveAgaciModule";
 import ZiraiYapiModule from "./ZiraiYapiModule";
@@ -169,6 +179,116 @@ export default function RaporOtomasyonuView({
   const [fiiliDurumAciklamasi, setFiiliDurumAciklamasi] = useState(
     selectedDava.ornekVeriler.teknikIncelemeMetni
   );
+
+  // -------------------------------------------------------------------
+  // AÇIKLAMALI KEŞİF FOTOĞRAFLARI VE KROKİ ALBÜMÜ (YARGITAY STANDARDI)
+  // -------------------------------------------------------------------
+  const [fotoAlbumuAktif, setFotoAlbumuAktif] = useState<boolean>(true);
+  const [fotograflar, setFotograflar] = useState<KesifFotografi[]>(() =>
+    generateDefaultKesifFotograflari({
+      il: selectedDava.ornekVeriler.parselIl,
+      ilce: selectedDava.ornekVeriler.parselIlce,
+      koy: selectedDava.ornekVeriler.parselKoy,
+      ada: selectedDava.ornekVeriler.ada,
+      parsel: selectedDava.ornekVeriler.parsel,
+      alanM2: selectedDava.ornekVeriler.alanM2,
+      araziTipi: selectedDava.ornekVeriler.araziTipi,
+      egimPct: 2,
+    })
+  );
+
+  const handleUpdateFoto = (id: string, field: keyof KesifFotografi, value: any) => {
+    setFotograflar((prev) =>
+      prev.map((f) => {
+        if (f.id !== id) return f;
+        const updated = { ...f, [field]: value };
+        if (field === "wgs84Lat" || field === "wgs84Lng") {
+          const lat = field === "wgs84Lat" ? Number(value) : f.wgs84Lat;
+          const lng = field === "wgs84Lng" ? Number(value) : f.wgs84Lng;
+          const itrf = wgs84ToItrf96(lat, lng);
+          updated.itrf96Y = itrf.easting;
+          updated.itrf96X = itrf.northing;
+        }
+        return updated;
+      })
+    );
+  };
+
+  const handleDeleteFoto = (id: string) => {
+    setFotograflar((prev) => prev.filter((f) => f.id !== id));
+    showToast("Fotoğraf albümden silindi");
+  };
+
+  const handleResetFotograflar = () => {
+    const defaults = generateDefaultKesifFotograflari({
+      il: parselIl,
+      ilce: parselIlce,
+      koy: parselKoy,
+      ada: adaNo,
+      parsel: parselNo,
+      alanM2: alanM2,
+      araziTipi: araziTipi,
+      egimPct: egimPct,
+      tarih: kesifTarihi,
+    });
+    setFotograflar(defaults);
+    showToast("🔄 Keşif fotoğrafları parsel koordinatlarına göre yenilendi");
+  };
+
+  const handleReplacePhoto = (id: string, e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = (event) => {
+      const dataUrl = event.target?.result as string;
+      if (!dataUrl) return;
+      setFotograflar((prev) =>
+        prev.map((f) => (f.id === id ? { ...f, dataUrl } : f))
+      );
+      showToast("📷 Fotoğraf görseli başarıyla güncellendi");
+    };
+    reader.readAsDataURL(file);
+  };
+
+  const handleUploadNewPhoto = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = (event) => {
+      const dataUrl = event.target?.result as string;
+      if (!dataUrl) return;
+      const baseLat = fotograflar[0]?.wgs84Lat || 39.5847;
+      const baseLng = fotograflar[0]?.wgs84Lng || 32.1444;
+      const itrf = wgs84ToItrf96(baseLat, baseLng);
+      const newFoto: KesifFotografi = {
+        id: `foto_${Date.now()}`,
+        baslik: `Fotoğraf ${fotograflar.length + 1}: Mahallinde Yapılan Saha Tespiti`,
+        kategori: "genel",
+        tarih: kesifTarihi,
+        yon: "Kuzey -> Güney (Bakı Açısı: 180°)",
+        wgs84Lat: baseLat,
+        wgs84Lng: baseLng,
+        itrf96Y: itrf.easting,
+        itrf96X: itrf.northing,
+        aciklama: `${adaNo} ada ${parselNo} parsel mahallinde keşif esnasında bilirkişiliğimizce çekilen saha fotoğrafı.`,
+        dataUrl,
+      };
+      setFotograflar((prev) => [...prev, newFoto]);
+      showToast("📷 Yeni keşif fotoğrafı albüme eklendi");
+    };
+    reader.readAsDataURL(file);
+  };
+
+  // Dinamik Rapor Bölüm Numaraları (Yargıtay Standartı)
+  const secPhoto = fotoAlbumuAktif && fotograflar.length > 0;
+  const numHesap = secPhoto ? "VI" : "V";
+  const numFaiz = secPhoto ? "VII" : "VI";
+  const numKanaat = secPhoto ? (faizHesabiAktif ? "VIII" : "VII") : (faizHesabiAktif ? "VII" : "VI");
+  const numKarsiOy = secPhoto ? (faizHesabiAktif ? "IX" : "VIII") : (faizHesabiAktif ? "VIII" : "VII");
+  const numImza =
+    raporTuru === "heyet_3" && kararTuru === "oycoklugu"
+      ? secPhoto ? (faizHesabiAktif ? "X" : "IX") : (faizHesabiAktif ? "IX" : "VIII")
+      : secPhoto ? (faizHesabiAktif ? "IX" : "VIII") : (faizHesabiAktif ? "VIII" : "VII");
 
   // -------------------------------------------------------------------
   // ADIM 4: BİLİMSEL METODOLOJİ VE HESAP PARAMETRELERİ
@@ -385,6 +505,20 @@ export default function RaporOtomasyonuView({
       setCustomFaizGerekcesi("");
     }
 
+    setFotograflar(
+      generateDefaultKesifFotograflari({
+        il: d.ornekVeriler.parselIl,
+        ilce: d.ornekVeriler.parselIlce,
+        koy: d.ornekVeriler.parselKoy,
+        ada: d.ornekVeriler.ada,
+        parsel: d.ornekVeriler.parsel,
+        alanM2: d.ornekVeriler.alanM2,
+        araziTipi: d.ornekVeriler.araziTipi,
+        egimPct: 2,
+        tarih: kesifTarihi,
+      })
+    );
+
     setActiveSubTab("kokRapor");
     setCurrentStep(1);
     showToast(`✅ ${d.ad} şablonu ve resmi soru kalıpları yüklendi`);
@@ -580,7 +714,51 @@ ${
   <tr><td class="bold">Sulama Durumu</td><td>${sulamaKaynagi}</td></tr>
 </table>
 
-<h2>V. BİLİMSEL İNCELEME, METODOLOJİ VE MATEMATİKSEL HESAPLAMALAR</h2>
+${
+  fotoAlbumuAktif && fotograflar.length > 0
+    ? `<h2>V. AÇIKLAMALI KEŞİF FOTOĞRAFLARI VE KROKİ ALBÜMÜ</h2>
+<p style="font-size: 10pt; color: #334155; margin-bottom: 12px;">
+  Yargıtay 5. ve 8. Hukuk Daireleri'nin yerleşik içtihatları ile Adalet Bakanlığı Bilirkişilik Standartları uyarınca; mahallinde yapılan keşifte çekilen fotoğraflar yön, çekim tarihi, WGS84 ve ITRF96 / UTM 3° koordinatları ile aşağıda belgelenmiştir:
+</p>
+
+<table style="width: 100%; border-collapse: collapse; margin-bottom: 20px;">
+  ${fotograflar
+    .reduce<KesifFotografi[][]>((acc, item, idx) => {
+      if (idx % 2 === 0) acc.push([item]);
+      else acc[acc.length - 1].push(item);
+      return acc;
+    }, [])
+    .map(
+      (pair) => `<tr>
+      ${pair
+        .map(
+          (foto) => `<td style="width: 50%; vertical-align: top; padding: 10px; border: 1px solid #cbd5e1; background-color: #fafafa;">
+        <div style="text-align: center; margin-bottom: 6px;">
+          <img src="${foto.dataUrl}" alt="${foto.baslik}" style="width: 100%; max-height: 230px; object-fit: cover; border-radius: 4px; border: 1px solid #94a3b8;" />
+        </div>
+        <div style="font-weight: bold; font-size: 10.5pt; color: #0f172a; margin-bottom: 4px;">${foto.baslik}</div>
+        <table style="width: 100%; font-size: 8.5pt; margin: 4px 0; border: none; background: transparent;">
+          <tr style="border: none;"><td style="border: none; padding: 2px 0; width: 50%;"><b>Çekim Tarihi:</b> ${foto.tarih}</td><td style="border: none; padding: 2px 0;"><b>Bakı Yönü:</b> ${foto.yon}</td></tr>
+          <tr style="border: none;"><td style="border: none; padding: 2px 0;"><b>WGS84:</b> ${foto.wgs84Lat.toFixed(5)}°K, ${foto.wgs84Lng.toFixed(5)}°D</td><td style="border: none; padding: 2px 0;"><b>ITRF96:</b> Y: ${foto.itrf96Y?.toLocaleString("tr-TR") || "-"} X: ${foto.itrf96X?.toLocaleString("tr-TR") || "-"}</td></tr>
+        </table>
+        <p style="font-size: 9pt; color: #334155; margin: 4px 0 0 0; line-height: 1.4; border-top: 1px dashed #cbd5e1; padding-top: 4px;">
+          ${foto.aciklama}
+        </p>
+      </td>`
+        )
+        .join("")}
+      ${pair.length === 1 ? `<td style="width: 50%; border: 1px solid #cbd5e1; background-color: #f8fafc;"></td>` : ""}
+    </tr>`
+    )
+    .join("")}
+</table>
+<p style="font-size: 9pt; font-style: italic; color: #64748b; margin-top: -10px; margin-bottom: 18px;">
+  * Not: Yargıtay bozma ilkeleri gereğince keşif fotoğraflarının yön ve ITRF96 / WGS84 koordinat bilgileri keşif zabtı ile uyumlu olarak rapora dercedilmiştir.
+</p>`
+    : ""
+}
+
+<h2>${numHesap}. BİLİMSEL İNCELEME, METODOLOJİ VE MATEMATİKSEL HESAPLAMALAR</h2>
 ${
   selectedDava.alan === "tarim"
     ? `<p>2942 sayılı Kamulaştırma Kanunu'nun 11/f maddesi ve yerleşik Yargıtay 5. Hukuk Dairesi içtihatları gereğince tarım arazilerinin değerlemesinde 'Net Gelir Metodu' (Gelir Kapitalizasyonu) uygulanması yasal zorunluluktur. Bu yöntemde arazinin çıplak değeri formülü: <b>Değer (TL/da) = Yıllık Ortalama Net Gelir (R) / Kapitalizasyon Faiz Oranı (f)</b></p>
@@ -658,7 +836,7 @@ ${
 
 ${
   faizHesabiAktif
-    ? `<h2>VI. FAİZ TÜRÜ VE BAŞLANGIÇ TARİHİ TAVSİYESİ (HÂKİMİN TAKDİRİNE SUNULMAK ÜZERE)</h2>
+    ? `<h2>${numFaiz}. FAİZ TÜRÜ VE BAŞLANGIÇ TARİHİ TAVSİYESİ (HÂKİMİN TAKDİRİNE SUNULMAK ÜZERE)</h2>
 <table>
   <tr><th colspan="2">TEKNİK VE USULİ FAİZ MATRİSİ</th></tr>
   <tr><td class="bold" style="width: 35%;">Tavsiye Edilen Faiz Türü</td><td>${
@@ -700,12 +878,12 @@ ${
     : ""
 }
 
-<h2>${faizHesabiAktif ? "VII" : "VI"}. HMK 279 UYUMLU SONUÇ VE KANAAT</h2>
+<h2>${numKanaat}. HMK 279 UYUMLU SONUÇ VE KANAAT</h2>
 <p style="white-space: pre-line;">${generatedKanaatMetni}</p>
 
 ${
   raporTuru === "heyet_3" && kararTuru === "oycoklugu"
-    ? `<h2>${faizHesabiAktif ? "VIII" : "VII"}. MUHALEFET ŞERHİ (KARŞI OY GEREKÇESİ)</h2>
+    ? `<h2>${numKarsiOy}. MUHALEFET ŞERHİ (KARŞI OY GEREKÇESİ)</h2>
 <div style="background-color: #fffbeb; border: 1px solid #fde68a; border-left: 5px solid #d97706; padding: 12px 14px; margin: 12px 0;">
   <p style="margin: 0 0 6px 0; font-weight: bold; color: #92400e; font-size: 10.5pt;">
     MUHALİF BİLİRKİŞİ: ${muhalifBilirkisiAdi} (${muhalifBilirkisiUnvani})
@@ -724,11 +902,7 @@ ${
     : ""
 }
 
-<h2>${
-  raporTuru === "heyet_3" && kararTuru === "oycoklugu"
-    ? (faizHesabiAktif ? "IX" : "VIII")
-    : (faizHesabiAktif ? "VIII" : "VII")
-}. İMZA VE EKLER LİSTESİ</h2>
+<h2>${numImza}. İMZA VE EKLER LİSTESİ</h2>
 <p>İşbu rapor 3 (üç) nüsha olarak tanzim edilmiş olup, bir nüshası ıslak imzalı/e-imzalı olarak dosyasında saklanmak üzere Sayın Mahkemenize saygıyla arz olunur.</p>
 
 <p><b>Ekler:</b><br>
@@ -879,6 +1053,13 @@ ${
     faizOraniPct,
     generatedFaizMetni,
     generatedKanaatMetni,
+    fotoAlbumuAktif,
+    fotograflar,
+    numHesap,
+    numFaiz,
+    numKanaat,
+    numKarsiOy,
+    numImza,
   ]);
 
   // Word (.doc formatında HTML tabanlı) indirme
@@ -2034,6 +2215,247 @@ ${
             </div>
           )}
 
+          {/* AÇIKLAMALI KEŞİF FOTOĞRAFLARI VE KROKİ ALBÜMÜ MODÜLÜ */}
+          <div className="bg-slate-50 dark:bg-slate-800/40 rounded-2xl border border-slate-200 dark:border-slate-800 p-5 md:p-6 space-y-5">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-slate-200 dark:border-slate-700/60 pb-4">
+              <div className="flex items-center gap-3">
+                <div className="p-2.5 rounded-xl bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20">
+                  <Camera size={20} />
+                </div>
+                <div>
+                  <h3 className="text-sm font-bold text-slate-900 dark:text-white flex items-center gap-2">
+                    Açıklamalı Keşif Fotoğrafları ve Kroki Albümü
+                    <span className="text-[10px] bg-emerald-100 dark:bg-emerald-950/60 text-emerald-700 dark:text-emerald-300 px-2 py-0.5 rounded-full font-semibold">
+                      Yargıtay Standartı (ITRF96 / WGS84)
+                    </span>
+                  </h3>
+                  <p className="text-[11px] text-slate-500 dark:text-slate-400">
+                    Yargıtay 5. ve 8. HD kararları uyarınca fotoğrafı, çekim yönü ve koordinatı olmayan raporlar bozulmaktadır.
+                  </p>
+                </div>
+              </div>
+
+              <div className="flex items-center gap-2">
+                <span className="text-xs font-semibold text-slate-600 dark:text-slate-300">
+                  Rapora Albümü Ekle
+                </span>
+                <button
+                  type="button"
+                  onClick={() => setFotoAlbumuAktif(!fotoAlbumuAktif)}
+                  className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
+                    fotoAlbumuAktif ? "bg-emerald-600" : "bg-slate-300 dark:bg-slate-700"
+                  }`}
+                >
+                  <span
+                    className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
+                      fotoAlbumuAktif ? "translate-x-6" : "translate-x-1"
+                    }`}
+                  />
+                </button>
+              </div>
+            </div>
+
+            {fotoAlbumuAktif && (
+              <div className="space-y-4">
+                {/* Yargıtay Bozma İlamı Uyarısı */}
+                <div className="p-3 bg-amber-50/70 dark:bg-amber-950/30 rounded-xl border border-amber-200/80 dark:border-amber-900/40 flex items-start gap-2.5 text-xs text-amber-900 dark:text-amber-300">
+                  <AlertTriangle size={16} className="mt-0.5 shrink-0 text-amber-600 dark:text-amber-400" />
+                  <div className="leading-relaxed">
+                    <span className="font-bold">Yargıtay 5. Hukuk Dairesi & 8. Hukuk Dairesi Bozma İlkesi: </span>
+                    "Mahallinde yapılan keşifte taşınmazın genel görünümü, topoğrafyası, sulama durumu ve fen krokisi aplikasyonunu gösteren fotoğrafların yön, çekim tarihi ve koordinatları (ITRF96 / WGS84) raporda açıkça gösterilmeden karar verilemez."
+                  </div>
+                </div>
+
+                {/* Aksiyon Butonları */}
+                <div className="flex flex-wrap items-center justify-between gap-3 pt-1">
+                  <div className="flex flex-wrap items-center gap-2">
+                    {/* Fotoğraf Yükle Butonu */}
+                    <label className="px-3.5 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold flex items-center gap-1.5 cursor-pointer shadow-sm transition">
+                      <Upload size={14} /> Yeni Keşif Fotoğrafı Yükle
+                      <input
+                        type="file"
+                        accept="image/*"
+                        className="hidden"
+                        onChange={(e) => handleUploadNewPhoto(e)}
+                      />
+                    </label>
+
+                    {/* Varsayılana Sıfırla */}
+                    <button
+                      type="button"
+                      onClick={handleResetFotograflar}
+                      className="px-3.5 py-2 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 hover:bg-slate-100 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 text-xs font-bold flex items-center gap-1.5 transition"
+                    >
+                      <RotateCcw size={14} /> Parsel Koordinatlarına Göre Sıfırla
+                    </button>
+                  </div>
+
+                  <div className="text-xs font-semibold text-slate-500 dark:text-slate-400">
+                    Toplam <b>{fotograflar.length}</b> adet keşif tespiti ve kroki
+                  </div>
+                </div>
+
+                {/* Fotoğraf Kartları Grid */}
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 pt-2">
+                  {fotograflar.map((foto, index) => (
+                    <div
+                      key={foto.id}
+                      className="bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-700/80 p-4 shadow-sm space-y-3"
+                    >
+                      {/* Fotoğraf Görseli ve Önizleme / Değiştir */}
+                      <div className="relative group rounded-lg overflow-hidden border border-slate-200 dark:border-slate-800 bg-slate-950">
+                        <img
+                          src={foto.dataUrl}
+                          alt={foto.baslik}
+                          className="w-full h-44 object-cover"
+                        />
+                        <div className="absolute top-2 left-2 bg-slate-900/85 backdrop-blur-sm text-white px-2.5 py-1 rounded-md text-[11px] font-bold flex items-center gap-1">
+                          <span>{index + 1}.</span> {foto.kategori.toUpperCase()}
+                        </div>
+                        <div className="absolute top-2 right-2 flex items-center gap-1">
+                          <label className="p-1.5 bg-slate-900/85 hover:bg-emerald-600 text-white rounded-md text-xs cursor-pointer transition" title="Görseli Değiştir">
+                            <Upload size={13} />
+                            <input
+                              type="file"
+                              accept="image/*"
+                              className="hidden"
+                              onChange={(e) => handleReplacePhoto(foto.id, e)}
+                            />
+                          </label>
+                          <button
+                            type="button"
+                            onClick={() => handleDeleteFoto(foto.id)}
+                            className="p-1.5 bg-slate-900/85 hover:bg-red-600 text-white rounded-md text-xs transition"
+                            title="Fotoğrafı Sil"
+                          >
+                            <Trash2 size={13} />
+                          </button>
+                        </div>
+                      </div>
+
+                      {/* Başlık ve Kategori */}
+                      <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
+                        <div className="sm:col-span-2">
+                          <label className="block text-[11px] font-semibold text-slate-600 dark:text-slate-400 mb-1">
+                            Fotoğraf Başlığı
+                          </label>
+                          <input
+                            type="text"
+                            value={foto.baslik}
+                            onChange={(e) => handleUpdateFoto(foto.id, "baslik", e.target.value)}
+                            className="w-full px-2.5 py-1.5 rounded-lg border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 text-xs font-semibold text-slate-800 dark:text-slate-100"
+                          />
+                        </div>
+
+                        <div>
+                          <label className="block text-[11px] font-semibold text-slate-600 dark:text-slate-400 mb-1">
+                            Kategori
+                          </label>
+                          <select
+                            value={foto.kategori}
+                            onChange={(e) => handleUpdateFoto(foto.id, "kategori", e.target.value)}
+                            className="w-full px-2.5 py-1.5 rounded-lg border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 text-xs font-medium text-slate-800 dark:text-slate-100"
+                          >
+                            {FOTO_KATEGORILERI.map((kat) => (
+                              <option key={kat.id} value={kat.id}>
+                                {kat.icon} {kat.label}
+                              </option>
+                            ))}
+                          </select>
+                        </div>
+                      </div>
+
+                      {/* Çekim Yönü & Tarih */}
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                        <div>
+                          <label className="block text-[11px] font-semibold text-slate-600 dark:text-slate-400 mb-1 flex items-center gap-1">
+                            <Compass size={12} className="text-emerald-600" /> Bakı Yönü
+                          </label>
+                          <select
+                            value={foto.yon}
+                            onChange={(e) => handleUpdateFoto(foto.id, "yon", e.target.value)}
+                            className="w-full px-2.5 py-1.5 rounded-lg border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 text-xs font-medium text-slate-800 dark:text-slate-100"
+                          >
+                            {FOTO_YONLERI.map((y, idx) => (
+                              <option key={idx} value={y}>
+                                {y}
+                              </option>
+                            ))}
+                          </select>
+                        </div>
+
+                        <div>
+                          <label className="block text-[11px] font-semibold text-slate-600 dark:text-slate-400 mb-1 flex items-center gap-1">
+                            <Calendar size={12} className="text-blue-600" /> Çekim Tarihi
+                          </label>
+                          <input
+                            type="date"
+                            value={foto.tarih}
+                            onChange={(e) => handleUpdateFoto(foto.id, "tarih", e.target.value)}
+                            className="w-full px-2.5 py-1.5 rounded-lg border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 text-xs font-medium text-slate-800 dark:text-slate-100"
+                          />
+                        </div>
+                      </div>
+
+                      {/* Koordinatlar (WGS84 Lat/Lng ve Otomatik ITRF96) */}
+                      <div className="p-2.5 bg-slate-50 dark:bg-slate-800/60 rounded-lg border border-slate-200 dark:border-slate-700/60 space-y-2">
+                        <div className="grid grid-cols-2 gap-2">
+                          <div>
+                            <label className="block text-[10px] font-bold text-slate-500 dark:text-slate-400">
+                              WGS84 Enlem (°K)
+                            </label>
+                            <input
+                              type="number"
+                              step="0.000001"
+                              value={foto.wgs84Lat}
+                              onChange={(e) => handleUpdateFoto(foto.id, "wgs84Lat", Number(e.target.value))}
+                              className="w-full px-2 py-1 rounded border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 text-xs font-mono text-slate-800 dark:text-slate-100"
+                            />
+                          </div>
+                          <div>
+                            <label className="block text-[10px] font-bold text-slate-500 dark:text-slate-400">
+                              WGS84 Boylam (°D)
+                            </label>
+                            <input
+                              type="number"
+                              step="0.000001"
+                              value={foto.wgs84Lng}
+                              onChange={(e) => handleUpdateFoto(foto.id, "wgs84Lng", Number(e.target.value))}
+                              className="w-full px-2 py-1 rounded border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 text-xs font-mono text-slate-800 dark:text-slate-100"
+                            />
+                          </div>
+                        </div>
+
+                        <div className="flex items-center justify-between text-[11px] pt-1 border-t border-slate-200 dark:border-slate-700">
+                          <span className="text-slate-500 dark:text-slate-400 font-semibold">
+                            ITRF96 / UTM 3°:
+                          </span>
+                          <span className="font-mono font-bold text-emerald-700 dark:text-emerald-400">
+                            Y: {foto.itrf96Y?.toLocaleString("tr-TR")} m | X: {foto.itrf96X?.toLocaleString("tr-TR")} m
+                          </span>
+                        </div>
+                      </div>
+
+                      {/* Teknik Açıklama */}
+                      <div>
+                        <label className="block text-[11px] font-semibold text-slate-600 dark:text-slate-400 mb-1">
+                          Teknik İnceleme ve Keşif Açıklaması
+                        </label>
+                        <textarea
+                          rows={2}
+                          value={foto.aciklama}
+                          onChange={(e) => handleUpdateFoto(foto.id, "aciklama", e.target.value)}
+                          className="w-full p-2.5 rounded-lg border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 text-xs text-slate-800 dark:text-slate-100 leading-relaxed font-sans"
+                          placeholder="Bu fotoğrafta tespit edilen tarımsal, agronomik ve kadastral özellikleri yazınız..."
+                        />
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+          </div>
+
           <div className="flex justify-between pt-4 border-t border-slate-200 dark:border-slate-800">
             <button
               onClick={() => setCurrentStep(2)}
@@ -3050,10 +3472,50 @@ ${
                 </div>
               </div>
 
-              {/* Bölüm IV */}
+              {/* Bölüm IV: AÇIKLAMALI KEŞİF FOTOĞRAFLARI VE KROKİ ALBÜMÜ */}
+              {fotoAlbumuAktif && fotograflar.length > 0 && (
+                <div className="space-y-3">
+                  <h3 className="font-bold text-xs uppercase border-b border-slate-300 pb-1 flex items-center justify-between">
+                    <span>IV. AÇIKLAMALI KEŞİF FOTOĞRAFLARI VE KROKİ ALBÜMÜ</span>
+                    <span className="text-[10px] font-semibold text-emerald-800 bg-emerald-50 px-2 py-0.5 rounded border border-emerald-200">
+                      Yargıtay Standartı ({fotograflar.length} Adet Tespit & Kroki)
+                    </span>
+                  </h3>
+                  <p className="text-[11px] text-slate-600 leading-relaxed font-sans">
+                    Yargıtay 5. ve 8. Hukuk Daireleri içtihatları ile Adalet Bakanlığı Bilirkişilik Standartları gereğince; keşif mahallinde yapılan incelemelerde tespit edilen fiili durum, toprak profili, sulama altyapısı ve kadastro aplikasyon krokisi yön, çekim tarihi ve ITRF96 / WGS84 koordinatları ile aşağıda belgelenmiştir:
+                  </p>
+
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-3 pt-1">
+                    {fotograflar.map((foto) => (
+                      <div key={foto.id} className="p-3 rounded-lg border border-slate-200 bg-slate-50 text-xs space-y-2">
+                        <img
+                          src={foto.dataUrl}
+                          alt={foto.baslik}
+                          className="w-full h-40 object-cover rounded border border-slate-300"
+                        />
+                        <div className="font-bold text-slate-900 text-xs">{foto.baslik}</div>
+                        <div className="grid grid-cols-2 gap-1 text-[10px] text-slate-700 bg-white p-2 rounded border border-slate-200 font-sans">
+                          <div><span className="text-slate-500">Tarih:</span> <b>{foto.tarih}</b></div>
+                          <div><span className="text-slate-500">Yön:</span> <b>{foto.yon}</b></div>
+                          <div><span className="text-slate-500">WGS84:</span> <span className="font-mono">{foto.wgs84Lat.toFixed(5)}°, {foto.wgs84Lng.toFixed(5)}°</span></div>
+                          <div><span className="text-slate-500">ITRF96:</span> <span className="font-mono text-emerald-700">Y:{foto.itrf96Y?.toLocaleString("tr-TR")}</span></div>
+                        </div>
+                        <p className="text-[11px] text-slate-700 leading-relaxed font-sans border-t border-slate-200 pt-1.5">
+                          {foto.aciklama}
+                        </p>
+                      </div>
+                    ))}
+                  </div>
+                  <p className="text-[10px] text-slate-500 italic">
+                    * Not: Yargıtay bozma ilkeleri gereğince keşif fotoğraflarının yön ve koordinatları keşif tutanağı ile uyumlu olarak rapora dercedilmiştir.
+                  </p>
+                </div>
+              )}
+
+              {/* Bölüm V (veya IV) */}
               <div>
                 <h3 className="font-bold text-xs uppercase border-b border-slate-300 pb-1 mb-2">
-                  IV. BİLİMSEL İNCELEME VE MATEMATİKSEL DEĞERLEME
+                  {secPhoto ? "V" : "IV"}. BİLİMSEL İNCELEME VE MATEMATİKSEL DEĞERLEME
                 </h3>
                 {selectedDava.alan === "tarim" ? (
                   <div className="space-y-3">
@@ -3084,11 +3546,11 @@ ${
                 )}
               </div>
 
-              {/* Bölüm V: FAİZ VE TEMERRÜT TAVSİYE MATRİSİ */}
+              {/* Bölüm VI (veya V): FAİZ VE TEMERRÜT TAVSİYE MATRİSİ */}
               {faizHesabiAktif && (
                 <div className="space-y-2">
                   <h3 className="font-bold text-xs uppercase border-b border-slate-300 pb-1 flex items-center justify-between">
-                    <span>V. FAİZ TÜRÜ VE BAŞLANGIÇ TARİHİ TAVSİYESİ (HÂKİMİN TAKDİRİNE SUNULMAK ÜZERE)</span>
+                    <span>{secPhoto ? "VI" : "V"}. FAİZ TÜRÜ VE BAŞLANGIÇ TARİHİ TAVSİYESİ (HÂKİMİN TAKDİRİNE SUNULMAK ÜZERE)</span>
                     <span className="text-[10px] font-semibold text-emerald-800 bg-emerald-50 px-2 py-0.5 rounded border border-emerald-200">
                       {faizTuru === "ticari_avans"
                         ? "Ticari Temerrüt (Avans) Faizi"
@@ -3138,19 +3600,19 @@ ${
                 </div>
               )}
 
-              {/* Bölüm VI */}
+              {/* Bölüm VII (veya VI) */}
               <div>
                 <h3 className="font-bold text-xs uppercase border-b border-slate-300 pb-1 mb-2">
-                  {faizHesabiAktif ? "VI" : "V"}. HMK 279 UYUMLU SONUÇ VE KANAAT
+                  {secPhoto ? (faizHesabiAktif ? "VII" : "VI") : (faizHesabiAktif ? "VI" : "V")}. HMK 279 UYUMLU SONUÇ VE KANAAT
                 </h3>
                 <p className="whitespace-pre-line">{generatedKanaatMetni}</p>
               </div>
 
-              {/* Bölüm VII: MUHALEFET ŞERHİ (KARŞI OY) */}
+              {/* Bölüm VIII (veya VII): MUHALEFET ŞERHİ (KARŞI OY) */}
               {raporTuru === "heyet_3" && kararTuru === "oycoklugu" && (
                 <div className="p-3.5 rounded-xl border border-amber-300 bg-amber-50/70 text-xs space-y-1.5">
                   <h3 className="font-bold text-amber-900 uppercase tracking-wide border-b border-amber-300 pb-1 flex items-center justify-between">
-                    <span>{faizHesabiAktif ? "VII" : "VI"}. MUHALEFET ŞERHİ (KARŞI OY GEREKÇESİ)</span>
+                    <span>{secPhoto ? (faizHesabiAktif ? "VIII" : "VII") : (faizHesabiAktif ? "VII" : "VI")}. MUHALEFET ŞERHİ (KARŞI OY GEREKÇESİ)</span>
                     <span className="text-[10px] bg-amber-200 px-2 py-0.5 rounded font-bold">
                       Muhalif: {muhalifBilirkisiAdi}
                     </span>
