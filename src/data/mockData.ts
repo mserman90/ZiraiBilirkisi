@@ -1,4 +1,5 @@
 import { CaprazRow, IlkeMadde } from "../types";
+import { TUIK_TARIM_VERITABANI } from "./tuikTarimData";
 
 export const RESMI_ILKELER_STANDARTLAR: IlkeMadde[] = [
   {
@@ -94,11 +95,13 @@ export const RESMI_ILKELER_STANDARTLAR: IlkeMadde[] = [
 ];
 
 export const UFE_RATES: Record<number, number> = {
-  2022: 151.0,
-  2023: 72.5,
-  2024: 65.0,
-  2025: 45.0,
-  2026: 30.0,
+  2020: 21.16,
+  2021: 36.37,
+  2022: 151.03,
+  2023: 52.88,
+  2024: 37.01,
+  2025: 36.01,
+  2026: 28.50,
 };
 
 export const ICTIHAT_DB = [
@@ -166,6 +169,23 @@ export const DATA_DB: Record<string, { urun: string; verim: number; fiyat: numbe
     { urun: "Pamuk", verim: 400, fiyat: 21.0, masraf: 5200 },
   ],
 };
+
+// TÜİK veri havuzundaki tüm resmi il ve ürün cetvellerini DATA_DB haritasına entegre et
+TUIK_TARIM_VERITABANI.forEach((item) => {
+  const key = `${item.il}_${item.yil}`;
+  if (!DATA_DB[key]) {
+    DATA_DB[key] = [];
+  }
+  const existing = DATA_DB[key].find((u) => u.urun.startsWith(item.urun));
+  if (!existing) {
+    DATA_DB[key].push({
+      urun: `${item.urun} (${item.araziTipi})`,
+      verim: item.verimKgDa,
+      fiyat: item.fiyatTlKg,
+      masraf: item.masrafTlDa,
+    });
+  }
+});
 
 export const CAPRAZ_ILCE_LIST = [
   "Edirne Merkez",

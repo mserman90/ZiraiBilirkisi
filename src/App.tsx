@@ -90,6 +90,7 @@ import NdviPanel from "./components/NdviPanel";
 import HayvancilikView from "./components/HayvancilikView";
 import YemlerBeslemeView from "./components/YemlerBeslemeView";
 import HeroView from "./components/HeroView";
+import TarimVeriArsiviView from "./components/TarimVeriArsiviView";
 import {
   UFE_RATES,
   ICTIHAT_DB,
@@ -1638,34 +1639,18 @@ export default function App() {
               </div>
             )}
 
-            {/* VERI ARSIVI */}
+            {/* TÜİK TARIM VERİ ARŞİVİ & ÇEGF & ÜFE */}
             {activeTab === "veriarsivi" && (
-              <div className="bg-white p-6 rounded-2xl border border-slate-200 space-y-4">
-                <h3 className="font-bold flex items-center gap-2"><Database size={18} className="text-blue-600" /> Tarım Verileri Arşivi</h3>
-                <div className="flex gap-2">
-                  <select value={archiveCity} onChange={(e) => setArchiveCity(e.target.value)} className="p-2 border rounded-xl text-xs">
-                    <option>Edirne</option><option>Konya</option><option>Adana</option>
-                  </select>
-                  <select value={archiveYear} onChange={(e) => setArchiveYear(e.target.value)} className="p-2 border rounded-xl text-xs">
-                    <option>2025</option><option>2024</option>
-                  </select>
-                  <button onClick={fetchArchive} className="px-4 py-2 bg-blue-600 text-white rounded-xl font-bold text-xs">Verileri Getir</button>
-                </div>
-                {archiveData && (
-                  <div className="overflow-x-auto">
-                    <table className="w-full text-xs text-left border-collapse">
-                      <thead>
-                        <tr className="bg-slate-100"><th className="p-2 border">Ürün</th><th className="p-2 border">Verim (kg/da)</th><th className="p-2 border">Fiyat (TL)</th><th className="p-2 border">Masraf (TL)</th></tr>
-                      </thead>
-                      <tbody>
-                        {archiveData.map((d, i) => (
-                          <tr key={i} className="border-b"><td className="p-2 border font-bold">{d.urun}</td><td className="p-2 border">{d.verim}</td><td className="p-2 border">{d.fiyat}</td><td className="p-2 border">{d.masraf}</td></tr>
-                        ))}
-                      </tbody>
-                    </table>
-                  </div>
-                )}
-              </div>
+              <TarimVeriArsiviView
+                showToast={showToast}
+                onTransferToWizard={({ netGelir, araziTipi, urunAdi }) => {
+                  setKamuNet(netGelir);
+                  setKamuArazi(araziTipi);
+                  setWizType("kamulastirma");
+                  setActiveTab("sihirbaz");
+                  showToast(`🌾 ${urunAdi} (${netGelir.toLocaleString("tr-TR")} TL/da) Rapor Sihirbazına aktarıldı`);
+                }}
+              />
             )}
 
             {/* TEORİK TEMEL EĞİTİM MODÜLLERİ */}
