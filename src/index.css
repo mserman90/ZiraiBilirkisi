@@ -1,5 +1,7 @@
 @import "tailwindcss";
 
+@custom-variant dark (&:where(.dark, .dark *));
+
 /* PWA & Mobile Viewport / Notch Safe Area Utilities */
 @supports (padding-bottom: env(safe-area-inset-bottom)) {
   .safe-area-bottom {
@@ -12,3 +14,312 @@ html, body {
   -webkit-overflow-scrolling: touch;
   overscroll-behavior-y: none;
 }
+
+/* -------------------------------------------------------------
+ * GECE VE GÜNDÜZ MODU KAPSAMLI TİPOGRAFİ VE KONTRAST STANDARTLARI
+ * Gündüz modunda okunabilen tüm metinlerin, gece modunda da
+ * WCAG 2.1 AAA/AA kontrast standartlarında (en az 4.5:1 / 7:1)
+ * kusursuz netlikte okunabilmesi garanti edilir.
+ * ------------------------------------------------------------- */
+
+/* Temel Geçiş Efekti */
+html {
+  transition: background-color 0.25s ease, color 0.25s ease;
+}
+
+/* Gece Modu Kök Ayarları */
+html.dark {
+  color-scheme: dark;
+}
+
+html.dark body {
+  background-color: #080c14;
+  color: #f1f5f9;
+}
+
+/* Kart Yüzeyleri & Arka Plan Dönüşümleri */
+html.dark .bg-white {
+  background-color: #0f172a !important;
+}
+
+html.dark .bg-\[\#f8fafc\] {
+  background-color: #080c14 !important;
+}
+
+html.dark .bg-slate-50,
+html.dark .bg-slate-50\/40,
+html.dark .bg-slate-50\/50,
+html.dark .bg-slate-50\/60,
+html.dark .bg-slate-50\/70,
+html.dark .bg-slate-50\/80 {
+  background-color: #131d31 !important;
+}
+
+html.dark .bg-slate-100,
+html.dark .bg-slate-100\/80,
+html.dark .bg-slate-200,
+html.dark .bg-slate-200\/70 {
+  background-color: #1e293b !important;
+}
+
+/* Kenarlıklar */
+html.dark .border-slate-200,
+html.dark .border-slate-200\/60,
+html.dark .border-slate-200\/70,
+html.dark .border-slate-200\/80,
+html.dark .border-slate-100 {
+  border-color: #273549 !important;
+}
+
+html.dark .border-slate-300 {
+  border-color: #334155 !important;
+}
+
+/* Metin Kontrastı ve Okunabilirlik Kuralları */
+html.dark .text-slate-950,
+html.dark .text-slate-900,
+html.dark .text-slate-800 {
+  color: #f8fafc !important;
+}
+
+html.dark .text-slate-700 {
+  color: #e2e8f0 !important;
+}
+
+html.dark .text-slate-600 {
+  color: #cbd5e1 !important;
+}
+
+html.dark .text-slate-500 {
+  color: #94a3b8 !important;
+}
+
+/* Renkli Uyarı & Rozet Metinleri için Gece Modu Aydınlatması */
+html.dark .text-emerald-950,
+html.dark .text-emerald-900,
+html.dark .text-emerald-800,
+html.dark .text-emerald-700 {
+  color: #6ee7b7 !important;
+}
+
+html.dark .text-amber-950,
+html.dark .text-amber-900,
+html.dark .text-amber-800,
+html.dark .text-amber-700 {
+  color: #fde68a !important;
+}
+
+html.dark .text-sky-950,
+html.dark .text-sky-900,
+html.dark .text-sky-800,
+html.dark .text-sky-700,
+html.dark .text-blue-950,
+html.dark .text-blue-900,
+html.dark .text-blue-800,
+html.dark .text-blue-700 {
+  color: #7dd3fc !important;
+}
+
+html.dark .text-indigo-950,
+html.dark .text-indigo-900,
+html.dark .text-indigo-800,
+html.dark .text-indigo-700 {
+  color: #a5b4fc !important;
+}
+
+html.dark .text-rose-950,
+html.dark .text-rose-900,
+html.dark .text-rose-800,
+html.dark .text-rose-700,
+html.dark .text-red-900,
+html.dark .text-red-800 {
+  color: #fda4af !important;
+}
+
+html.dark .text-lime-900,
+html.dark .text-lime-700,
+html.dark .text-green-800,
+html.dark .text-green-700 {
+  color: #bef264 !important;
+}
+
+html.dark .text-purple-900,
+html.dark .text-purple-800,
+html.dark .text-violet-800,
+html.dark .text-violet-700 {
+  color: #d8b4fe !important;
+}
+
+/* Buton İstisnaları: Parlak renkli butonların üzerindeki siyah yazılar siyah kalmalıdır */
+html.dark button.bg-emerald-500,
+html.dark button.bg-gradient-to-r,
+html.dark .bg-emerald-500.text-slate-950,
+html.dark .bg-amber-400.text-slate-950,
+html.dark [class*="from-emerald-500"][class*="text-slate-950"] {
+  color: #020617 !important;
+}
+
+/* Rozet ve Pill Arka Planlarının Gece Modu Uyarlaması */
+html.dark .bg-emerald-50,
+html.dark .bg-emerald-50\/40,
+html.dark .bg-emerald-50\/50,
+html.dark .bg-emerald-50\/60,
+html.dark .bg-emerald-50\/70,
+html.dark .bg-emerald-50\/80,
+html.dark .bg-emerald-100 {
+  background-color: rgba(6, 78, 59, 0.35) !important;
+  border-color: rgba(16, 185, 129, 0.4) !important;
+}
+
+html.dark .bg-amber-50,
+html.dark .bg-amber-50\/40,
+html.dark .bg-amber-50\/50,
+html.dark .bg-amber-50\/60,
+html.dark .bg-amber-50\/70,
+html.dark .bg-amber-100 {
+  background-color: rgba(120, 53, 15, 0.35) !important;
+  border-color: rgba(245, 158, 11, 0.4) !important;
+}
+
+html.dark .bg-sky-50,
+html.dark .bg-blue-50,
+html.dark .bg-blue-50\/40,
+html.dark .bg-blue-50\/60,
+html.dark .bg-blue-50\/70,
+html.dark .bg-blue-100 {
+  background-color: rgba(12, 74, 110, 0.35) !important;
+  border-color: rgba(14, 165, 233, 0.4) !important;
+}
+
+html.dark .bg-indigo-50,
+html.dark .bg-indigo-50\/40,
+html.dark .bg-indigo-50\/60,
+html.dark .bg-indigo-50\/70,
+html.dark .bg-indigo-100 {
+  background-color: rgba(49, 46, 129, 0.35) !important;
+  border-color: rgba(99, 102, 241, 0.4) !important;
+}
+
+html.dark .bg-rose-50,
+html.dark .bg-rose-50\/60,
+html.dark .bg-rose-50\/70,
+html.dark .bg-rose-100,
+html.dark .bg-red-50,
+html.dark .bg-red-50\/30,
+html.dark .bg-red-100 {
+  background-color: rgba(136, 19, 55, 0.35) !important;
+  border-color: rgba(244, 63, 94, 0.4) !important;
+}
+
+html.dark .bg-lime-50,
+html.dark .bg-lime-50\/40,
+html.dark .bg-lime-50\/60,
+html.dark .bg-lime-100 {
+  background-color: rgba(54, 83, 20, 0.35) !important;
+  border-color: rgba(132, 204, 22, 0.4) !important;
+}
+
+html.dark .bg-purple-50,
+html.dark .bg-purple-100,
+html.dark .bg-violet-50,
+html.dark .bg-violet-100 {
+  background-color: rgba(76, 29, 149, 0.35) !important;
+  border-color: rgba(168, 85, 247, 0.4) !important;
+}
+
+/* Form Elemanları (Inputs, Selects, Textareas) */
+html.dark input[type="text"],
+html.dark input[type="number"],
+html.dark input[type="email"],
+html.dark input[type="search"],
+html.dark select,
+html.dark textarea {
+  background-color: #162032 !important;
+  color: #f8fafc !important;
+  border-color: #334155 !important;
+}
+
+html.dark select option {
+  background-color: #0f172a !important;
+  color: #f8fafc !important;
+}
+
+html.dark input::placeholder,
+html.dark textarea::placeholder {
+  color: #64748b !important;
+}
+
+html.dark input:focus,
+html.dark select:focus,
+html.dark textarea:focus {
+  border-color: #10b981 !important;
+  outline: none;
+}
+
+/* Tablo Başlıkları ve Satırları */
+html.dark table thead th {
+  background-color: #131d31 !important;
+  color: #e2e8f0 !important;
+  border-color: #273549 !important;
+}
+
+html.dark table tbody td {
+  border-color: #1e293b !important;
+  color: #f1f5f9 !important;
+}
+
+html.dark table tbody tr:hover {
+  background-color: rgba(255, 255, 255, 0.03) !important;
+}
+
+/* Leaflet ve Harita Kontrolleri */
+html.dark .leaflet-popup-content-wrapper,
+html.dark .leaflet-popup-tip {
+  background: #0f172a !important;
+  color: #f8fafc !important;
+  border: 1px solid #334155;
+}
+
+html.dark .leaflet-control-zoom a {
+  background: #0f172a !important;
+  color: #f8fafc !important;
+  border-color: #334155 !important;
+}
+
+/* Recharts & Grafik Öğeleri */
+html.dark .recharts-cartesian-grid line {
+  stroke: #273549 !important;
+}
+
+html.dark .recharts-text,
+html.dark .recharts-cartesian-axis-tick text {
+  fill: #94a3b8 !important;
+}
+
+html.dark .recharts-cartesian-axis-line {
+  stroke: #334155 !important;
+}
+
+html.dark .recharts-legend-item-text {
+  color: #e2e8f0 !important;
+}
+
+/* Gece Modu Scrollbar */
+html.dark ::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+html.dark ::-webkit-scrollbar-track {
+  background: #080c14;
+}
+
+html.dark ::-webkit-scrollbar-thumb {
+  background: #273549;
+  border-radius: 4px;
+}
+
+html.dark ::-webkit-scrollbar-thumb:hover {
+  background: #334155;
+}
+

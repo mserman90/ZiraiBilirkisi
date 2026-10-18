@@ -56,6 +56,7 @@ import {
   Wheat,
   CloudRain,
   Sun,
+  Moon,
   BarChart3,
   CalendarDays,
   Target,
@@ -117,6 +118,39 @@ export default function App() {
     araclar: true,
     egitim: true,
   });
+
+  // Gece / Gündüz Modu (Dark / Light Mode)
+  const [theme, setTheme] = useState<"light" | "dark">(() => {
+    if (typeof window !== "undefined") {
+      const stored = localStorage.getItem("zirai_theme");
+      if (stored === "dark" || stored === "light") return stored;
+      return window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light";
+    }
+    return "light";
+  });
+
+  useEffect(() => {
+    const root = document.documentElement;
+    if (theme === "dark") {
+      root.classList.add("dark");
+      localStorage.setItem("zirai_theme", "dark");
+      const meta = document.querySelector('meta[name="theme-color"]');
+      if (meta) meta.setAttribute("content", "#080c14");
+    } else {
+      root.classList.remove("dark");
+      localStorage.setItem("zirai_theme", "light");
+      const meta = document.querySelector('meta[name="theme-color"]');
+      if (meta) meta.setAttribute("content", "#0f172a");
+    }
+  }, [theme]);
+
+  const toggleTheme = () => {
+    setTheme((prev) => {
+      const next = prev === "dark" ? "light" : "dark";
+      showToast(next === "dark" ? "🌙 Gece Modu Açıldı" : "☀️ Gündüz Modu Açıldı");
+      return next;
+    });
+  };
 
   // PWA & Çevrimdışı Durumları
   const [isOnline, setIsOnline] = useState<boolean>(navigator.onLine);
@@ -1014,10 +1048,10 @@ export default function App() {
   ];
 
   return (
-    <div className="min-h-screen bg-[#f8fafc] text-slate-800 antialiased flex">
+    <div className="min-h-screen bg-[#f8fafc] dark:bg-[#080c14] text-slate-800 dark:text-slate-100 antialiased flex transition-colors duration-200">
       {/* Sidebar */}
       <aside className="w-[280px] bg-[#0f172a] text-white hidden md:flex flex-col shrink-0 shadow-xl z-20">
-        <div className="p-6 border-b border-white/10">
+        <div className="p-5 border-b border-white/10 flex items-center justify-between">
           <div className="flex items-center gap-3">
             <div className="w-9 h-9 rounded-xl bg-emerald-500/20 border border-emerald-500/30 flex items-center justify-center text-emerald-400">
               <Leaf size={20} />
@@ -1027,6 +1061,14 @@ export default function App() {
               <p className="text-[11px] text-emerald-400 font-medium">01 TARIM • 02 HAYVANCILIK</p>
             </div>
           </div>
+          <button
+            onClick={toggleTheme}
+            className="p-2 rounded-xl bg-white/10 hover:bg-white/20 text-slate-300 hover:text-white transition flex items-center justify-center cursor-pointer"
+            title={theme === "dark" ? "Gündüz Moduna Geç" : "Gece Moduna Geç"}
+            aria-label="Gece/Gündüz Modu"
+          >
+            {theme === "dark" ? <Sun size={17} className="text-amber-300" /> : <Moon size={17} className="text-sky-300" />}
+          </button>
         </div>
 
         <nav className="flex-1 overflow-y-auto py-4 px-3 space-y-3">
@@ -1179,6 +1221,47 @@ export default function App() {
 
       {/* Main Content */}
       <main className="flex-1 flex flex-col min-w-0 h-screen overflow-hidden">
+        {/* Desktop Header Top Bar with Theme Toggle */}
+        <header className="hidden md:flex items-center justify-between px-8 py-3.5 border-b border-slate-200/80 bg-white/80 backdrop-blur-md shrink-0 sticky top-0 z-20 shadow-xs">
+          <div className="flex items-center gap-3">
+            <span className="text-[11px] font-bold uppercase tracking-wider text-emerald-600 bg-emerald-50 px-2.5 py-1 rounded-lg border border-emerald-200/60">
+              {activeTab === "hero" ? "Platform" : navItems.find((i) => i.id === activeTab)?.group === "tarim" ? "01 Tarım" : navItems.find((i) => i.id === activeTab)?.group === "hayvancilik" ? "02 Hayvancılık" : navItems.find((i) => i.id === activeTab)?.group === "egitim" ? "Aday Eğitimi" : "Araçlar"}
+            </span>
+            <span className="text-slate-400 text-sm">/</span>
+            <h2 className="text-sm font-bold text-slate-800">
+              {activeTab === "hero" ? "Platform Tanıtımı & Genel Bakış" : navItems.find((i) => i.id === activeTab)?.label || "Bilirkişi Portalı"}
+            </h2>
+          </div>
+
+          <div className="flex items-center gap-3">
+            {/* Gece / Gündüz Modu Butonu */}
+            <button
+              onClick={toggleTheme}
+              className="flex items-center gap-2 px-3 py-1.5 rounded-xl border border-slate-200 bg-slate-50 hover:bg-slate-100 text-xs font-bold text-slate-700 transition shadow-xs cursor-pointer"
+              title={theme === "dark" ? "Gündüz Moduna Geç" : "Gece Moduna Geç"}
+              aria-label="Gece/Gündüz Modu"
+            >
+              {theme === "dark" ? (
+                <>
+                  <Sun size={15} className="text-amber-400" />
+                  <span>Gündüz Modu</span>
+                </>
+              ) : (
+                <>
+                  <Moon size={15} className="text-indigo-600" />
+                  <span>Gece Modu</span>
+                </>
+              )}
+            </button>
+
+            {/* Durum Göstergesi */}
+            <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-slate-50 border border-slate-200 text-[11px] font-medium text-slate-600">
+              <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
+              <span>TÜİK 2026 & HMK 279 Uyumlu</span>
+            </div>
+          </div>
+        </header>
+
         {/* Mobile Header with PWA & Connection status */}
         <header className="md:hidden bg-[#0f172a] text-white px-4 py-3 flex items-center justify-between border-b border-white/10 shrink-0 sticky top-0 z-30 shadow-md">
           <div className="flex items-center gap-2.5">
@@ -1195,6 +1278,16 @@ export default function App() {
           </div>
 
           <div className="flex items-center gap-2">
+            {/* Mobile Gece / Gündüz Butonu */}
+            <button
+              onClick={toggleTheme}
+              className="p-1.5 rounded-lg bg-white/10 hover:bg-white/15 text-slate-200 transition cursor-pointer"
+              title={theme === "dark" ? "Gündüz Modu" : "Gece Modu"}
+              aria-label="Gece/Gündüz Modu"
+            >
+              {theme === "dark" ? <Sun size={17} className="text-amber-300" /> : <Moon size={17} className="text-sky-300" />}
+            </button>
+
             {!isOnline && (
               <span className="flex items-center gap-1 text-[10px] bg-rose-500/20 text-rose-300 border border-rose-500/40 px-2 py-0.5 rounded-full">
                 <WifiOff size={10} /> Çevrimdışı
@@ -1236,6 +1329,27 @@ export default function App() {
                 className="p-1.5 rounded-lg bg-white/10 text-slate-300"
               >
                 <X size={18} />
+              </button>
+            </div>
+
+            {/* Tema Değiştirici Satırı (Mobil) */}
+            <div className="flex items-center justify-between p-3 rounded-xl bg-white/5 border border-white/10">
+              <span className="text-xs text-slate-300 font-medium">Görünüm Teması</span>
+              <button
+                onClick={toggleTheme}
+                className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-white/10 hover:bg-white/20 text-xs font-bold text-white transition cursor-pointer"
+              >
+                {theme === "dark" ? (
+                  <>
+                    <Sun size={14} className="text-amber-300" />
+                    <span>Gündüz Modu</span>
+                  </>
+                ) : (
+                  <>
+                    <Moon size={14} className="text-sky-300" />
+                    <span>Gece Modu</span>
+                  </>
+                )}
               </button>
             </div>
 
