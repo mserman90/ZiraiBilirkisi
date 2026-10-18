@@ -41,6 +41,7 @@ import {
   Beef,
   PawPrint,
   Bird,
+  FileCheck,
 } from "lucide-react";
 import { motion, AnimatePresence } from "motion/react";
 
@@ -64,6 +65,7 @@ import {
 export interface HayvancilikViewProps {
   showToast: (msg: string) => void;
   onGoToWizard: () => void;
+  onGoToReportAutomation?: () => void;
 }
 
 // ÜFE Artış Oranları (Telef Tarihinden Günümüze Endeksleme)
@@ -101,7 +103,11 @@ const YEM_ETIKETLERI: Record<string, { ad: string; kategori: string }> = {
   yumurtaYemi: { ad: "Yumurta Tavuğu Karma Yemi", kategori: "Kanatlı Yemi" },
 };
 
-export default function HayvancilikView({ showToast, onGoToWizard }: HayvancilikViewProps) {
+export default function HayvancilikView({
+  showToast,
+  onGoToWizard,
+  onGoToReportAutomation,
+}: HayvancilikViewProps) {
   // Ana Alt Sekmeler
   const [altSekme, setAltSekme] = useState<"degerleme" | "telef" | "irkDB" | "rehber">("degerleme");
 
@@ -632,49 +638,62 @@ Olay tarihi (${telefYili}) itibarıyla davacının nihai maddi tazminat alacağ�
       </div>
 
       {/* ========================================================= */}
-      {/* 4 ANA SUB-TAB SEÇİCİ */}
+      {/* 4 ANA SUB-TAB SEÇİCİ + HEYET RAPOR OTOMASYONU BUTONU */}
       {/* ========================================================= */}
-      <div className="flex bg-white rounded-2xl p-1.5 border border-slate-200 shadow-sm overflow-x-auto max-w-2xl">
-        <button
-          onClick={() => setAltSekme("degerleme")}
-          className={`flex-1 py-2.5 px-4 rounded-xl text-xs font-bold transition flex items-center justify-center gap-2 whitespace-nowrap ${
-            altSekme === "degerleme"
-              ? "bg-gradient-to-r from-amber-600 to-orange-500 text-white shadow-sm"
-              : "text-slate-600 hover:text-slate-900"
-          }`}
-        >
-          <Calculator size={15} /> Değerleme Sihirbazı
-        </button>
-        <button
-          onClick={() => setAltSekme("telef")}
-          className={`flex-1 py-2.5 px-4 rounded-xl text-xs font-bold transition flex items-center justify-center gap-2 whitespace-nowrap ${
-            altSekme === "telef"
-              ? "bg-gradient-to-r from-amber-600 to-orange-500 text-white shadow-sm"
-              : "text-slate-600 hover:text-slate-900"
-          }`}
-        >
-          <AlertTriangle size={15} /> Telef & Hasar Tazminatı
-        </button>
-        <button
-          onClick={() => setAltSekme("irkDB")}
-          className={`flex-1 py-2.5 px-4 rounded-xl text-xs font-bold transition flex items-center justify-center gap-2 whitespace-nowrap ${
-            altSekme === "irkDB"
-              ? "bg-gradient-to-r from-amber-600 to-orange-500 text-white shadow-sm"
-              : "text-slate-600 hover:text-slate-900"
-          }`}
-        >
-          <Database size={15} /> Irk & Verim Veritabanı
-        </button>
-        <button
-          onClick={() => setAltSekme("rehber")}
-          className={`flex-1 py-2.5 px-4 rounded-xl text-xs font-bold transition flex items-center justify-center gap-2 whitespace-nowrap ${
-            altSekme === "rehber"
-              ? "bg-gradient-to-r from-amber-600 to-orange-500 text-white shadow-sm"
-              : "text-slate-600 hover:text-slate-900"
-          }`}
-        >
-          <BookOpen size={15} /> Rehber & Kontrol Listesi
-        </button>
+      <div className="flex flex-wrap items-center justify-between gap-3">
+        <div className="flex bg-white dark:bg-slate-900 rounded-2xl p-1.5 border border-slate-200 dark:border-slate-800 shadow-sm overflow-x-auto max-w-2xl">
+          <button
+            onClick={() => setAltSekme("degerleme")}
+            className={`flex-1 py-2.5 px-4 rounded-xl text-xs font-bold transition flex items-center justify-center gap-2 whitespace-nowrap min-h-[44px] cursor-pointer ${
+              altSekme === "degerleme"
+                ? "bg-gradient-to-r from-amber-600 to-orange-500 text-white shadow-sm"
+                : "text-slate-600 dark:text-slate-400 hover:text-slate-900"
+            }`}
+          >
+            <Calculator size={15} /> Değerleme Sihirbazı
+          </button>
+          <button
+            onClick={() => setAltSekme("telef")}
+            className={`flex-1 py-2.5 px-4 rounded-xl text-xs font-bold transition flex items-center justify-center gap-2 whitespace-nowrap min-h-[44px] cursor-pointer ${
+              altSekme === "telef"
+                ? "bg-gradient-to-r from-amber-600 to-orange-500 text-white shadow-sm"
+                : "text-slate-600 dark:text-slate-400 hover:text-slate-900"
+            }`}
+          >
+            <AlertTriangle size={15} /> Telef & Hasar Tazminatı
+          </button>
+          <button
+            onClick={() => setAltSekme("irkDB")}
+            className={`flex-1 py-2.5 px-4 rounded-xl text-xs font-bold transition flex items-center justify-center gap-2 whitespace-nowrap min-h-[44px] cursor-pointer ${
+              altSekme === "irkDB"
+                ? "bg-gradient-to-r from-amber-600 to-orange-500 text-white shadow-sm"
+                : "text-slate-600 dark:text-slate-400 hover:text-slate-900"
+            }`}
+          >
+            <Database size={15} /> Irk & Verim Veritabanı
+          </button>
+          <button
+            onClick={() => setAltSekme("rehber")}
+            className={`flex-1 py-2.5 px-4 rounded-xl text-xs font-bold transition flex items-center justify-center gap-2 whitespace-nowrap min-h-[44px] cursor-pointer ${
+              altSekme === "rehber"
+                ? "bg-gradient-to-r from-amber-600 to-orange-500 text-white shadow-sm"
+                : "text-slate-600 dark:text-slate-400 hover:text-slate-900"
+            }`}
+          >
+            <BookOpen size={15} /> Rehber & Kontrol Listesi
+          </button>
+        </div>
+
+        {onGoToReportAutomation && (
+          <button
+            onClick={onGoToReportAutomation}
+            className="flex items-center gap-2 px-5 py-3 rounded-2xl bg-gradient-to-r from-amber-600 via-orange-600 to-amber-700 hover:from-amber-500 hover:to-orange-500 text-white font-bold text-xs shadow-lg shadow-amber-600/25 transition min-h-[44px] cursor-pointer"
+          >
+            <FileCheck size={16} />
+            <span>Adım Adım Heyet Rapor Otomasyonu</span>
+            <ArrowRight size={14} />
+          </button>
+        )}
       </div>
 
       {/* ========================================================= */}

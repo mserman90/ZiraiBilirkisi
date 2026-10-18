@@ -99,6 +99,7 @@ import IctihatAramaView from "./components/IctihatAramaView";
 import RaporOtomasyonuView from "./components/RaporOtomasyonuView";
 import SutUrunleriView from "./components/SutUrunleriView";
 import PwaInstallModal from "./components/PwaInstallModal";
+import HayvancilikRaporOtomasyonuView from "./components/HayvancilikRaporOtomasyonuView";
 import {
   UFE_RATES,
   ICTIHAT_DB,
@@ -1074,6 +1075,7 @@ export default function App() {
     { id: "tarimRaporlar" as TabId, label: "Tarım Örnek Raporları", icon: <FileText size={18} />, group: "tarim", badge: "İÇTİHATLI" },
 
     // 02 Hayvancılık
+    { id: "hayvancilikRaporOtomasyonu" as TabId, label: "Hayvancılık Rapor Otomasyonu", icon: <FileCheck size={18} />, group: "hayvancilik", badge: "YÖNLENDİRMELİ" },
     { id: "hayvancilik" as TabId, label: "02.01 Hayvancılık", icon: <Beef size={18} />, group: "hayvancilik", badge: "YENİ" },
     { id: "yemlerBesleme" as TabId, label: "02.05 Yemler & Besleme", icon: <Wheat size={18} />, group: "hayvancilik", badge: "YENİ" },
     { id: "sutTeknolojisi" as TabId, label: "02.06 Süt & Mandıra", icon: <Milk size={18} />, group: "hayvancilik", badge: "TGK • KRİYOSKOPİ" },
@@ -1911,6 +1913,7 @@ export default function App() {
               <HayvancilikView
                 showToast={showToast}
                 onGoToWizard={() => setActiveTab("sihirbaz")}
+                onGoToReportAutomation={() => setActiveTab("hayvancilikRaporOtomasyonu")}
               />
             )}
 
@@ -1926,7 +1929,7 @@ export default function App() {
             {activeTab === "sutTeknolojisi" && (
               <SutUrunleriView
                 showToast={showToast}
-                onGoToReportAutomation={() => setActiveTab("raporOtomasyonu")}
+                onGoToReportAutomation={() => setActiveTab("hayvancilikRaporOtomasyonu")}
               />
             )}
 
@@ -1938,11 +1941,19 @@ export default function App() {
               />
             )}
 
-            {/* ADIM ADIM REHBERLİ RAPOR OTOMASYONU */}
+            {/* ADIM ADIM REHBERLİ RAPOR OTOMASYONU (TARIM) */}
             {activeTab === "raporOtomasyonu" && (
               <RaporOtomasyonuView
                 showToast={showToast}
                 onGoToWizard={() => setActiveTab("sihirbaz")}
+              />
+            )}
+
+            {/* ADIM ADIM HAYVANCILIK RAPOR OTOMASYONU */}
+            {activeTab === "hayvancilikRaporOtomasyonu" && (
+              <HayvancilikRaporOtomasyonuView
+                showToast={showToast}
+                onGoToWizard={() => setActiveTab("hayvancilik")}
               />
             )}
           </div>

@@ -61,10 +61,19 @@ export default function HeroView({ onSelectTab }: HeroViewProps) {
           <div className="flex flex-wrap items-center gap-3 pt-2">
             <button
               onClick={() => onSelectTab("raporOtomasyonu")}
-              className="flex items-center gap-2.5 px-6 py-3.5 rounded-2xl bg-gradient-to-r from-emerald-500 to-teal-500 text-slate-950 font-bold text-sm hover:from-emerald-400 hover:to-teal-400 shadow-lg shadow-emerald-500/25 transition-all transform hover:-translate-y-0.5"
+              className="flex items-center gap-2.5 px-6 py-3.5 rounded-2xl bg-gradient-to-r from-emerald-500 to-teal-500 text-slate-950 font-bold text-sm hover:from-emerald-400 hover:to-teal-400 shadow-lg shadow-emerald-500/25 transition-all transform hover:-translate-y-0.5 cursor-pointer"
             >
               <FileCheck size={18} />
-              <span>Adım Adım Rapor Otomasyonu</span>
+              <span>01 Tarım Rapor Otomasyonu</span>
+              <ArrowRight size={16} />
+            </button>
+
+            <button
+              onClick={() => onSelectTab("hayvancilikRaporOtomasyonu")}
+              className="flex items-center gap-2.5 px-6 py-3.5 rounded-2xl bg-gradient-to-r from-amber-500 to-orange-500 text-slate-950 font-bold text-sm hover:from-amber-400 hover:to-orange-400 shadow-lg shadow-amber-500/25 transition-all transform hover:-translate-y-0.5 cursor-pointer"
+            >
+              <Beef size={18} />
+              <span>02 Hayvancılık Rapor Otomasyonu</span>
               <ArrowRight size={16} />
             </button>
 

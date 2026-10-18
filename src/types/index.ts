@@ -15,6 +15,7 @@ export type TabId =
   | "tarimRaporlar"
   | "hayvancilikRaporlar"
   | "raporOtomasyonu"
+  | "hayvancilikRaporOtomasyonu"
   | "sutTeknolojisi";
 
 export type IlkeMadde = {
