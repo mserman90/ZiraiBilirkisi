@@ -47,6 +47,9 @@ import {
   Compass,
   Upload,
   Truck,
+  Landmark,
+  Zap,
+  Milk,
 } from "lucide-react";
 import {
   DAVA_TURLERI_DB,
@@ -3926,14 +3929,16 @@ ${
                         setFaizOraniPct(9);
                         setCustomFaizGerekcesi("");
                       }}
-                      className={`p-3 rounded-xl border text-left transition-all text-xs ${
+                      className={`p-3 rounded-xl border text-left transition-all text-xs cursor-pointer ${
                         faizKurali === "kamulastirma_4ay"
                           ? "border-emerald-500 bg-emerald-50/60 dark:bg-emerald-950/40 text-emerald-900 dark:text-emerald-200 font-bold shadow-sm"
                           : "border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-300 hover:border-slate-300"
                       }`}
+                      title="2942 Sayılı Kamulaştırma Kanunu m.10/son: Dava tarihinden 4 ay sonra başlayan yasal faiz"
                     >
                       <div className="flex items-center gap-1.5 font-bold mb-1">
-                        <span>🏛️ Kamulaştırma (2942 m. 10/son)</span>
+                        <Landmark size={14} className="text-emerald-600 dark:text-emerald-400" />
+                        <span>Kamulaştırma (2942 m. 10/son)</span>
                       </div>
                       <p className="text-[11px] text-slate-500 dark:text-slate-400 font-normal">
                         Dava tarihinden 4 ay sonra başlayan yasal faiz.
@@ -3948,14 +3953,16 @@ ${
                         setFaizOraniPct(9);
                         setCustomFaizGerekcesi("");
                       }}
-                      className={`p-3 rounded-xl border text-left transition-all text-xs ${
+                      className={`p-3 rounded-xl border text-left transition-all text-xs cursor-pointer ${
                         faizKurali === "donem_sonu_kademeli"
                           ? "border-emerald-500 bg-emerald-50/60 dark:bg-emerald-950/40 text-emerald-900 dark:text-emerald-200 font-bold shadow-sm"
                           : "border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-300 hover:border-slate-300"
                       }`}
+                      title="TMK m. 995 ve Yargıtay 3. HD: Münavebe ve kira dönem sonlarından itibaren kademeli faiz"
                     >
                       <div className="flex items-center gap-1.5 font-bold mb-1">
-                        <span>🌾 Ecrimisil (TMK m. 995)</span>
+                        <Wheat size={14} className="text-amber-600 dark:text-amber-400" />
+                        <span>Ecrimisil (TMK m. 995)</span>
                       </div>
                       <p className="text-[11px] text-slate-500 dark:text-slate-400 font-normal">
                         Münavebe / dönem sonlarından itibaren kademeli faiz.
@@ -3970,14 +3977,16 @@ ${
                         setFaizOraniPct(9);
                         setCustomFaizGerekcesi("");
                       }}
-                      className={`p-3 rounded-xl border text-left transition-all text-xs ${
+                      className={`p-3 rounded-xl border text-left transition-all text-xs cursor-pointer ${
                         faizKurali === "olay_tarihi"
                           ? "border-emerald-500 bg-emerald-50/60 dark:bg-emerald-950/40 text-emerald-900 dark:text-emerald-200 font-bold shadow-sm"
                           : "border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-300 hover:border-slate-300"
                       }`}
+                      title="TBK m. 117/2: Haksız fiil, yangın, elektrik veya zehirlenme olay/zarar tarihinden itibaren yasal faiz"
                     >
                       <div className="flex items-center gap-1.5 font-bold mb-1">
-                        <span>⚡ Haksız Fiil & Telef (TBK 117/2)</span>
+                        <Zap size={14} className="text-orange-500" />
+                        <span>Haksız Fiil & Telef (TBK 117/2)</span>
                       </div>
                       <p className="text-[11px] text-slate-500 dark:text-slate-400 font-normal">
                         Olay / zarar tarihinden itibaren yasal faiz.
@@ -3992,14 +4001,16 @@ ${
                         setFaizOraniPct(48);
                         setCustomFaizGerekcesi("");
                       }}
-                      className={`p-3 rounded-xl border text-left transition-all text-xs ${
+                      className={`p-3 rounded-xl border text-left transition-all text-xs cursor-pointer ${
                         faizKurali === "temerrut_ihtar"
                           ? "border-emerald-500 bg-emerald-50/60 dark:bg-emerald-950/40 text-emerald-900 dark:text-emerald-200 font-bold shadow-sm"
                           : "border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-300 hover:border-slate-300"
                       }`}
+                      title="TTK m. 9 ve m. 1530: Ticari süt veya yem teslimi temerrüt/ihtar tarihinden itibaren avans faizi"
                     >
                       <div className="flex items-center gap-1.5 font-bold mb-1">
-                        <span>🥛 Ticari Süt/Yem (TTK 9 & 1530)</span>
+                        <Milk size={14} className="text-sky-500" />
+                        <span>Ticari Süt/Yem (TTK 9 & 1530)</span>
                       </div>
                       <p className="text-[11px] text-slate-500 dark:text-slate-400 font-normal">
                         Temerrüt / ihtar tarihinden itibaren avans faizi.

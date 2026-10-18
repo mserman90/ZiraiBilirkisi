@@ -34,6 +34,7 @@ export default function HizliRehberModal({
   const steps = [
     {
       num: 1,
+      icon: <Scale size={15} />,
       title: "Dava Türü & 3'lü Kurul Heyeti",
       subtitle: "Gerekli bilirkişi künyesini ve faiz matrisini oluşturun",
       desc: "Kamulaştırma ve telefat davalarında tek bilirkişi raporu Yargıtay tarafından bozulabilmektedir. Sistemde Ziraat Müh. + Veteriner Hekim / Harita Müh. + Gayrimenkul Değerleme Uzmanından oluşan 3'lü kurul heyetini oluşturun. Varsa muhalefet şerhini ve faiz türünü belirleyin.",
@@ -43,6 +44,7 @@ export default function HizliRehberModal({
     },
     {
       num: 2,
+      icon: <Satellite size={15} />,
       title: "TKGM Parsel & TÜİK Resmi Verileri",
       subtitle: "Koordinat ve resmi dekar maliyetlerini otomatik getirin",
       desc: "Keşif koordinatlarını (ITRF96/WGS84) TKGM'den çekin. Sentinel-2 L2A uydu görüntüleri üzerinden NDVI bitki örtüsü endeksini ve TÜİK resmi il/ilçe ürün maliyet cetvellerini yükleyerek emsalleri çapraz doğrulayın.",
@@ -52,6 +54,7 @@ export default function HizliRehberModal({
     },
     {
       num: 3,
+      icon: <ShieldAlert size={15} />,
       title: "Pre-Flight 10 Nokta Yargıtay Denetimi",
       subtitle: "Raporu UYAP'a sunmadan önce bozma risklerini sıfırlayın",
       desc: "Yargıtay 3, 5 ve 11. Hukuk Dairesi bozma kriterlerini (TBK m.52/55 kurtarma eti mahsubu, münavebe net kâr tenzili, HMK m.279 kusur kelimesi yasağı) tek tıkla taratın. 100 üzerinden skorunuzu alın.",
@@ -61,6 +64,7 @@ export default function HizliRehberModal({
     },
     {
       num: 4,
+      icon: <FileCheck size={15} />,
       title: "Resmi A4 & Word (.doc) / UYAP Çıktısı",
       subtitle: "Adliye formatında antetli heyet raporunu tek tıkla indirin",
       desc: "Hesap tabloları, açıklamalı keşif fotoğrafları albümü, kroki ve faiz tavsiye paragrafını içeren resmi A4 mahkeme raporunuzu doğrudan Word (.doc) veya PDF olarak indirin, UYAP sistemine yükleyin.",
@@ -92,31 +96,34 @@ export default function HizliRehberModal({
           <button
             onClick={onClose}
             className="p-2 rounded-xl bg-white/10 hover:bg-white/20 text-slate-300 hover:text-white transition cursor-pointer"
+            title="Kapat (ESC)"
+            aria-label="Kapat"
           >
             <X size={18} />
           </button>
         </div>
 
-        {/* Adım Seçici Çubuğu */}
+        {/* Adım Seçici Çubuğu - STANDART İKONLAR VE MOUSEOVER TOOLTIPLER */}
         <div className="grid grid-cols-4 border-b border-white/10 bg-black/20 backdrop-blur-lg text-xs">
           {steps.map((s) => (
             <button
               key={s.num}
               onClick={() => setActiveStep(s.num)}
-              className={`p-3 sm:p-4 text-center font-bold transition border-b-2 cursor-pointer flex flex-col sm:flex-row items-center justify-center gap-1.5 ${
+              title={`Adım ${s.num}: ${s.title} — ${s.subtitle}`}
+              className={`p-3 sm:p-4 text-center font-bold transition border-b-2 cursor-pointer flex flex-col sm:flex-row items-center justify-center gap-2 ${
                 activeStep === s.num
                   ? "border-emerald-500 bg-emerald-500/10 text-emerald-300"
                   : "border-transparent text-slate-400 hover:text-white hover:bg-white/5"
               }`}
             >
               <span
-                className={`w-6 h-6 rounded-full flex items-center justify-center text-[11px] font-black shrink-0 ${
+                className={`w-7 h-7 rounded-xl flex items-center justify-center text-xs shrink-0 transition ${
                   activeStep === s.num
-                    ? "bg-emerald-500 text-slate-950"
-                    : "bg-white/10 text-slate-400"
+                    ? "bg-emerald-500 text-slate-950 shadow-xs"
+                    : "bg-white/10 text-slate-300"
                 }`}
               >
-                {s.num}
+                {s.icon}
               </span>
               <span className="truncate hidden sm:inline">{s.title.split("&")[0]}</span>
             </button>

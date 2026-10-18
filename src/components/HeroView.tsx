@@ -23,6 +23,7 @@ import {
   Milk,
   Compass,
   Target,
+  Sprout,
 } from "lucide-react";
 import { TabId } from "../types";
 
@@ -64,6 +65,7 @@ export default function HeroView({ onSelectTab }: HeroViewProps) {
             <button
               onClick={() => onSelectTab("raporOtomasyonu")}
               className="flex items-center gap-2.5 px-6 py-3.5 rounded-2xl bg-gradient-to-r from-emerald-500 to-teal-500 text-slate-950 font-bold text-sm hover:from-emerald-400 hover:to-teal-400 shadow-lg shadow-emerald-500/25 transition-all transform hover:-translate-y-0.5 cursor-pointer"
+              title="6 Adımlı Resmi 01 Tarım Heyet Raporu Otomasyonunu Başlat"
             >
               <FileCheck size={18} />
               <span>01 Tarım Rapor Otomasyonu</span>
@@ -73,6 +75,7 @@ export default function HeroView({ onSelectTab }: HeroViewProps) {
             <button
               onClick={() => onSelectTab("hayvancilikRaporOtomasyonu")}
               className="flex items-center gap-2.5 px-6 py-3.5 rounded-2xl bg-gradient-to-r from-amber-500 to-orange-500 text-slate-950 font-bold text-sm hover:from-amber-400 hover:to-orange-400 shadow-lg shadow-amber-500/25 transition-all transform hover:-translate-y-0.5 cursor-pointer"
+              title="6 Adımlı Resmi 02 Hayvancılık Heyet Raporu Otomasyonunu Başlat"
             >
               <Beef size={18} />
               <span>02 Hayvancılık Rapor Otomasyonu</span>
@@ -81,7 +84,8 @@ export default function HeroView({ onSelectTab }: HeroViewProps) {
 
             <button
               onClick={() => onSelectTab("uyduParsel")}
-              className="flex items-center gap-2 px-5 py-3.5 rounded-2xl bg-white/10 hover:bg-white/15 text-white font-semibold text-sm border border-white/15 backdrop-blur-sm transition"
+              className="flex items-center gap-2 px-5 py-3.5 rounded-2xl bg-white/10 hover:bg-white/15 text-white font-semibold text-sm border border-white/15 backdrop-blur-sm transition cursor-pointer"
+              title="TKGM Ada/Parsel Sınırları ve Sentinel-2 L2A Uydu NDVI Analizini Aç"
             >
               <Satellite size={16} className="text-emerald-400" />
               <span>Uydu Parsel AI</span>
@@ -89,7 +93,8 @@ export default function HeroView({ onSelectTab }: HeroViewProps) {
 
             <button
               onClick={() => onSelectTab("hayvancilik")}
-              className="flex items-center gap-2 px-5 py-3.5 rounded-2xl bg-amber-500/10 hover:bg-amber-500/20 text-amber-300 font-semibold text-sm border border-amber-500/30 backdrop-blur-sm transition"
+              className="flex items-center gap-2 px-5 py-3.5 rounded-2xl bg-amber-500/10 hover:bg-amber-500/20 text-amber-300 font-semibold text-sm border border-amber-500/30 backdrop-blur-sm transition cursor-pointer"
+              title="02.01 Hayvan Yetiştiriciliği Değerleme ve Telef Modülünü Aç"
             >
               <Beef size={16} className="text-amber-400" />
               <span>02.01 Hayvancılık</span>
@@ -97,7 +102,8 @@ export default function HeroView({ onSelectTab }: HeroViewProps) {
 
             <button
               onClick={() => onSelectTab("yemlerBesleme")}
-              className="flex items-center gap-2 px-5 py-3.5 rounded-2xl bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-300 font-semibold text-sm border border-emerald-500/30 backdrop-blur-sm transition"
+              className="flex items-center gap-2 px-5 py-3.5 rounded-2xl bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-300 font-semibold text-sm border border-emerald-500/30 backdrop-blur-sm transition cursor-pointer"
+              title="02.05 Yemler ve Hayvan Besleme Rasyon Modülünü Aç"
             >
               <Wheat size={16} className="text-emerald-400" />
               <span>02.05 Yemler & Besleme</span>
@@ -105,7 +111,8 @@ export default function HeroView({ onSelectTab }: HeroViewProps) {
 
             <button
               onClick={() => onSelectTab("sutTeknolojisi")}
-              className="flex items-center gap-2 px-5 py-3.5 rounded-2xl bg-sky-500/10 hover:bg-sky-500/20 text-sky-300 font-semibold text-sm border border-sky-500/30 backdrop-blur-sm transition"
+              className="flex items-center gap-2 px-5 py-3.5 rounded-2xl bg-sky-500/10 hover:bg-sky-500/20 text-sky-300 font-semibold text-sm border border-sky-500/30 backdrop-blur-sm transition cursor-pointer"
+              title="02.06 Çiğ Süt ve Mandıra Teknolojisi Modülünü Aç"
             >
               <Milk size={16} className="text-sky-400" />
               <span>02.06 Süt & Mandıra</span>
@@ -172,15 +179,23 @@ export default function HeroView({ onSelectTab }: HeroViewProps) {
               <button
                 onClick={() => onSelectTab("raporOtomasyonu")}
                 className="w-full flex items-center justify-between p-2.5 rounded-xl bg-emerald-50 hover:bg-emerald-100 dark:bg-emerald-500/10 dark:hover:bg-emerald-500/20 text-emerald-800 dark:text-emerald-300 text-xs font-bold transition cursor-pointer"
+                title="6 Adımlı Resmi 01 Tarım Heyet Raporu Otomasyonunu Başlat (Word & UYAP)"
               >
-                <span>🌱 01 Tarım Raporu</span>
+                <span className="flex items-center gap-2">
+                  <Sprout size={15} className="text-emerald-600 dark:text-emerald-400" />
+                  <span>01 Tarım Raporu</span>
+                </span>
                 <ArrowRight size={14} />
               </button>
               <button
                 onClick={() => onSelectTab("hayvancilikRaporOtomasyonu")}
                 className="w-full flex items-center justify-between p-2.5 rounded-xl bg-amber-50 hover:bg-amber-100 dark:bg-amber-500/10 dark:hover:bg-amber-500/20 text-amber-800 dark:text-amber-300 text-xs font-bold transition cursor-pointer"
+                title="6 Adımlı Resmi 02 Hayvancılık Heyet Raporu Otomasyonunu Başlat (Telefat & Mahsup)"
               >
-                <span>🥩 02 Hayvancılık Raporu</span>
+                <span className="flex items-center gap-2">
+                  <Beef size={15} className="text-amber-600 dark:text-amber-400" />
+                  <span>02 Hayvancılık Raporu</span>
+                </span>
                 <ArrowRight size={14} />
               </button>
             </div>
@@ -206,8 +221,12 @@ export default function HeroView({ onSelectTab }: HeroViewProps) {
               <button
                 onClick={() => onSelectTab("uyduParsel")}
                 className="w-full flex items-center justify-between p-2.5 rounded-xl bg-sky-50 hover:bg-sky-100 dark:bg-sky-500/10 dark:hover:bg-sky-500/20 text-sky-800 dark:text-sky-300 text-xs font-bold transition cursor-pointer"
+                title="TKGM Ada/Parsel Sınırları ve Sentinel-2 L2A Uydu NDVI Analizini Başlat"
               >
-                <span>Uydu Parsel AI'yi Başlat</span>
+                <span className="flex items-center gap-2">
+                  <Satellite size={15} className="text-sky-600 dark:text-sky-400" />
+                  <span>Uydu Parsel AI'yi Başlat</span>
+                </span>
                 <ArrowRight size={14} />
               </button>
             </div>
@@ -233,8 +252,12 @@ export default function HeroView({ onSelectTab }: HeroViewProps) {
               <button
                 onClick={() => onSelectTab("veriarsivi")}
                 className="w-full flex items-center justify-between p-2.5 rounded-xl bg-emerald-50 hover:bg-emerald-100 dark:bg-emerald-500/10 dark:hover:bg-emerald-500/20 text-emerald-800 dark:text-emerald-300 text-xs font-bold transition cursor-pointer"
+                title="81 İl ve İlçe Resmi TÜİK Ürün Maliyet ve Satış Cetvellerini İncele"
               >
-                <span>Tarım Veri Arşivine Git</span>
+                <span className="flex items-center gap-2">
+                  <Database size={15} className="text-emerald-600 dark:text-emerald-400" />
+                  <span>Tarım Veri Arşivine Git</span>
+                </span>
                 <ArrowRight size={14} />
               </button>
             </div>
@@ -260,15 +283,23 @@ export default function HeroView({ onSelectTab }: HeroViewProps) {
               <button
                 onClick={() => onSelectTab("ictihat")}
                 className="w-full flex items-center justify-between p-2.5 rounded-xl bg-purple-50 hover:bg-purple-100 dark:bg-purple-500/10 dark:hover:bg-purple-500/20 text-purple-800 dark:text-purple-300 text-xs font-bold transition cursor-pointer"
+                title="Yargıtay 3, 5 ve 11. Hukuk Daireleri Emsal Kararlarında Arama Yap"
               >
-                <span>⚖️ İçtihat Arama</span>
+                <span className="flex items-center gap-2">
+                  <Scale size={15} className="text-purple-600 dark:text-purple-400" />
+                  <span>İçtihat Arama</span>
+                </span>
                 <ArrowRight size={14} />
               </button>
               <button
                 onClick={() => onSelectTab("tarayici")}
                 className="w-full flex items-center justify-between p-2.5 rounded-xl bg-slate-50 hover:bg-slate-100 dark:bg-white/5 dark:hover:bg-white/10 text-slate-800 dark:text-slate-200 text-xs font-bold transition cursor-pointer"
+                title="Raporunuzdaki Yasaklı Hukuki Kelimeleri ve Kusur İfadelerini Tara"
               >
-                <span>🔍 HMK 279 Tarayıcı</span>
+                <span className="flex items-center gap-2">
+                  <Microscope size={15} className="text-indigo-600 dark:text-indigo-400" />
+                  <span>HMK 279 Tarayıcı</span>
+                </span>
                 <ArrowRight size={14} />
               </button>
             </div>

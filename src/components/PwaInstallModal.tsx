@@ -170,8 +170,9 @@ export default function PwaInstallModal({
 
           {/* Çevrimdışı & Saha Avantajları */}
           <div className="pt-2 border-t border-slate-100 dark:border-slate-800">
-            <p className="font-bold text-[11px] text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-2.5">
-              📱 PWA & Çevrimdışı Saha Avantajları
+            <p className="font-bold text-[11px] text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-2.5 flex items-center gap-1.5">
+              <Smartphone size={14} className="text-emerald-500" />
+              <span>PWA & Çevrimdışı Saha Avantajları</span>
             </p>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
               <div className="p-2.5 rounded-xl bg-slate-50 dark:bg-slate-800/40 border border-slate-200 dark:border-slate-800 flex items-start gap-2">

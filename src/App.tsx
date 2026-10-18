@@ -70,6 +70,7 @@ import {
   WifiOff,
   Smartphone,
   Milk,
+  UserCheck,
 } from "lucide-react";
 import {
   LineChart,
@@ -1440,13 +1441,13 @@ export default function App() {
             </div>
           </nav>
 
-          {/* Sağ: PWA, Tema, Durum & Profil */}
-          <div className="flex items-center gap-2 sm:gap-2.5 shrink-0">
+          {/* Sağ: PWA, Tema, Durum & Profil - STANDART İKONLAR VE MOUSEOVER TOOLTIPLER */}
+          <div className="flex items-center gap-1.5 sm:gap-2 shrink-0">
             {/* Mobil Arama Butonu */}
             <button
               onClick={() => setCommandPaletteOpen(true)}
               className="md:hidden p-2 rounded-xl bg-white/10 hover:bg-white/15 text-slate-200 cursor-pointer min-h-[36px] min-w-[36px] flex items-center justify-center transition"
-              title="Hızlı Arama (Ctrl + K)"
+              title="Evrensel Arama (Ctrl + K) - Modül, dava türü veya içtihat arayın"
               aria-label="Arama"
             >
               <Search size={16} className="text-emerald-400" />
@@ -1455,11 +1456,11 @@ export default function App() {
             {/* Nasıl Kullanılır? Rehber Butonu */}
             <button
               onClick={() => setHizliRehberOpen(true)}
-              className="flex items-center gap-1.5 px-2.5 sm:px-3 py-1.5 rounded-xl border border-sky-500/30 bg-sky-500/10 hover:bg-sky-500/20 text-xs font-bold text-sky-300 transition shadow-xs cursor-pointer min-h-[36px]"
+              className="p-2 sm:p-2.5 rounded-xl border border-sky-500/30 bg-sky-500/10 hover:bg-sky-500/20 text-sky-300 transition shadow-xs cursor-pointer min-h-[36px] min-w-[36px] flex items-center justify-center"
               title="Platform Nasıl Kullanılır? 4 Adımda Bilirkişi Rehberi (F1)"
+              aria-label="Nasıl Kullanılır?"
             >
-              <BookOpen size={14} className="text-sky-400" />
-              <span className="hidden sm:inline">Nasıl Kullanılır?</span>
+              <BookOpen size={16} className="text-sky-400" />
             </button>
 
             {/* PWA Kurulum Butonu */}
@@ -1471,47 +1472,42 @@ export default function App() {
                   setShowInstallModal(true);
                 }
               }}
-              className="flex items-center gap-1.5 px-2.5 sm:px-3 py-1.5 rounded-xl border border-emerald-500/30 bg-emerald-500/10 hover:bg-emerald-500/20 text-xs font-bold text-emerald-300 transition shadow-xs cursor-pointer min-h-[36px]"
-              title="Zirai Bilirkişi PWA Kurulumu & Çevrimdışı Kullanım"
+              className="p-2 sm:p-2.5 rounded-xl border border-emerald-500/30 bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-300 transition shadow-xs cursor-pointer min-h-[36px] min-w-[36px] flex items-center justify-center"
+              title={isStandalone ? "Zirai Bilirkişi PWA Aktif (Çevrimdışı Kullanım)" : "Uygulamayı Cihazınıza Yükleyin (PWA & Çevrimdışı Çalışır)"}
+              aria-label="Uygulamayı Yükle"
             >
-              <Smartphone size={14} className="text-emerald-400" />
-              <span className="hidden sm:inline">{isStandalone ? "PWA Aktif" : "Uygulamayı Yükle"}</span>
-              <span className="sm:hidden">{isStandalone ? "PWA" : "Yükle"}</span>
+              <Smartphone size={16} className="text-emerald-400" />
             </button>
 
             {/* Gece / Gündüz Modu Butonu */}
             <button
               onClick={toggleTheme}
-              className="flex items-center gap-1.5 px-2.5 sm:px-3 py-1.5 rounded-xl border border-white/10 bg-white/5 hover:bg-white/10 text-xs font-bold text-slate-200 transition shadow-xs cursor-pointer min-h-[36px]"
+              className="p-2 sm:p-2.5 rounded-xl border border-white/10 bg-white/5 hover:bg-white/10 text-slate-200 transition shadow-xs cursor-pointer min-h-[36px] min-w-[36px] flex items-center justify-center"
               title={theme === "dark" ? "Gündüz Moduna Geç" : "Gece Moduna Geç"}
               aria-label="Gece/Gündüz Modu"
             >
               {theme === "dark" ? (
-                <>
-                  <Sun size={15} className="text-amber-400" />
-                  <span className="hidden md:inline">Gündüz</span>
-                </>
+                <Sun size={16} className="text-amber-400" />
               ) : (
-                <>
-                  <Moon size={15} className="text-sky-300" />
-                  <span className="hidden md:inline">Gece</span>
-                </>
+                <Moon size={16} className="text-sky-300" />
               )}
             </button>
 
             {/* Durum Göstergesi (Geniş Ekran) */}
-            <div className="hidden xl:flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-white/5 border border-white/10 text-[11px] font-medium text-slate-300">
-              <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
-              <span>TÜİK 2026 & HMK 279 Uyumlu</span>
+            <div
+              className="hidden xl:flex items-center justify-center p-2 sm:p-2.5 rounded-xl bg-white/5 border border-white/10 text-emerald-400 transition cursor-help min-h-[36px] min-w-[36px]"
+              title="TÜİK 2026 & HMK 279 Resmi Mevzuatına Tam Uyumlu"
+            >
+              <ShieldCheck size={16} className="text-emerald-400" />
             </div>
 
             {/* Bilirkişi Rozeti */}
-            <div className="hidden sm:flex items-center gap-2 pl-2 border-l border-white/10">
+            <div className="hidden sm:flex items-center pl-1 border-l border-white/10">
               <div
-                className="w-8 h-8 rounded-xl bg-emerald-500/20 border border-emerald-500/30 text-emerald-300 font-bold grid place-items-center text-xs shadow-xs"
+                className="w-9 h-9 rounded-xl bg-emerald-500/20 border border-emerald-500/30 text-emerald-300 flex items-center justify-center text-xs shadow-xs cursor-default"
                 title="Ziraat Mühendisi Bilirkişi Profili"
               >
-                ZM
+                <UserCheck size={16} />
               </div>
             </div>
 
@@ -1576,15 +1572,14 @@ export default function App() {
 
           {/* Sağ: Aktif Kategori İçi Hızlı Geçiş Butonları */}
           <div className="flex items-center gap-1.5 shrink-0">
-            {/* Hızlı Arama Butonu */}
+            {/* Hızlı Arama Butonu - Standart İkon ve Tooltip */}
             <button
               onClick={() => setCommandPaletteOpen(true)}
-              className="flex items-center gap-1 px-2.5 py-1 rounded-lg bg-white/5 hover:bg-white/10 text-slate-300 hover:text-white border border-white/10 text-xs transition cursor-pointer font-medium mr-1 shrink-0"
-              title="Evrensel Arama (Ctrl + K)"
+              className="p-1.5 rounded-lg bg-white/5 hover:bg-white/10 text-slate-300 hover:text-white border border-white/10 transition cursor-pointer flex items-center justify-center mr-1 shrink-0"
+              title="Evrensel Arama (Ctrl + K) - Modül, dava türü veya içtihat arayın"
+              aria-label="Arama"
             >
-              <Search size={12} className="text-emerald-400" />
-              <span className="hidden sm:inline">Ara</span>
-              <kbd className="hidden md:inline px-1 py-0.2 rounded bg-white/10 text-[9px] text-slate-400 font-mono">⌘K</kbd>
+              <Search size={14} className="text-emerald-400" />
             </button>
             {currentGroup === "hero" ? (
               <>
