@@ -11,6 +11,7 @@ import { OrnekRapor, HesaplamaPrensibi } from "../types";
 
 export const HESAPLAMA_PRENSIPLERI_REHBERI: Record<string, HesaplamaPrensibi> = {
   kamulastirma_gelir_kapitalizasyonu: {
+    kategori: "tarim",
     baslik: "Gelir Kapitalizasyonu Yöntemiyle Arazi Değer Tespiti",
     kanunVeIctihat: "2942 Sayılı Kamulaştırma Kanunu m.11/f ve Yargıtay 5. HD Yerleşik İçtihatları",
     aciklama: "Tarım arazilerinin kamulaştırma bedeli değerlendirme tarihindeki mevki ve şartlara göre olduğu gibi kullanılması halinde getireceği net gelir üzerinden hesaplanır. Taşınmazın sulu ya da kuru oluşuna göre münavebe planı düzenlenir, resmi İlçe Tarım Müdürlüğü verileri esas alınır.",
@@ -33,6 +34,7 @@ export const HESAPLAMA_PRENSIPLERI_REHBERI: Record<string, HesaplamaPrensibi> = 
   },
 
   irtifak_hakki_ddo: {
+    kategori: "tarim",
     baslik: "Enerji Nakil Hattı & Boru Hattı İrtifak Hakkı Değer Düşüklüğü (DDO)",
     kanunVeIctihat: "2942 Sayılı Kamulaştırma Kanunu m.11/son ve TMMOB ZMO İrtifak Değerleme Kurs Standartları",
     aciklama: "İrtifak hakkı tesisinde kamulaştırma bedeli, irtifak nedeniyle taşınmazın tamamında meydana gelen değer düşüklüğüdür. Ayrıca direk dikilen alan varsa tam mülkiyet olarak kamulaştırılır.",
@@ -54,6 +56,7 @@ export const HESAPLAMA_PRENSIPLERI_REHBERI: Record<string, HesaplamaPrensibi> = 
   },
 
   ecrimisil_kademe_ufe: {
+    kategori: "tarim",
     baslik: "Tarımsal Arazilerde Haksız İşgal Tazminatı (Ecrimisil)",
     kanunVeIctihat: "Yargıtay 3. Hukuk Dairesi Yerleşik Kararları (Örn: 2018/6541 E., 2019/1205 K.)",
     aciklama: "Tarımsal arazilerde ecrimisil belirlenirken, işgalin başladığı ilk dönem için İlçe Tarım resmi verilerine göre münavebe net geliri baz alınır. Takip eden dönemler için her yıl ayrı fiyat araştırması yapılmaz; ilk yıl bedeline TÜİK Tarım-ÜFE oranları kademeli olarak eklenir.",
@@ -73,6 +76,7 @@ export const HESAPLAMA_PRENSIPLERI_REHBERI: Record<string, HesaplamaPrensibi> = 
   },
 
   mahsul_hasari_tasarruf: {
+    kategori: "tarim",
     baslik: "Tarımsal Mahsul Zararı ve Tasarruf Edilen Masrafların Mahsubu",
     kanunVeIctihat: "6098 Sayılı Türk Borçlar Kanunu m.49, 50, 51 ve Yargıtay 3. & 4. HD Kararları",
     aciklama: "Su baskını, yangın, hatalı ilaçlama veya doğal afet sonucu hasara uğrayan tarımsal üründe zarar hesabı, ürünün fenolojik gelişim dönemi dikkate alınarak yapılır. Henüz yapılmamış olan hasat, nakliye, kurutma ve ambalaj masrafları zarardan mutlaka tenzil edilir.",
@@ -92,6 +96,7 @@ export const HESAPLAMA_PRENSIPLERI_REHBERI: Record<string, HesaplamaPrensibi> = 
   },
 
   hayvan_telefi_mahsup: {
+    kategori: "hayvancilik",
     baslik: "Damızlık ve Besi Hayvanı Telefinde Zarar ve Kurtarma Bedeli Mahsubu",
     kanunVeIctihat: "6098 Sayılı TBK m.49/50, Hayvan Sağlığı Zabıtası Mevzuatı ve Yargıtay 3. & 11. HD Kararları",
     aciklama: "Trafik kazası, elektrik çarpması veya zehirlenme sonucu telef olan hayvanlarda tazminat; hayvanın ırkı, yaşı, cinsiyeti, canlı ağırlığı, damızlık vasfı ve yoksun kalınan kâr (süt/cenin) üzerinden hesaplanır. Ancak acil kesimle değerlendirilebilen karkas eti, deri veya sakatat gibi kurtarma (hurda) bedeli ile yedirilmeyen yem masrafı tazminattan düşülür.",
@@ -112,6 +117,7 @@ export const HESAPLAMA_PRENSIPLERI_REHBERI: Record<string, HesaplamaPrensibi> = 
   },
 
   yem_aflatoksin_zarari: {
+    kategori: "hayvancilik",
     baslik: "Kontamine Yem Kaynaklı Verim Kaybı ve İmalatçı Sorumluluğu",
     kanunVeIctihat: "5996 Sayılı Kanun, Yem Hijyeni Yönetmeliği, TBK m.49/71 ve Yargıtay 11. HD Kararları",
     aciklama: "Yem fabrikasınca sağlanan karma yemde yasal limitin üzerinde mikotoksin (özellikle Aflatoksin B1 > 5 ppb) bulunması durumunda üretici ayıplı mal ve kusursuz sorumluluk ilkesi gereği meydana gelen süt verim kaybı, karaciğer harabiyeti, sürüden çıkarma ve imha edilen yem bedelinden sorumludur.",
@@ -129,7 +135,46 @@ export const HESAPLAMA_PRENSIPLERI_REHBERI: Record<string, HesaplamaPrensibi> = 
     ],
   },
 
+  kumes_asfiksi_havalandirma_prensibi: {
+    kategori: "hayvancilik",
+    baslik: "Kanatlı Kümes Asfiksi (Boğulma) ve Jeneratör Arızası Tazminat Hesabı",
+    kanunVeIctihat: "6098 Sayılı TBK m. 49, 71 (Tehlike Sorumluluğu) ve Yargıtay 11. HD Kararları",
+    aciklama: "Etlik piliç (broiler) veya yumurta tavukçuluğu kümeslerinde elektrik kesintisi sonrası yedek jeneratörün otomatik devreye girmemesi veya havalandırma fanlarının kilitlenmesi sonucu meydana gelen toplu asfiksi (karbondioksit/amonyak zehirlenmesi ve oksijensizlik) zararlarında tazminat; piliçlerin yetiştirme gününe ait canlı ağırlık ve entegre firma sözleşme birim bedeli üzerinden hesaplanır.",
+    formulMetni: "Brüt Telefat Bedeli = Telef Piliç Adedi × Günlük Standart Canlı Ağırlık (kg) × Sözleşme Fason/Satış Fiyatı\nTasarruf Edilen Gider = Kalan Kesim Gününe Kadar Tüketilmeyecek Yem Tasarrufu\nİmha & Kireçleme Masrafı = İtlaf ve Gömme İşçiliği\nNet Zarar = Brüt Telefat - Tasarruf Edilen Yem + Çevre İmha Gideri",
+    degiskenler: [
+      { ad: "Telef Piliç Yaşı", tanim: "Ölümün gerçekleştiği kesim öncesi gün (örneğin 38. gün, ortalama 2.45 kg canlı ağırlık)." },
+      { ad: "Tasarruf Edilen Yem", tanim: "Piliçlerin kalan ömründe yemeyeceği rasyon yem maliyetinin mahsubu." },
+    ],
+    yargitayKriterleri: [
+      "Elektrik dağıtım şirketi kesinti kayıtları ile çiftlik jeneratör bakım defterleri karşılaştırılmalıdır.",
+      "İlçe Tarım Müdürlüğü veteriner hekimlerinin keşifte tanzim ettiği resmi itlaf ve nekropsi zaptı esastır.",
+    ],
+    dikkatEdilecekler: [
+      "Telef piliçlerin derhal açılan çukurlara gömülüp kireçlendiğine dair çevre sağlığı tutanağı aranmalıdır.",
+    ],
+  },
+
+  sut_mandira_ayip_prensibi: {
+    kategori: "hayvancilik",
+    baslik: "Çiğ Süt Kalite Ayıbı (Kriyoskopi / Su Katılması) ve Peynir Randıman Kaybı",
+    kanunVeIctihat: "6102 Sayılı TTK m. 23, 6098 Sayılı TBK m. 219 ve Türk Gıda Kodeksi Çiğ Süt Tebliği",
+    aciklama: "Mandıra ve süt işleme tesislerine teslim edilen çiğ sütlerde yapılan laboratuvar testlerinde donma noktasının (kriyoskopi) -0.520°C'den daha yüksek çıkması (su katılması hilesi), asitliğin 8 °SH üzerine çıkması veya yüksek somatik hücre sayısı (>400.000) nedeniyle peynir randımanında meydana gelen düşüklük ve bozulmalar ticari ayıp kapsamında tazminata konu edilir.",
+    formulMetni: "Katılan Su Oranı (%) = [(-0.520 - Ölçülen Donma Noktası) / -0.520] × 100\nRandıman Kaybı = Normalde Gereken Süt Miktarı (kg) - Fiilen Harcanan Süt Miktarı (kg)\nToplam Alacak = (Hileli Su Oranı × Toplam Süt Litresi × Süt Fiyatı) + Randıman Düşüşü Maliyet Farkı",
+    degiskenler: [
+      { ad: "Kriyoskopi Eşiği", tanim: "TGK standardı gereği saf inek sütü donma noktası azami -0.520°C olmalıdır." },
+      { ad: "Kaşar Randımanı", tanim: "Standart 1 kg taze kaşar için 8.5 - 9.0 kg çiğ süt gerekir." },
+    ],
+    yargitayKriterleri: [
+      "TTK m. 23/1-c gereği teslim anında muayene ve ihbar sürelerine (2 gün / 8 gün) riayet edilip edilmediği araştırılmalıdır.",
+      "Numune alma tutanaklarının çiftlik temsilcisi ve mandıra laboratuvar sorumlusu tarafından müştereken imzalanmış olması gerekir.",
+    ],
+    dikkatEdilecekler: [
+      "Asitlik (SH) yükselmiş ekşimiş sütlerin pastörizasyonda kesilme riski ve yoğurt/peynir mayalanma ziyanı hesaplanmalıdır.",
+    ],
+  },
+
   kadastro_zilyetlik_hava_fotografi: {
+    kategori: "tarim",
     baslik: "Zilyetlikle Mülkiyet İktisabı ve Stereoskopik Hava Fotoğrafı Analizi",
     kanunVeIctihat: "3402 Sayılı Kadastro Kanunu m.14 ve Yargıtay 16. HD (2014/15312 E., 2017/4943 K.)",
     aciklama: "Belgesiz zilyetlik yoluyla kazanılabilecek tarım arazisi miktarı aynı çalışma alanı içerisinde sulu toprakta azami 40 dönüm, kuru toprakta 100 dönüm ile sınırlıdır. İmar ve ihyanın tamamlandığı tarih ile zilyetliğin başlangıcı Harita Genel Komutanlığı'ndan getirtilen en az 3 farklı tarihe ait (15, 20 ve 25 yıl öncesi) stereoskopik çift hava fotoğraflarının 3 boyutlu incelenmesiyle tespit edilir.",
@@ -148,6 +193,7 @@ export const HESAPLAMA_PRENSIPLERI_REHBERI: Record<string, HesaplamaPrensibi> = 
   },
 
   tarsim_don_dolu_itiraz: {
+    kategori: "tarim",
     baslik: "TARSİM Sigorta Hasar Tespiti ve Ovaryum Nekroz Sayımı",
     kanunVeIctihat: "5363 Sayılı Tarım Sigortaları Kanunu ve Yargıtay 11. HD (2019/3314 E., 2020/5120 K.)",
     aciklama: "TARSİM tarım sigortası kapsamında meydana gelen don veya dolu hasarlarında sigorta eksperinin düzenlediği rapor kesin delil niteliğinde değildir. Mahkemece atanan ziraat bilirkişi heyetinin parselde bizzat yaptığı fenolojik inceleme ve rastgele örnekleme ile tespit ettiği hasar oranı üstündür.",
@@ -166,6 +212,7 @@ export const HESAPLAMA_PRENSIPLERI_REHBERI: Record<string, HesaplamaPrensibi> = 
   },
 
   munferit_agac_amortisman: {
+    kategori: "tarim",
     baslik: "Münferit Meyve Ağaçlarında Amortismanlı Değerleme (Maktu Değer)",
     kanunVeIctihat: "6098 Sayılı TBK m.49 ve TMMOB Ziraat Mühendisleri Odası Ağaç Değerleme Cetvelleri",
     aciklama: "Tarla veya bahçe içinde kapama niteliğinde olmayan münferit meyve ağaçlarının haksız fiil sonucu kesilmesi veya zarar görmesi durumunda ağacın cinsine, yaşına ve ekonomik ömrüne göre amortismanlı maktu değeri hesaplanır.",
@@ -184,6 +231,7 @@ export const HESAPLAMA_PRENSIPLERI_REHBERI: Record<string, HesaplamaPrensibi> = 
   },
 
   kuruyan_agac_4devre_prensibi: {
+    kategori: "tarim",
     baslik: "Meyve Ağaçlarında 4 Devre Değerleme ve Kuruyan Ağaç Tazminatı (ZMO Normları)",
     kanunVeIctihat: "TMMOB ZMO Bilirkişi Rehberi (Doç. Dr. Z. Gökalp Mülayim), TBK m. 49/50 ve Yargıtay 5. HD Kararları",
     aciklama: "Meyve ağaçlarının hayatı 4 evreye ayrılır: 1. Tesis Devresi (gelir metodu uygulanamaz; birikimli fidan, dikim, sulama ve bakım maliyeti esastır), 2. Artış Devresi (artan verim eğrisi), 3. Normal Mahsul Devresi (tam verim çağı, gelir kapitalizasyonu), 4. Eksiliş Devresi (yaşlılık ve odun değeri). Kuruyan/kesilen ağaçlarda tazminat: Kalan ekonomik ömür boyunca yoksun kalınan net gelir - tasarruf edilen bakım masrafları + odun/hurda bedeli formülüyle hesaplanır.",
@@ -203,6 +251,7 @@ export const HESAPLAMA_PRENSIPLERI_REHBERI: Record<string, HesaplamaPrensibi> = 
   },
 
   kismi_kamulastirma_m12_prensibi: {
+    kategori: "tarim",
     baslik: "Kısmi Kamulaştırma ve Artık Parsel Değer Azalışı (2942 s.K. m. 12)",
     kanunVeIctihat: "2942 Sayılı Kamulaştırma Kanunu m. 12, Yargıtay 5. HD ve TMMOB ZMO Normları",
     aciklama: "Taşınmazın bir kısmının kamulaştırılması halinde; yol veya kanalın parseli bölmesi nedeniyle arta kalan parçalarda geometrik şekil bozukluğu, mekanizasyon (traktör manevra) kısıtlılığı ve sulama şebekesinden kopma oluşuyorsa arta kalan kısımdaki değer azalışı kamulaştırma bedeline eklenir. Artık kısım ekonomik tarıma elverişsiz hale gelirse malikin tamamının kamulaştırılmasını talep hakkı doğar.",
@@ -221,6 +270,7 @@ export const HESAPLAMA_PRENSIPLERI_REHBERI: Record<string, HesaplamaPrensibi> = 
   },
 
   ek_rapor_secenekli_tablo_prensibi: {
+    kategori: "tarim",
     baslik: "İtirazlara Karşı Kademeli ve Seçenekli Ek Bilirkişi Raporu Tanzimi",
     kanunVeIctihat: "HMK m. 281, 6754 sayılı Bilirkişilik Kanunu m. 3 ve Adalet Bakanlığı Bilirkişilik Rehber İlkeleri m. 30",
     aciklama: "Mahkemenin ara kararı ile taraf itirazlarının karşılanması istendiğinde; bilirkişi itirazları tek tek alt başlıklar altında inceler, bilimsel ve teknik gerekçesini sunar ve hâkime takdir alanı bırakmak üzere 'Kök Rapor', 'Davacı İddiası' ve 'Davalı Savunması' doğrultusunda seçenekli ve kademeli hesap cetveli sunar.",
@@ -239,6 +289,7 @@ export const HESAPLAMA_PRENSIPLERI_REHBERI: Record<string, HesaplamaPrensibi> = 
   },
 
   zirai_yapi_amortisman_prensibi: {
+    kategori: "tarim",
     baslik: "Zirai Binalar, Sera ve Çiftlik Tesisleri Amortisman Hesabı",
     kanunVeIctihat: "Çevre, Şehircilik ve İklim Değişikliği Bakanlığı Yapı Birim Maliyetleri ve TMMOB ZMO Amortisman Cetvelleri",
     aciklama: "Tarım arazisi üzerindeki zirai binalar (ahır, samanlık, silo), seralar (cam, plastik tünel), sulama tesisleri ve derin kuyuların değeri; keşif tarihindeki yapı yaklaşık birim maliyeti üzerinden hesaplanan yeniden inşa bedelinden yaşa bağlı yıpranma payının (amortisman) düşülmesiyle bulunur.",
@@ -257,6 +308,7 @@ export const HESAPLAMA_PRENSIPLERI_REHBERI: Record<string, HesaplamaPrensibi> = 
   },
 
   gecit_hakki_zirai_prensibi: {
+    kategori: "tarim",
     baslik: "Tarımsal Taşınmazlarda Zorunlu Geçit Hakkı Bedeli Hesabı (TMK m. 747)",
     kanunVeIctihat: "Türk Medeni Kanunu m. 747 ve Yargıtay 14. HD (Hukuk Genel Kurulu 2017/14-1602 E., 2019/560 K.)",
     aciklama: "Genel yola çıkışı bulunmayan veya çıkışı yetersiz olan tarımsal taşınmaz lehine komşu parselden zorunlu geçit hakkı kurulurken; geçit güzergahının en az zarar verecek şekilde parsel sınırından geçirilmesi, yolun genişliği (traktör ve biçerdöver geçişi için asgari 3 - 3.5 metre) ve yüklü taşınmazda meydana gelen mülkiyet ve verim değer kaybı tam olarak karşılanmalıdır.",
@@ -1845,6 +1897,66 @@ export const ORNEK_RAPORLAR_DB: OrnekRapor[] = [
     toplamTazminatTL: 280500.00,
     sonucVeKanaatMetni: "3573 sayılı Zeytinciliğin Islahı ve Yabanilerinin Aşılattırılması Hakkında Kanun'un 20. maddesi amir hükmü uyarınca zeytinlik sahalara 3 km'den daha yakın mesafede kimyevi atık, toz ve duman çıkaran tesis yapılamayacağı ve işletilemeyeceği; taş ocağı tozunun zeytin yapraklarındaki stomaları tıkaması sebebiyle fotosentezin durduğu ve %55 rekolte kaybı oluşturduğu, 2 yıllık dönem için toplam 280.500 TL net maddi tazminatın tahsili gerektiği heyetimizce teknik olarak saptanmıştır.",
     bilirkisiHeyeti: ["Prof. Dr. Zafer M. (Zeytin ve Zeytinyağı Teknolojisi)", "Zir. Yük. Müh. Canan K."],
+  },
+
+  {
+    id: "hayvancilik-08-cig-sut-kriyoskopi-ve-mandira-alacak",
+    kategori: "hayvancilik",
+    altKategori: "sut_kalite_ayip",
+    baslik: "Mandıraya Teslim Edilen Çiğ Sütte Su Katılması (Kriyoskopi -0.485°C Ayıbı) ve Kaşar Randıman Kaybı Alacak Davası",
+    etiket: "TGK Çiğ Süt • Kriyoskopi • SH Asitlik • TTK m.23",
+    mahkeme: "Balıkesir 1. Asliye Hukuk Mahkemesi (Asliye Ticaret Mahkemesi Sıfatıyla)",
+    dosyaNo: "2024/491 Esas",
+    davaTuru: "Ayıplı Çiğ Süt Teslimi Kaynaklı Peynir Randıman Kaybı ve Hileli Su Bedeli Alacağı (TTK m. 23, TBK m. 219)",
+    kesifTarihi: "18.06.2024",
+    ozet: "Davacı mandıra işletmesi ile davalı süt üreticileri kooperatifi arasındaki çiğ süt alım sözleşmesi kapsamında teslim edilen 180.000 litre sütte yapılan laboratuvar analizlerinde donma noktasının (kriyoskopi) -0.485°C'ye yükseldiği (%7.8 su katılması), asitliğin 9.2 °SH çıktığı ve kaşar randımanının düştüğü iddiasıyla açılan tazminat davası incelemesi.",
+    iddiaVeSavunma: {
+      davaciIstem: "Davacı mandıra işletmecisi, teslim edilen sütlerin sulandırıldığını, 1 kg taze kaşar için gereken süt miktarının 8.5 kg'dan 10.8 kg'a çıktığını, 520.000 TL zararının tazminini talep etmiştir.",
+      davaliSavunma: "Davalı kooperatif, sütlerin soğutma tanklarında usulüne uygun saklandığını, mandıranın teslim anında şahit numune almadığını ve donma noktası ölçüm cihazının kalibrasyonsuz olduğunu savunmuştur.",
+      uyusmazlikNoktasi: "TGK Çiğ Süt Tebliği kriyoskopi sınırları (-0.520°C), akredite laboratuvar analiz sonuçları, su katılması oranı ve kaşar randıman kaybı hesabı.",
+    },
+    hesaplamaPrensibi: HESAPLAMA_PRENSIPLERI_REHBERI.sut_mandira_ayip_prensibi,
+    teknikVeriler: [
+      { etiket: "Teslim Edilen Toplam Süt", deger: 180000, birim: "Litre (Çiğ İnek Sütü)" },
+      { etiket: "Sözleşme Litre Satış Fiyatı", deger: 14.50, birim: "TL/Litre (USK Referans + Prim)" },
+      { etiket: "Ortalama Kriyoskopi (Donma Noktası)", deger: "-0.485 °C (Yasal Sınır: -0.520 °C)" },
+      { etiket: "Tespit Edilen Katma Su Oranı", deger: "%6.73 Su İlavesi (Kriyoskopik Formül)" },
+      { etiket: "Normal Kaşar Randımanı", deger: "8.50 Litre Süt / 1 kg Kaşar" },
+      { etiket: "Fiili Gerçekleşen Randıman", deger: "10.45 Litre Süt / 1 kg Kaşar (Randıman Kaybı %22.9)" },
+    ],
+    hesaplamaAdimlari: [
+      {
+        adimNo: 1,
+        adimAdi: "Hileli Su Hacmi ve Haksız Ödenen Bedel",
+        islem: "180.000 Litre × %6.73 su = 12.114 Litre Su | 12.114 L × 14,50 TL",
+        sonuc: "175.653,00 TL",
+        aciklama: "Süt yerine teslim edilen hileli su için mandıra tarafından fazladan ödenen net bedeldir.",
+      },
+      {
+        adimNo: 2,
+        adimAdi: "Eksik Üretilen Kaşar Peyniri Miktarı",
+        islem: "Normalde: 180.000 / 8.5 = 21.176 kg | Fiilen: 180.000 / 10.45 = 17.225 kg | Fark: 3.951 kg Kaşar",
+        sonuc: "3.951 kg Eksik Kaşar Üretimi",
+        aciklama: "Kazein seyreltisi ve asitlik bozulması nedeniyle mayalanmayan ve peynir altı suyuna kaçan net randıman ziyanıdır.",
+      },
+      {
+        adimNo: 3,
+        adimAdi: "Randıman Kaybı Parasal Değeri",
+        islem: "3.951 kg × 185,00 TL/kg Toptan Kaşar Fiyatı - 75.000 TL Tasarruf Edilen Ambalaj/Mayalama Gideri",
+        sonuc: "265.935,00 TL",
+        aciklama: "Tasarruf edilen kültür, maya, tuzlama ve vakum poşet giderleri TBK m. 52/55 uyarınca mahsup edilmiştir.",
+      },
+      {
+        adimNo: 4,
+        adimAdi: "Toplam Tazminat ve Fiyat Tenzili",
+        islem: "175.653,00 TL (Su Bedeli) + 265.935,00 TL (Net Randıman Kaybı)",
+        sonuc: "441.588,00 TL",
+        aciklama: "Davalının davacı mandıraya ödemesi gereken nihai ayıp tazminatı ve fiyat tenzili tutarıdır.",
+      },
+    ],
+    toplamTazminatTL: 441588.00,
+    sonucVeKanaatMetni: "TGK Çiğ Süt Tebliği'ne göre saf inek sütü donma noktasının -0.520 °C'den yüksek olamayacağı; Balıkesir İl Gıda Kontrol Laboratuvarı'nın mühürlü numuneler üzerinde yaptığı kriyoskopik analizde ortalama -0.485 °C bulunarak süte %6.73 oranında su katıldığının kesinleştiği; bu durumun kazein proteinini seyrelterek kaşar peyniri randımanını 1 kg peynir için 8.5 litreden 10.45 litreye düşürdüğü; TTK m. 23 ve TBK m. 219 hükümleri gereğince 175.653 TL su fazlalığı ve 265.935 TL randıman ziyanı olmak üzere toplam 441.588 TL tazminatın davalı kooperatiften tahsili gerektiği heyetimizce oybirliğiyle mütalaa olunur.",
+    bilirkisiHeyeti: ["Prof. Dr. Selami K. (Süt Teknolojisi / Gıda Müh.)", "Zir. Yük. Müh. Murat D."],
   },
 ];
 

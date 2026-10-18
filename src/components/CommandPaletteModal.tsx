@@ -83,11 +83,11 @@ const SEARCH_ITEMS: SearchItem[] = [
   {
     id: "tarim-ornek",
     tabId: "tarimRaporlar",
-    title: "Tarım Örnek Raporları Kütüphanesi",
+    title: "01 Tarım Örnek Raporları Kütüphanesi",
     category: "01 Tarım",
-    description: "Yargıtay 5. ve 3. Hukuk Dairesi onaylı emsal kamulaştırma ve ecrimisil raporları.",
-    keywords: ["örnek", "emsal", "rapor", "metin", "şablon", "kamulaştırma örneği", "ecrimisil örneği"],
-    badge: "İÇTİHATLI",
+    description: "Yargıtay 5. ve 3. Hukuk Dairesi onaylı 17 emsal kamulaştırma, ecrimisil, irtifak ve mahsul raporu.",
+    keywords: ["örnek", "emsal", "rapor", "metin", "şablon", "kamulaştırma örneği", "ecrimisil örneği", "irtifak örneği"],
+    badge: "17 RAPOR",
     icon: <FileText size={18} className="text-emerald-400" />,
   },
 
@@ -125,11 +125,11 @@ const SEARCH_ITEMS: SearchItem[] = [
   {
     id: "hayvan-ornek",
     tabId: "hayvancilikRaporlar",
-    title: "Hayvancılık Örnek Raporları",
+    title: "02 Hayvancılık & Yem Örnek Raporları",
     category: "02 Hayvancılık",
-    description: "Elektrik çarpması, trafik kazası, yem toksin ve mandıra alacak davaları tam metin raporları.",
-    keywords: ["hayvancılık örneği", "telef örneği", "yem davası", "elektrik çarpması raporu"],
-    badge: "İÇTİHATLI",
+    description: "Elektrik çarpması, telefat, aflatoksinli yem, kümes asfiksi ve mandıra süt ayıpları 8 emsal raporu.",
+    keywords: ["hayvancılık örneği", "telef örneği", "yem davası", "elektrik çarpması raporu", "kriyoskopi", "mandıra"],
+    badge: "8 RAPOR",
     icon: <FileCheck size={18} className="text-amber-400" />,
   },
 

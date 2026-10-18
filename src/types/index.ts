@@ -144,6 +144,7 @@ export type TarsimData = {
 };
 
 export interface HesaplamaPrensibi {
+  kategori?: "tarim" | "hayvancilik";
   baslik: string;
   kanunVeIctihat: string;
   aciklama: string;

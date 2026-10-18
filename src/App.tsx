@@ -1103,14 +1103,14 @@ export default function App() {
     { id: "raporOtomasyonu" as TabId, label: "Adım Adım Rapor Otomasyonu", icon: <FileCheck size={16} />, group: "tarim", badge: "YÖNLENDİRMELİ", desc: "6 adımlı rehberli A4/Word raporu" },
     { id: "sihirbaz" as TabId, label: "01.05 Zirai Değerleme (Sihirbaz)", icon: <Wand2 size={16} />, group: "tarim", badge: "KFO / ODA", desc: "Kamulaştırma, ecrimisil, irtifak, ağaç" },
     { id: "veriarsivi" as TabId, label: "Tarım Veri Arşivi", icon: <Database size={16} />, group: "tarim", desc: "81 il resmi TÜİK maliyet & verim" },
-    { id: "tarimRaporlar" as TabId, label: "Tarım Örnek Raporları", icon: <FileText size={16} />, group: "tarim", badge: "İÇTİHATLI", desc: "Yargıtay onaylı emsal bilirkişi raporları" },
+    { id: "tarimRaporlar" as TabId, label: "Tarım Örnek Raporları", icon: <FileText size={16} />, group: "tarim", badge: "17 RAPOR", desc: "17 emsal kamulaştırma, ecrimisil ve mahsul raporu" },
 
     // 02 Hayvancılık
     { id: "hayvancilikRaporOtomasyonu" as TabId, label: "Hayvancılık Rapor Otomasyonu", icon: <FileCheck size={16} />, group: "hayvancilik", badge: "YÖNLENDİRMELİ", desc: "6 adımlı heyet raporu & TBK 55 mahsup" },
     { id: "hayvancilik" as TabId, label: "02.01 Hayvancılık", icon: <Beef size={16} />, group: "hayvancilik", badge: "YENİ", desc: "Büyükbaş, küçükbaş, kanatlı değerleme & telef" },
     { id: "yemlerBesleme" as TabId, label: "02.05 Yemler & Besleme", icon: <Wheat size={16} />, group: "hayvancilik", badge: "YENİ", desc: "Rasyon hesabı, kalite & yem hasarı" },
     { id: "sutTeknolojisi" as TabId, label: "02.06 Süt & Mandıra", icon: <Milk size={16} />, group: "hayvancilik", badge: "TGK • KRİYOSKOPİ", desc: "Çiğ süt, mandıra randıman, kalite & ayıp" },
-    { id: "hayvancilikRaporlar" as TabId, label: "Hayvancılık Örnek Raporları", icon: <FileCheck size={16} />, group: "hayvancilik", badge: "İÇTİHATLI", desc: "Yargıtay 3. & 11. HD emsal telefat raporları" },
+    { id: "hayvancilikRaporlar" as TabId, label: "Hayvancılık Örnek Raporları", icon: <FileCheck size={16} />, group: "hayvancilik", badge: "8 RAPOR", desc: "8 emsal telefat, mikotoksin ve mandıra raporu" },
 
     // Araçlar
     { id: "aiAsistan" as TabId, label: "AI Saha Asistanı", icon: <MessageSquare size={16} />, group: "araclar", badge: "Meta AI", desc: "Keşif esnası mevzuat & formül danışmanı" },
@@ -2146,8 +2146,10 @@ export default function App() {
             {/* 01 TARIM ÖRNEK RAPORLARI */}
             {activeTab === "tarimRaporlar" && (
               <OrnekRaporlarView
+                key="tarimRaporlar"
                 showToast={showToast}
-                defaultCategory="tarim"
+                categoryLock="tarim"
+                onSwitchCategory={(tab) => setActiveTab(tab)}
                 onTransferToWizard={({ netGelir, araziTipi, urunAdi }) => {
                   setKamuNet(netGelir);
                   setKamuArazi(araziTipi);
@@ -2202,8 +2204,10 @@ export default function App() {
             {/* 02 HAYVANCILIK & YEM ÖRNEK RAPORLARI */}
             {activeTab === "hayvancilikRaporlar" && (
               <OrnekRaporlarView
+                key="hayvancilikRaporlar"
                 showToast={showToast}
-                defaultCategory="hayvancilik"
+                categoryLock="hayvancilik"
+                onSwitchCategory={(tab) => setActiveTab(tab)}
               />
             )}
 

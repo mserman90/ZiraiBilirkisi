@@ -340,8 +340,8 @@ export default function HeroView({ onSelectTab }: HeroViewProps) {
                 className="flex items-center justify-between p-3 rounded-xl bg-emerald-50/70 hover:bg-emerald-100/70 border border-emerald-200 text-left transition group"
               >
                 <div>
-                  <p className="text-xs font-bold text-emerald-950 group-hover:text-emerald-800">Örnek Raporlar</p>
-                  <p className="text-[11px] text-emerald-700">İçtihatlı tam metinler</p>
+                  <p className="text-xs font-bold text-emerald-950 group-hover:text-emerald-800">01 Tarım Raporları</p>
+                  <p className="text-[11px] text-emerald-700">17 Emsal içtihatlı metin</p>
                 </div>
                 <ArrowRight size={14} className="text-emerald-600 transition" />
               </button>
@@ -397,8 +397,8 @@ export default function HeroView({ onSelectTab }: HeroViewProps) {
                 className="flex items-center justify-between p-3 rounded-xl bg-amber-50/70 hover:bg-amber-100/70 border border-amber-200 text-left transition group"
               >
                 <div>
-                  <p className="text-xs font-bold text-amber-950 group-hover:text-amber-800">Örnek Raporlar</p>
-                  <p className="text-[11px] text-amber-700">Telef, zehirlenme, yem</p>
+                  <p className="text-xs font-bold text-amber-950 group-hover:text-amber-800">02 Hayvancılık Raporları</p>
+                  <p className="text-[11px] text-amber-700">8 Emsal telef & mandıra</p>
                 </div>
                 <ArrowRight size={14} className="text-amber-600 transition" />
               </button>
