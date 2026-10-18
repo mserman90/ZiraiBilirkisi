@@ -100,6 +100,8 @@ import RaporOtomasyonuView from "./components/RaporOtomasyonuView";
 import SutUrunleriView from "./components/SutUrunleriView";
 import PwaInstallModal from "./components/PwaInstallModal";
 import HayvancilikRaporOtomasyonuView from "./components/HayvancilikRaporOtomasyonuView";
+import CommandPaletteModal from "./components/CommandPaletteModal";
+import HizliRehberModal from "./components/HizliRehberModal";
 import {
   UFE_RATES,
   ICTIHAT_DB,
@@ -115,6 +117,8 @@ export default function App() {
   const [mobileOpen, setMobileOpen] = useState(false);
   const [toast, setToast] = useState<string | null>(null);
   const [activeDropdown, setActiveDropdown] = useState<"tarim" | "hayvancilik" | "araclar" | "egitim" | null>(null);
+  const [commandPaletteOpen, setCommandPaletteOpen] = useState<boolean>(false);
+  const [hizliRehberOpen, setHizliRehberOpen] = useState<boolean>(false);
   const topNavRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -124,8 +128,14 @@ export default function App() {
       }
     };
     const handleKeyDown = (e: KeyboardEvent) => {
-      if (e.key === "Escape") {
+      if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === "k") {
+        e.preventDefault();
+        setCommandPaletteOpen((prev) => !prev);
+      } else if (e.key === "Escape") {
         setActiveDropdown(null);
+      } else if (e.key === "F1") {
+        e.preventDefault();
+        setHizliRehberOpen(true);
       }
     };
     document.addEventListener("mousedown", handleClickOutside);
@@ -1153,6 +1163,21 @@ export default function App() {
             </div>
           </button>
 
+          {/* Evrensel Arama & Komut Paleti Butonu (Spotlight Ctrl+K) */}
+          <button
+            onClick={() => setCommandPaletteOpen(true)}
+            className="hidden md:flex items-center gap-2.5 px-3.5 py-1.5 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 text-xs text-slate-300 hover:text-white transition cursor-pointer min-w-[220px] justify-between shadow-xs"
+            title="Modül, dava türü, kanun veya içtihat arayın (Ctrl + K)"
+          >
+            <span className="flex items-center gap-2">
+              <Search size={14} className="text-emerald-400" />
+              <span className="font-medium text-slate-300">Modül veya Konu Ara...</span>
+            </span>
+            <kbd className="px-1.5 py-0.5 rounded bg-white/10 text-[10px] text-slate-300 font-mono border border-white/10 font-bold">
+              Ctrl K
+            </kbd>
+          </button>
+
           {/* Orta: Masaüstü Üst Menü Unsurları (lg ve üzeri) */}
           <nav className="hidden lg:flex items-center gap-1 xl:gap-1.5">
             {/* ANA SAYFA */}
@@ -1405,7 +1430,27 @@ export default function App() {
           </nav>
 
           {/* Sağ: PWA, Tema, Durum & Profil */}
-          <div className="flex items-center gap-2 sm:gap-3 shrink-0">
+          <div className="flex items-center gap-2 sm:gap-2.5 shrink-0">
+            {/* Mobil Arama Butonu */}
+            <button
+              onClick={() => setCommandPaletteOpen(true)}
+              className="md:hidden p-2 rounded-xl bg-white/10 hover:bg-white/15 text-slate-200 cursor-pointer min-h-[36px] min-w-[36px] flex items-center justify-center transition"
+              title="Hızlı Arama (Ctrl + K)"
+              aria-label="Arama"
+            >
+              <Search size={16} className="text-emerald-400" />
+            </button>
+
+            {/* Nasıl Kullanılır? Rehber Butonu */}
+            <button
+              onClick={() => setHizliRehberOpen(true)}
+              className="flex items-center gap-1.5 px-2.5 sm:px-3 py-1.5 rounded-xl border border-sky-500/30 bg-sky-500/10 hover:bg-sky-500/20 text-xs font-bold text-sky-300 transition shadow-xs cursor-pointer min-h-[36px]"
+              title="Platform Nasıl Kullanılır? 4 Adımda Bilirkişi Rehberi (F1)"
+            >
+              <BookOpen size={14} className="text-sky-400" />
+              <span className="hidden sm:inline">Nasıl Kullanılır?</span>
+            </button>
+
             {/* PWA Kurulum Butonu */}
             <button
               onClick={() => {
@@ -1520,6 +1565,16 @@ export default function App() {
 
           {/* Sağ: Aktif Kategori İçi Hızlı Geçiş Butonları */}
           <div className="flex items-center gap-1.5 shrink-0">
+            {/* Hızlı Arama Butonu */}
+            <button
+              onClick={() => setCommandPaletteOpen(true)}
+              className="flex items-center gap-1 px-2.5 py-1 rounded-lg bg-white/5 hover:bg-white/10 text-slate-300 hover:text-white border border-white/10 text-xs transition cursor-pointer font-medium mr-1 shrink-0"
+              title="Evrensel Arama (Ctrl + K)"
+            >
+              <Search size={12} className="text-emerald-400" />
+              <span className="hidden sm:inline">Ara</span>
+              <kbd className="hidden md:inline px-1 py-0.2 rounded bg-white/10 text-[9px] text-slate-400 font-mono">⌘K</kbd>
+            </button>
             {currentGroup === "hero" ? (
               <>
                 <span className="text-[11px] text-slate-400 font-medium hidden sm:inline mr-1">Öne Çıkanlar:</span>
@@ -2267,6 +2322,20 @@ export default function App() {
         deferredPrompt={deferredPrompt}
         onInstallPrompt={handleInstallClick}
         isStandalone={isStandalone}
+      />
+
+      {/* Evrensel Arama & Komut Paleti Modalı (Ctrl+K) */}
+      <CommandPaletteModal
+        isOpen={commandPaletteOpen}
+        onClose={() => setCommandPaletteOpen(false)}
+        onSelectTab={setActiveTab}
+      />
+
+      {/* Platform Nasıl Kullanılır? Hızlı Rehber Modalı */}
+      <HizliRehberModal
+        isOpen={hizliRehberOpen}
+        onClose={() => setHizliRehberOpen(false)}
+        onSelectTab={setActiveTab}
       />
     </div>
   );

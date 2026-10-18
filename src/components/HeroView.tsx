@@ -21,6 +21,8 @@ import {
   TrendingUp,
   Award,
   Milk,
+  Compass,
+  Target,
 } from "lucide-react";
 import { TabId } from "../types";
 
@@ -132,7 +134,149 @@ export default function HeroView({ onSelectTab }: HeroViewProps) {
         </div>
       </div>
 
-      {/* 2. UZMANLIK ALANLARI KARTLARI */}
+      {/* 2. SEZGİSEL GÖREV BAŞLATICI (NE YAPMAK İSTİYORSUNUZ?) */}
+      <div className="space-y-4">
+        <div className="flex items-center justify-between">
+          <div>
+            <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-emerald-500/10 text-emerald-700 dark:text-emerald-300 border border-emerald-500/20 text-xs font-bold mb-1.5">
+              <Compass size={14} className="text-emerald-600 dark:text-emerald-400" />
+              <span>Sezgisel Hızlı Başlangıç</span>
+            </div>
+            <h2 className="text-xl md:text-2xl font-black text-slate-900 dark:text-white tracking-tight">
+              Ne Yapmak İstiyorsunuz?
+            </h2>
+            <p className="text-xs md:text-sm text-slate-500 dark:text-slate-400">
+              Görevinize uygun adımı seçin, sistem sizi doğru resmi formüllere, mevzuata ve şablonlara yönlendirsin
+            </p>
+          </div>
+        </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+          {/* GÖREV 1: DAVA RAPORU YAZ */}
+          <div className="bg-white dark:bg-[#0f172a] rounded-3xl p-5 border border-slate-200 dark:border-white/10 shadow-sm hover:shadow-md transition-all flex flex-col justify-between space-y-4">
+            <div className="space-y-3">
+              <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-emerald-500/20 to-teal-500/10 border border-emerald-500/30 text-emerald-600 dark:text-emerald-400 flex items-center justify-center">
+                <FileCheck size={24} />
+              </div>
+              <div>
+                <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-emerald-100 dark:bg-emerald-500/20 text-emerald-800 dark:text-emerald-300 font-mono">
+                  ADIM ADIM REHBER
+                </span>
+                <h3 className="font-bold text-base text-slate-900 dark:text-white mt-1">Dava Raporu Yaz</h3>
+                <p className="text-xs text-slate-500 dark:text-slate-400 mt-1 leading-relaxed">
+                  3'lü kurul künyesi, mahsup motoru ve faiz tavsiyesiyle UYAP'a hazır Word (.doc) heyet raporu.
+                </p>
+              </div>
+            </div>
+            <div className="space-y-2 pt-2 border-t border-slate-100 dark:border-white/5">
+              <button
+                onClick={() => onSelectTab("raporOtomasyonu")}
+                className="w-full flex items-center justify-between p-2.5 rounded-xl bg-emerald-50 hover:bg-emerald-100 dark:bg-emerald-500/10 dark:hover:bg-emerald-500/20 text-emerald-800 dark:text-emerald-300 text-xs font-bold transition cursor-pointer"
+              >
+                <span>🌱 01 Tarım Raporu</span>
+                <ArrowRight size={14} />
+              </button>
+              <button
+                onClick={() => onSelectTab("hayvancilikRaporOtomasyonu")}
+                className="w-full flex items-center justify-between p-2.5 rounded-xl bg-amber-50 hover:bg-amber-100 dark:bg-amber-500/10 dark:hover:bg-amber-500/20 text-amber-800 dark:text-amber-300 text-xs font-bold transition cursor-pointer"
+              >
+                <span>🥩 02 Hayvancılık Raporu</span>
+                <ArrowRight size={14} />
+              </button>
+            </div>
+          </div>
+
+          {/* GÖREV 2: UYDU & PARSEL TESPİTİ */}
+          <div className="bg-white dark:bg-[#0f172a] rounded-3xl p-5 border border-slate-200 dark:border-white/10 shadow-sm hover:shadow-md transition-all flex flex-col justify-between space-y-4">
+            <div className="space-y-3">
+              <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-sky-500/20 to-indigo-500/10 border border-sky-500/30 text-sky-600 dark:text-sky-400 flex items-center justify-center">
+                <Satellite size={24} />
+              </div>
+              <div>
+                <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-sky-100 dark:bg-sky-500/20 text-sky-800 dark:text-sky-300 font-mono">
+                  GIS & SENTINEL
+                </span>
+                <h3 className="font-bold text-base text-slate-900 dark:text-white mt-1">Parsel & Uydu Tespiti</h3>
+                <p className="text-xs text-slate-500 dark:text-slate-400 mt-1 leading-relaxed">
+                  TKGM ada/parsel kadastro sınırları ve Sentinel-2 L2A NDVI vejetasyon endeksi analizi.
+                </p>
+              </div>
+            </div>
+            <div className="pt-2 border-t border-slate-100 dark:border-white/5">
+              <button
+                onClick={() => onSelectTab("uyduParsel")}
+                className="w-full flex items-center justify-between p-2.5 rounded-xl bg-sky-50 hover:bg-sky-100 dark:bg-sky-500/10 dark:hover:bg-sky-500/20 text-sky-800 dark:text-sky-300 text-xs font-bold transition cursor-pointer"
+              >
+                <span>Uydu Parsel AI'yi Başlat</span>
+                <ArrowRight size={14} />
+              </button>
+            </div>
+          </div>
+
+          {/* GÖREV 3: RESMİ VERİM & FİYAT ARAŞTIRMASI */}
+          <div className="bg-white dark:bg-[#0f172a] rounded-3xl p-5 border border-slate-200 dark:border-white/10 shadow-sm hover:shadow-md transition-all flex flex-col justify-between space-y-4">
+            <div className="space-y-3">
+              <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-emerald-500/20 to-teal-500/10 border border-emerald-500/30 text-emerald-600 dark:text-emerald-400 flex items-center justify-center">
+                <Database size={24} />
+              </div>
+              <div>
+                <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-emerald-100 dark:bg-emerald-500/20 text-emerald-800 dark:text-emerald-300 font-mono">
+                  81 İL RESMİ VERİ
+                </span>
+                <h3 className="font-bold text-base text-slate-900 dark:text-white mt-1">Resmi Maliyet & Verim</h3>
+                <p className="text-xs text-slate-500 dark:text-slate-400 mt-1 leading-relaxed">
+                  TÜİK ve İlçe Tarım resmi maliyet cetvelleri, dekar verimleri ve ÇEGF satış fiyatları.
+                </p>
+              </div>
+            </div>
+            <div className="pt-2 border-t border-slate-100 dark:border-white/5">
+              <button
+                onClick={() => onSelectTab("veriarsivi")}
+                className="w-full flex items-center justify-between p-2.5 rounded-xl bg-emerald-50 hover:bg-emerald-100 dark:bg-emerald-500/10 dark:hover:bg-emerald-500/20 text-emerald-800 dark:text-emerald-300 text-xs font-bold transition cursor-pointer"
+              >
+                <span>Tarım Veri Arşivine Git</span>
+                <ArrowRight size={14} />
+              </button>
+            </div>
+          </div>
+
+          {/* GÖREV 4: YARGITAY BOZMA KONTROLÜ */}
+          <div className="bg-white dark:bg-[#0f172a] rounded-3xl p-5 border border-slate-200 dark:border-white/10 shadow-sm hover:shadow-md transition-all flex flex-col justify-between space-y-4">
+            <div className="space-y-3">
+              <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-purple-500/20 to-indigo-500/10 border border-purple-500/30 text-purple-600 dark:text-purple-400 flex items-center justify-center">
+                <Scale size={24} />
+              </div>
+              <div>
+                <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-purple-100 dark:bg-purple-500/20 text-purple-800 dark:text-purple-300 font-mono">
+                  HMK 279 & İÇTİHAT
+                </span>
+                <h3 className="font-bold text-base text-slate-900 dark:text-white mt-1">İçtihat & Kusur Taraması</h3>
+                <p className="text-xs text-slate-500 dark:text-slate-400 mt-1 leading-relaxed">
+                  Yargıtay 3, 5, 11. HD emsal kararları ve raporda yasaklı kelimelerin otomatik tespiti.
+                </p>
+              </div>
+            </div>
+            <div className="space-y-2 pt-2 border-t border-slate-100 dark:border-white/5">
+              <button
+                onClick={() => onSelectTab("ictihat")}
+                className="w-full flex items-center justify-between p-2.5 rounded-xl bg-purple-50 hover:bg-purple-100 dark:bg-purple-500/10 dark:hover:bg-purple-500/20 text-purple-800 dark:text-purple-300 text-xs font-bold transition cursor-pointer"
+              >
+                <span>⚖️ İçtihat Arama</span>
+                <ArrowRight size={14} />
+              </button>
+              <button
+                onClick={() => onSelectTab("tarayici")}
+                className="w-full flex items-center justify-between p-2.5 rounded-xl bg-slate-50 hover:bg-slate-100 dark:bg-white/5 dark:hover:bg-white/10 text-slate-800 dark:text-slate-200 text-xs font-bold transition cursor-pointer"
+              >
+                <span>🔍 HMK 279 Tarayıcı</span>
+                <ArrowRight size={14} />
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* 3. UZMANLIK ALANLARI KARTLARI */}
       <div>
         <div className="flex items-center justify-between mb-5">
           <div>
