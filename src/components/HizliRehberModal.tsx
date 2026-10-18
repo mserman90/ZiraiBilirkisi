@@ -71,13 +71,13 @@ export default function HizliRehberModal({
   ];
 
   return (
-    <div className="fixed inset-0 z-50 bg-black/70 backdrop-blur-sm flex items-center justify-center p-4 sm:p-6 overflow-y-auto animate-in fade-in duration-150">
+    <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-md flex items-center justify-center p-4 sm:p-6 overflow-y-auto animate-in fade-in duration-150">
       <div
-        className="relative w-full max-w-3xl bg-[#0f172a] text-white rounded-3xl border border-white/15 shadow-2xl overflow-hidden flex flex-col max-h-[90vh] animate-in zoom-in-95 duration-150"
+        className="relative w-full max-w-3xl bg-[#0f172a]/90 backdrop-blur-2xl text-white rounded-3xl border border-white/15 shadow-2xl shadow-black/50 overflow-hidden flex flex-col max-h-[90vh] animate-in zoom-in-95 duration-150"
         onClick={(e) => e.stopPropagation()}
       >
         {/* Üst Başlık */}
-        <div className="p-5 sm:p-6 border-b border-white/10 bg-gradient-to-r from-emerald-950 via-slate-900 to-indigo-950 flex items-center justify-between">
+        <div className="p-5 sm:p-6 border-b border-white/10 bg-gradient-to-r from-emerald-950/80 via-slate-900/80 to-indigo-950/80 backdrop-blur-xl flex items-center justify-between">
           <div className="flex items-center gap-3">
             <div className="w-10 h-10 rounded-2xl bg-emerald-500/20 border border-emerald-500/40 flex items-center justify-center text-emerald-400">
               <HelpCircle size={22} />
@@ -98,7 +98,7 @@ export default function HizliRehberModal({
         </div>
 
         {/* Adım Seçici Çubuğu */}
-        <div className="grid grid-cols-4 border-b border-white/10 bg-[#0b1222] text-xs">
+        <div className="grid grid-cols-4 border-b border-white/10 bg-black/20 backdrop-blur-lg text-xs">
           {steps.map((s) => (
             <button
               key={s.num}

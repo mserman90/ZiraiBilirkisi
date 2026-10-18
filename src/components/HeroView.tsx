@@ -33,8 +33,8 @@ interface HeroViewProps {
 export default function HeroView({ onSelectTab }: HeroViewProps) {
   return (
     <div className="space-y-10 pb-12">
-      {/* 1. HERO BANNER */}
-      <div className="relative overflow-hidden rounded-3xl bg-gradient-to-br from-slate-950 via-slate-900 to-emerald-950 text-white p-8 md:p-12 shadow-2xl border border-emerald-500/20">
+      {/* 1. HERO BANNER - GLASSMORPHISM */}
+      <div className="relative overflow-hidden rounded-3xl bg-gradient-to-br from-slate-950/90 via-slate-900/85 to-emerald-950/80 backdrop-blur-2xl text-white p-8 md:p-12 shadow-2xl shadow-emerald-950/20 border border-emerald-500/30">
         {/* Arka plan ışık efektleri */}
         <div className="absolute -top-24 -right-24 w-96 h-96 rounded-full bg-emerald-500/10 blur-3xl pointer-events-none" />
         <div className="absolute -bottom-24 -left-24 w-96 h-96 rounded-full bg-sky-500/10 blur-3xl pointer-events-none" />
@@ -153,7 +153,7 @@ export default function HeroView({ onSelectTab }: HeroViewProps) {
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
           {/* GÖREV 1: DAVA RAPORU YAZ */}
-          <div className="bg-white dark:bg-[#0f172a] rounded-3xl p-5 border border-slate-200 dark:border-white/10 shadow-sm hover:shadow-md transition-all flex flex-col justify-between space-y-4">
+          <div className="backdrop-blur-xl bg-white/80 dark:bg-[#0f172a]/70 rounded-3xl p-5 border border-slate-200/70 dark:border-white/10 shadow-sm hover:shadow-xl hover:border-emerald-500/40 transition-all duration-300 flex flex-col justify-between space-y-4">
             <div className="space-y-3">
               <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-emerald-500/20 to-teal-500/10 border border-emerald-500/30 text-emerald-600 dark:text-emerald-400 flex items-center justify-center">
                 <FileCheck size={24} />
@@ -187,7 +187,7 @@ export default function HeroView({ onSelectTab }: HeroViewProps) {
           </div>
 
           {/* GÖREV 2: UYDU & PARSEL TESPİTİ */}
-          <div className="bg-white dark:bg-[#0f172a] rounded-3xl p-5 border border-slate-200 dark:border-white/10 shadow-sm hover:shadow-md transition-all flex flex-col justify-between space-y-4">
+          <div className="backdrop-blur-xl bg-white/80 dark:bg-[#0f172a]/70 rounded-3xl p-5 border border-slate-200/70 dark:border-white/10 shadow-sm hover:shadow-xl hover:border-sky-500/40 transition-all duration-300 flex flex-col justify-between space-y-4">
             <div className="space-y-3">
               <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-sky-500/20 to-indigo-500/10 border border-sky-500/30 text-sky-600 dark:text-sky-400 flex items-center justify-center">
                 <Satellite size={24} />
@@ -214,7 +214,7 @@ export default function HeroView({ onSelectTab }: HeroViewProps) {
           </div>
 
           {/* GÖREV 3: RESMİ VERİM & FİYAT ARAŞTIRMASI */}
-          <div className="bg-white dark:bg-[#0f172a] rounded-3xl p-5 border border-slate-200 dark:border-white/10 shadow-sm hover:shadow-md transition-all flex flex-col justify-between space-y-4">
+          <div className="backdrop-blur-xl bg-white/80 dark:bg-[#0f172a]/70 rounded-3xl p-5 border border-slate-200/70 dark:border-white/10 shadow-sm hover:shadow-xl hover:border-emerald-500/40 transition-all duration-300 flex flex-col justify-between space-y-4">
             <div className="space-y-3">
               <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-emerald-500/20 to-teal-500/10 border border-emerald-500/30 text-emerald-600 dark:text-emerald-400 flex items-center justify-center">
                 <Database size={24} />
@@ -241,7 +241,7 @@ export default function HeroView({ onSelectTab }: HeroViewProps) {
           </div>
 
           {/* GÖREV 4: YARGITAY BOZMA KONTROLÜ */}
-          <div className="bg-white dark:bg-[#0f172a] rounded-3xl p-5 border border-slate-200 dark:border-white/10 shadow-sm hover:shadow-md transition-all flex flex-col justify-between space-y-4">
+          <div className="backdrop-blur-xl bg-white/80 dark:bg-[#0f172a]/70 rounded-3xl p-5 border border-slate-200/70 dark:border-white/10 shadow-sm hover:shadow-xl hover:border-purple-500/40 transition-all duration-300 flex flex-col justify-between space-y-4">
             <div className="space-y-3">
               <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-purple-500/20 to-indigo-500/10 border border-purple-500/30 text-purple-600 dark:text-purple-400 flex items-center justify-center">
                 <Scale size={24} />
@@ -277,14 +277,15 @@ export default function HeroView({ onSelectTab }: HeroViewProps) {
       </div>
 
       {/* 3. UZMANLIK ALANLARI KARTLARI */}
+      {/* 3. UZMANLIK ALANLARI KARTLARI - GLASSMORPHISM */}
       <div>
         <div className="flex items-center justify-between mb-5">
           <div>
-            <h2 className="text-xl md:text-2xl font-bold text-slate-900 tracking-tight flex items-center gap-2">
-              <Award className="text-emerald-600" size={24} />
+            <h2 className="text-xl md:text-2xl font-bold text-slate-900 dark:text-white tracking-tight flex items-center gap-2">
+              <Award className="text-emerald-600 dark:text-emerald-400" size={24} />
               Bilirkişilik Uzmanlık Alanları
             </h2>
-            <p className="text-xs md:text-sm text-slate-500 mt-1">
+            <p className="text-xs md:text-sm text-slate-500 dark:text-slate-400 mt-1">
               Adalet Bakanlığı Bilirkişilik Daire Başkanlığı resmi kodlarına tam uyumlu modüller
             </p>
           </div>
@@ -292,22 +293,22 @@ export default function HeroView({ onSelectTab }: HeroViewProps) {
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
           {/* 01 TARIM KARTI */}
-          <div className="bg-white rounded-3xl p-6 md:p-8 border border-slate-200/80 shadow-sm hover:shadow-md transition-all space-y-5">
+          <div className="backdrop-blur-xl bg-white/80 dark:bg-[#0f172a]/75 rounded-3xl p-6 md:p-8 border border-slate-200/70 dark:border-white/10 shadow-sm hover:shadow-xl hover:border-emerald-500/35 transition-all duration-300 space-y-5">
             <div className="flex items-start justify-between">
               <div className="flex items-center gap-3.5">
-                <div className="w-12 h-12 rounded-2xl bg-emerald-50 border border-emerald-200/60 flex items-center justify-center text-emerald-700">
+                <div className="w-12 h-12 rounded-2xl bg-emerald-50 dark:bg-emerald-500/15 border border-emerald-200/60 dark:border-emerald-500/30 flex items-center justify-center text-emerald-700 dark:text-emerald-400">
                   <Wand2 size={24} />
                 </div>
                 <div>
-                  <span className="text-[11px] font-bold tracking-wider text-emerald-600 uppercase bg-emerald-50 px-2.5 py-0.5 rounded-full border border-emerald-200/50">
+                  <span className="text-[11px] font-bold tracking-wider text-emerald-600 dark:text-emerald-400 uppercase bg-emerald-50 dark:bg-emerald-500/10 px-2.5 py-0.5 rounded-full border border-emerald-200/50 dark:border-emerald-500/20">
                     KOD: 01 TARIM
                   </span>
-                  <h3 className="text-lg font-bold text-slate-900 mt-1">Zirai Değerleme & Arazi Analizi</h3>
+                  <h3 className="text-lg font-bold text-slate-900 dark:text-white mt-1">Zirai Değerleme & Arazi Analizi</h3>
                 </div>
               </div>
             </div>
 
-            <p className="text-xs md:text-sm text-slate-600 leading-relaxed">
+            <p className="text-xs md:text-sm text-slate-600 dark:text-slate-300 leading-relaxed">
               2942 Sayılı Kamulaştırma Kanunu m.11 (Net Gelir & KFO), münavebe cetvelleri, ODA katsayıları, 
               Yargıtay 3. HD ecrimisil artış formülleri, zilyetlik ve irtifak hakkı değer düşüklüğü hesaplamaları.
             </p>
@@ -315,56 +316,56 @@ export default function HeroView({ onSelectTab }: HeroViewProps) {
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-2.5 pt-2">
               <button
                 onClick={() => onSelectTab("sihirbaz")}
-                className="flex items-center justify-between p-3 rounded-xl bg-slate-50 hover:bg-emerald-50/60 border border-slate-200/80 text-left transition group"
+                className="flex items-center justify-between p-3 rounded-xl bg-slate-50/80 dark:bg-white/5 hover:bg-emerald-50/60 dark:hover:bg-emerald-500/10 border border-slate-200/70 dark:border-white/10 text-left transition group cursor-pointer"
               >
                 <div>
-                  <p className="text-xs font-bold text-slate-900 group-hover:text-emerald-700">01.05 Zirai Değerleme</p>
-                  <p className="text-[11px] text-slate-500">Kamulaştırma, Ecrimisil, Ağaç</p>
+                  <p className="text-xs font-bold text-slate-900 dark:text-white group-hover:text-emerald-700 dark:group-hover:text-emerald-300">01.05 Zirai Değerleme</p>
+                  <p className="text-[11px] text-slate-500 dark:text-slate-400">Kamulaştırma, Ecrimisil, Ağaç</p>
                 </div>
-                <ArrowRight size={14} className="text-slate-400 group-hover:text-emerald-600 transition" />
+                <ArrowRight size={14} className="text-slate-400 group-hover:text-emerald-600 dark:group-hover:text-emerald-400 transition" />
               </button>
 
               <button
                 onClick={() => onSelectTab("veriarsivi")}
-                className="flex items-center justify-between p-3 rounded-xl bg-slate-50 hover:bg-emerald-50/60 border border-slate-200/80 text-left transition group"
+                className="flex items-center justify-between p-3 rounded-xl bg-slate-50/80 dark:bg-white/5 hover:bg-emerald-50/60 dark:hover:bg-emerald-500/10 border border-slate-200/70 dark:border-white/10 text-left transition group cursor-pointer"
               >
                 <div>
-                  <p className="text-xs font-bold text-slate-900 group-hover:text-emerald-700">Tarım Veri Arşivi</p>
-                  <p className="text-[11px] text-slate-500">TÜİK ÇEGF & ÜFE</p>
+                  <p className="text-xs font-bold text-slate-900 dark:text-white group-hover:text-emerald-700 dark:group-hover:text-emerald-300">Tarım Veri Arşivi</p>
+                  <p className="text-[11px] text-slate-500 dark:text-slate-400">TÜİK ÇEGF & ÜFE</p>
                 </div>
-                <ArrowRight size={14} className="text-slate-400 group-hover:text-emerald-600 transition" />
+                <ArrowRight size={14} className="text-slate-400 group-hover:text-emerald-600 dark:group-hover:text-emerald-400 transition" />
               </button>
 
               <button
                 onClick={() => onSelectTab("tarimRaporlar")}
-                className="flex items-center justify-between p-3 rounded-xl bg-emerald-50/70 hover:bg-emerald-100/70 border border-emerald-200 text-left transition group"
+                className="flex items-center justify-between p-3 rounded-xl bg-emerald-50/70 dark:bg-emerald-500/15 hover:bg-emerald-100/70 dark:hover:bg-emerald-500/25 border border-emerald-200 dark:border-emerald-500/30 text-left transition group cursor-pointer"
               >
                 <div>
-                  <p className="text-xs font-bold text-emerald-950 group-hover:text-emerald-800">01 Tarım Raporları</p>
-                  <p className="text-[11px] text-emerald-700">17 Emsal içtihatlı metin</p>
+                  <p className="text-xs font-bold text-emerald-950 dark:text-emerald-200 group-hover:text-emerald-800 dark:group-hover:text-emerald-100">01 Tarım Raporları</p>
+                  <p className="text-[11px] text-emerald-700 dark:text-emerald-400">17 Emsal içtihatlı metin</p>
                 </div>
-                <ArrowRight size={14} className="text-emerald-600 transition" />
+                <ArrowRight size={14} className="text-emerald-600 dark:text-emerald-400 transition" />
               </button>
             </div>
           </div>
 
           {/* 02 HAYVANCILIK KARTI */}
-          <div className="bg-white rounded-3xl p-6 md:p-8 border border-slate-200/80 shadow-sm hover:shadow-md transition-all space-y-5">
+          <div className="backdrop-blur-xl bg-white/80 dark:bg-[#0f172a]/75 rounded-3xl p-6 md:p-8 border border-slate-200/70 dark:border-white/10 shadow-sm hover:shadow-xl hover:border-amber-500/35 transition-all duration-300 space-y-5">
             <div className="flex items-start justify-between">
               <div className="flex items-center gap-3.5">
-                <div className="w-12 h-12 rounded-2xl bg-amber-50 border border-amber-200/60 flex items-center justify-center text-amber-700">
+                <div className="w-12 h-12 rounded-2xl bg-amber-50 dark:bg-amber-500/15 border border-amber-200/60 dark:border-amber-500/30 flex items-center justify-center text-amber-700 dark:text-amber-400">
                   <Beef size={24} />
                 </div>
                 <div>
-                  <span className="text-[11px] font-bold tracking-wider text-amber-600 uppercase bg-amber-50 px-2.5 py-0.5 rounded-full border border-amber-200/50">
+                  <span className="text-[11px] font-bold tracking-wider text-amber-600 dark:text-amber-400 uppercase bg-amber-50 dark:bg-amber-500/10 px-2.5 py-0.5 rounded-full border border-amber-200/50 dark:border-amber-500/20">
                     KOD: 02 HAYVANCILIK
                   </span>
-                  <h3 className="text-lg font-bold text-slate-900 mt-1">Hayvan Yetiştiriciliği & Besleme</h3>
+                  <h3 className="text-lg font-bold text-slate-900 dark:text-white mt-1">Hayvan Yetiştiriciliği & Besleme</h3>
                 </div>
               </div>
             </div>
 
-            <p className="text-xs md:text-sm text-slate-600 leading-relaxed">
+            <p className="text-xs md:text-sm text-slate-600 dark:text-slate-300 leading-relaxed">
               Büyükbaş, küçükbaş ve kanatlı canlı değerleme, telefat/hasar tazminatı, TBK m.52/55 mahsupları, 
               NRC/TÜBİTAK standartlarında TMR rasyon formülasyonu, aflatoksin/mikotoksin ve ayıp incelemeleri.
             </p>
@@ -372,49 +373,49 @@ export default function HeroView({ onSelectTab }: HeroViewProps) {
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-2.5 pt-2">
               <button
                 onClick={() => onSelectTab("hayvancilik")}
-                className="flex items-center justify-between p-3 rounded-xl bg-slate-50 hover:bg-amber-50/60 border border-slate-200/80 text-left transition group"
+                className="flex items-center justify-between p-3 rounded-xl bg-slate-50/80 dark:bg-white/5 hover:bg-amber-50/60 dark:hover:bg-amber-500/10 border border-slate-200/70 dark:border-white/10 text-left transition group cursor-pointer"
               >
                 <div>
-                  <p className="text-xs font-bold text-slate-900 group-hover:text-amber-700">02.01 Hayvancılık</p>
-                  <p className="text-[11px] text-slate-500">29 Irk, telef tazminatı</p>
+                  <p className="text-xs font-bold text-slate-900 dark:text-white group-hover:text-amber-700 dark:group-hover:text-amber-300">02.01 Hayvancılık</p>
+                  <p className="text-[11px] text-slate-500 dark:text-slate-400">29 Irk, telef tazminatı</p>
                 </div>
-                <ArrowRight size={14} className="text-slate-400 group-hover:text-amber-600 transition" />
+                <ArrowRight size={14} className="text-slate-400 group-hover:text-amber-600 dark:group-hover:text-amber-400 transition" />
               </button>
 
               <button
                 onClick={() => onSelectTab("yemlerBesleme")}
-                className="flex items-center justify-between p-3 rounded-xl bg-slate-50 hover:bg-amber-50/60 border border-slate-200/80 text-left transition group"
+                className="flex items-center justify-between p-3 rounded-xl bg-slate-50/80 dark:bg-white/5 hover:bg-amber-50/60 dark:hover:bg-amber-500/10 border border-slate-200/70 dark:border-white/10 text-left transition group cursor-pointer"
               >
                 <div>
-                  <p className="text-xs font-bold text-slate-900 group-hover:text-amber-700">02.05 Yemler</p>
-                  <p className="text-[11px] text-slate-500">Rasyon & analiz</p>
+                  <p className="text-xs font-bold text-slate-900 dark:text-white group-hover:text-amber-700 dark:group-hover:text-amber-300">02.05 Yemler</p>
+                  <p className="text-[11px] text-slate-500 dark:text-slate-400">Rasyon & analiz</p>
                 </div>
-                <ArrowRight size={14} className="text-slate-400 group-hover:text-amber-600 transition" />
+                <ArrowRight size={14} className="text-slate-400 group-hover:text-amber-600 dark:group-hover:text-amber-400 transition" />
               </button>
 
               <button
                 onClick={() => onSelectTab("hayvancilikRaporlar")}
-                className="flex items-center justify-between p-3 rounded-xl bg-amber-50/70 hover:bg-amber-100/70 border border-amber-200 text-left transition group"
+                className="flex items-center justify-between p-3 rounded-xl bg-amber-50/70 dark:bg-amber-500/15 hover:bg-amber-100/70 dark:hover:bg-amber-500/25 border border-amber-200 dark:border-amber-500/30 text-left transition group cursor-pointer"
               >
                 <div>
-                  <p className="text-xs font-bold text-amber-950 group-hover:text-amber-800">02 Hayvancılık Raporları</p>
-                  <p className="text-[11px] text-amber-700">8 Emsal telef & mandıra</p>
+                  <p className="text-xs font-bold text-amber-950 dark:text-amber-200 group-hover:text-amber-800 dark:group-hover:text-amber-100">02 Hayvancılık Raporları</p>
+                  <p className="text-[11px] text-amber-700 dark:text-amber-400">8 Emsal telef & mandıra</p>
                 </div>
-                <ArrowRight size={14} className="text-amber-600 transition" />
+                <ArrowRight size={14} className="text-amber-600 dark:text-amber-400 transition" />
               </button>
             </div>
           </div>
         </div>
       </div>
 
-      {/* 3. ENTEGRE ARAÇLAR VE TEKNOLOJİ ALTYAPISI */}
+      {/* 4. ENTEGRE ARAÇLAR VE TEKNOLOJİ ALTYAPISI - GLASSMORPHISM */}
       <div>
         <div className="mb-5">
-          <h2 className="text-xl md:text-2xl font-bold text-slate-900 tracking-tight flex items-center gap-2">
-            <Cpu className="text-sky-600" size={24} />
+          <h2 className="text-xl md:text-2xl font-bold text-slate-900 dark:text-white tracking-tight flex items-center gap-2">
+            <Cpu className="text-sky-600 dark:text-sky-400" size={24} />
             Akıllı Saha & Laboratuvar Araçları
           </h2>
-          <p className="text-xs md:text-sm text-slate-500 mt-1">
+          <p className="text-xs md:text-sm text-slate-500 dark:text-slate-400 mt-1">
             Sahada ve duruşma salonunda saniyeler içinde teknik rapor oluşturan yapay zekâ motorları
           </p>
         </div>
@@ -426,50 +427,50 @@ export default function HeroView({ onSelectTab }: HeroViewProps) {
               title: "Uydu Parsel AI",
               desc: "Esri 0.5m & Sentinel NDVI zaman serisi, TKGM entegrasyonu.",
               icon: <Satellite size={22} />,
-              color: "text-emerald-600 bg-emerald-50 border-emerald-200",
+              color: "text-emerald-600 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-500/15 border-emerald-200 dark:border-emerald-500/30",
             },
             {
               id: "aiAsistan" as TabId,
               title: "AI Saha Asistanı",
               desc: "KFO, HMK 279, TARSİM ve yerel mevzuatla çevrimdışı çalışır.",
               icon: <MessageSquare size={22} />,
-              color: "text-sky-600 bg-sky-50 border-sky-200",
+              color: "text-sky-600 dark:text-sky-400 bg-sky-50 dark:bg-sky-500/15 border-sky-200 dark:border-sky-500/30",
             },
             {
               id: "fotoAnaliz" as TabId,
               title: "Fotoğraf Analiz AI",
               desc: "Vision motoruyla bitki evresi ve zarar yüzdesi tespiti.",
               icon: <Camera size={22} />,
-              color: "text-teal-600 bg-teal-50 border-teal-200",
+              color: "text-teal-600 dark:text-teal-400 bg-teal-50 dark:bg-teal-500/15 border-teal-200 dark:border-teal-500/30",
             },
             {
               id: "tarayici" as TabId,
               title: "HMK 279 Tarayıcı",
               desc: "Hukuki değerlendirme ve kusur yasağı ihlallerini denetler.",
               icon: <Microscope size={22} />,
-              color: "text-purple-600 bg-purple-50 border-purple-200",
+              color: "text-purple-600 dark:text-purple-400 bg-purple-50 dark:bg-purple-500/15 border-purple-200 dark:border-purple-500/30",
             },
             {
               id: "ictihat" as TabId,
               title: "İçtihat Arama",
               desc: "Yargıtay 3, 5 ve 11. Hukuk Daireleri emsal kararları.",
               icon: <Scale size={22} />,
-              color: "text-amber-600 bg-amber-50 border-amber-200",
+              color: "text-amber-600 dark:text-amber-400 bg-amber-50 dark:bg-amber-500/15 border-amber-200 dark:border-amber-500/30",
             },
           ].map((item) => (
             <button
               key={item.id}
               onClick={() => onSelectTab(item.id)}
-              className="text-left bg-white p-5 rounded-2xl border border-slate-200/80 shadow-sm hover:shadow-md hover:border-slate-300 transition group flex flex-col justify-between"
+              className="text-left backdrop-blur-xl bg-white/80 dark:bg-[#0f172a]/70 p-5 rounded-2xl border border-slate-200/70 dark:border-white/10 shadow-sm hover:shadow-xl hover:border-emerald-500/40 transition-all duration-300 group flex flex-col justify-between cursor-pointer"
             >
               <div>
                 <div className={`w-11 h-11 rounded-xl flex items-center justify-center border mb-3.5 transition group-hover:scale-105 ${item.color}`}>
                   {item.icon}
                 </div>
-                <h4 className="font-bold text-slate-900 text-sm">{item.title}</h4>
-                <p className="text-xs text-slate-500 mt-1.5 leading-relaxed">{item.desc}</p>
+                <h4 className="font-bold text-slate-900 dark:text-white text-sm">{item.title}</h4>
+                <p className="text-xs text-slate-500 dark:text-slate-400 mt-1.5 leading-relaxed">{item.desc}</p>
               </div>
-              <div className="pt-3 mt-3 border-t border-slate-100 flex items-center justify-between text-[11px] font-semibold text-slate-400 group-hover:text-slate-800 transition">
+              <div className="pt-3 mt-3 border-t border-slate-100 dark:border-white/5 flex items-center justify-between text-[11px] font-semibold text-slate-400 group-hover:text-slate-800 dark:group-hover:text-slate-200 transition">
                 <span>Aracı Aç</span>
                 <ArrowRight size={12} />
               </div>
@@ -478,8 +479,8 @@ export default function HeroView({ onSelectTab }: HeroViewProps) {
         </div>
       </div>
 
-      {/* 4. ADAY BİLİRKİŞİ EĞİTİMLERİ & YASAL UYGUNLUK */}
-      <div className="bg-gradient-to-br from-indigo-950 via-slate-900 to-slate-950 rounded-3xl p-6 md:p-8 text-white border border-indigo-500/20 shadow-xl">
+      {/* 5. ADAY BİLİRKİŞİ EĞİTİMLERİ & YASAL UYGUNLUK - GLASSMORPHISM */}
+      <div className="relative overflow-hidden rounded-3xl bg-gradient-to-br from-indigo-950/90 via-slate-900/85 to-slate-950/90 backdrop-blur-2xl p-6 md:p-8 text-white border border-indigo-500/30 shadow-2xl shadow-indigo-950/30">
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
           <div className="space-y-2 max-w-2xl">
             <span className="text-[11px] font-bold tracking-wider text-indigo-400 uppercase bg-indigo-500/10 px-2.5 py-0.5 rounded-full border border-indigo-500/30">
@@ -497,7 +498,7 @@ export default function HeroView({ onSelectTab }: HeroViewProps) {
           <div className="flex flex-wrap items-center gap-3">
             <button
               onClick={() => onSelectTab("ilkeler")}
-              className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-white/10 hover:bg-white/15 text-white font-semibold text-xs border border-white/20 transition"
+              className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-white/10 hover:bg-white/15 text-white font-semibold text-xs border border-white/20 transition cursor-pointer"
             >
               <ShieldCheck size={16} className="text-indigo-400" />
               <span>İlkeler & Standartlar</span>
@@ -505,7 +506,7 @@ export default function HeroView({ onSelectTab }: HeroViewProps) {
 
             <button
               onClick={() => onSelectTab("teorik")}
-              className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-white/10 hover:bg-white/15 text-white font-semibold text-xs border border-white/20 transition"
+              className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-white/10 hover:bg-white/15 text-white font-semibold text-xs border border-white/20 transition cursor-pointer"
             >
               <BookOpen size={16} className="text-indigo-400" />
               <span>5 Eğitim Modülü</span>
@@ -513,7 +514,7 @@ export default function HeroView({ onSelectTab }: HeroViewProps) {
 
             <button
               onClick={() => onSelectTab("uyap")}
-              className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white font-bold text-xs shadow-lg shadow-indigo-600/30 transition"
+              className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white font-bold text-xs shadow-lg shadow-indigo-600/30 transition cursor-pointer"
             >
               <Monitor size={16} />
               <span>UYAP Simülasyonu</span>

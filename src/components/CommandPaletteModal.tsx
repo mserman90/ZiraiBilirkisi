@@ -294,13 +294,13 @@ export default function CommandPaletteModal({
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 z-50 bg-black/70 backdrop-blur-sm flex items-start justify-center p-4 sm:p-6 md:p-12 overflow-y-auto animate-in fade-in duration-150">
+    <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-md flex items-start justify-center p-4 sm:p-6 md:p-12 overflow-y-auto animate-in fade-in duration-150">
       <div
-        className="relative w-full max-w-2xl bg-[#0f172a] text-white rounded-3xl border border-white/15 shadow-2xl overflow-hidden flex flex-col max-h-[85vh] mt-4 sm:mt-10 animate-in zoom-in-95 duration-150"
+        className="relative w-full max-w-2xl bg-[#0f172a]/90 backdrop-blur-2xl text-white rounded-3xl border border-white/15 shadow-2xl shadow-black/50 overflow-hidden flex flex-col max-h-[85vh] mt-4 sm:mt-10 animate-in zoom-in-95 duration-150"
         onClick={(e) => e.stopPropagation()}
       >
         {/* Arama Başlığı & Giriş Kutusu */}
-        <div className="p-4 sm:p-5 border-b border-white/10 flex items-center gap-3 bg-[#131d31]">
+        <div className="p-4 sm:p-5 border-b border-white/10 flex items-center gap-3 bg-white/5 backdrop-blur-xl">
           <Search size={22} className="text-emerald-400 shrink-0" />
           <input
             ref={inputRef}
@@ -330,7 +330,7 @@ export default function CommandPaletteModal({
         </div>
 
         {/* Kategori Filtre Butonları */}
-        <div className="px-4 py-2 bg-[#0b1222] border-b border-white/5 flex items-center gap-1.5 overflow-x-auto text-xs shrink-0">
+        <div className="px-4 py-2 bg-black/20 backdrop-blur-lg border-b border-white/5 flex items-center gap-1.5 overflow-x-auto text-xs shrink-0">
           {categories.map((cat) => (
             <button
               key={cat}

@@ -47,10 +47,7 @@ html, body {
 }
 
 /* -------------------------------------------------------------
- * GECE VE GÜNDÜZ MODU KAPSAMLI TİPOGRAFİ VE KONTRAST STANDARTLARI
- * Gündüz modunda okunabilen tüm metinlerin, gece modunda da
- * WCAG 2.1 AAA/AA kontrast standartlarında (en az 4.5:1 / 7:1)
- * kusursuz netlikte okunabilmesi garanti edilir.
+ * SADE, TEMİZ, MİNİMALİST GLASSMORPHISM VE KONTRAST STANDARTLARI
  * ------------------------------------------------------------- */
 
 /* Temel Geçiş Efekti */
@@ -64,33 +61,109 @@ html.dark {
 }
 
 html.dark body {
-  background-color: #080c14;
+  background-color: #060911;
   color: #f1f5f9;
 }
 
-/* Kart Yüzeyleri & Arka Plan Dönüşümleri */
-html.dark .bg-white {
-  background-color: #0f172a !important;
+/* Glassmorphism Yardımcı Sınıfları */
+.glass-panel {
+  background: rgba(255, 255, 255, 0.78);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid rgba(255, 255, 255, 0.85);
+  box-shadow: 0 4px 24px -1px rgba(0, 0, 0, 0.04), 0 2px 6px -1px rgba(0, 0, 0, 0.02);
+}
+
+html.dark .glass-panel {
+  background: rgba(15, 23, 42, 0.72);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  box-shadow: 0 4px 24px -1px rgba(0, 0, 0, 0.35);
+}
+
+.glass-card {
+  background: rgba(255, 255, 255, 0.82);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid rgba(226, 232, 240, 0.8);
+  box-shadow: 0 4px 20px -2px rgba(0, 0, 0, 0.03);
+  transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+html.dark .glass-card {
+  background: rgba(15, 23, 42, 0.70);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  box-shadow: 0 4px 20px -2px rgba(0, 0, 0, 0.25);
+}
+
+.glass-card:hover {
+  transform: translateY(-2px);
+  border-color: rgba(16, 185, 129, 0.4);
+  box-shadow: 0 12px 32px -4px rgba(16, 185, 129, 0.1);
+}
+
+html.dark .glass-card:hover {
+  border-color: rgba(16, 185, 129, 0.45);
+  box-shadow: 0 12px 32px -4px rgba(16, 185, 129, 0.18);
+}
+
+.glass-input {
+  background: rgba(255, 255, 255, 0.7);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  border: 1px solid rgba(226, 232, 240, 0.8);
+  transition: all 0.2s ease;
+}
+
+html.dark .glass-input {
+  background: rgba(22, 32, 50, 0.6);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.glass-input:focus {
+  background: rgba(255, 255, 255, 0.95);
+  border-color: #10b981;
+  box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.15);
+}
+
+html.dark .glass-input:focus {
+  background: rgba(22, 32, 50, 0.9);
+  border-color: #10b981;
+  box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.25);
+}
+
+/* Kart Yüzeyleri & Arka Plan Dönüşümleri (Glassmorphism Uyumlu) */
+html.dark .bg-white:not(.no-glass) {
+  background-color: rgba(15, 23, 42, 0.82) !important;
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
 }
 
 html.dark .bg-\[\#f8fafc\] {
-  background-color: #080c14 !important;
+  background-color: #060911 !important;
 }
 
-html.dark .bg-slate-50,
-html.dark .bg-slate-50\/40,
-html.dark .bg-slate-50\/50,
-html.dark .bg-slate-50\/60,
-html.dark .bg-slate-50\/70,
-html.dark .bg-slate-50\/80 {
-  background-color: #131d31 !important;
+html.dark .bg-slate-50:not(.no-glass),
+html.dark .bg-slate-50\/40:not(.no-glass),
+html.dark .bg-slate-50\/50:not(.no-glass),
+html.dark .bg-slate-50\/60:not(.no-glass),
+html.dark .bg-slate-50\/70:not(.no-glass),
+html.dark .bg-slate-50\/80:not(.no-glass) {
+  background-color: rgba(19, 29, 49, 0.65) !important;
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
 }
 
 html.dark .bg-slate-100,
 html.dark .bg-slate-100\/80,
 html.dark .bg-slate-200,
 html.dark .bg-slate-200\/70 {
-  background-color: #1e293b !important;
+  background-color: rgba(30, 41, 59, 0.7) !important;
 }
 
 /* Kenarlıklar */
@@ -99,11 +172,11 @@ html.dark .border-slate-200\/60,
 html.dark .border-slate-200\/70,
 html.dark .border-slate-200\/80,
 html.dark .border-slate-100 {
-  border-color: #273549 !important;
+  border-color: rgba(255, 255, 255, 0.08) !important;
 }
 
 html.dark .border-slate-300 {
-  border-color: #334155 !important;
+  border-color: rgba(255, 255, 255, 0.12) !important;
 }
 
 /* Metin Kontrastı ve Okunabilirlik Kuralları */

@@ -1129,11 +1129,22 @@ export default function App() {
   const currentGroup = activeTab === "hero" ? "hero" : navItems.find((i) => i.id === activeTab)?.group || "tarim";
 
   return (
-    <div className="min-h-screen bg-[#f8fafc] dark:bg-[#080c14] text-slate-800 dark:text-slate-100 antialiased flex flex-col transition-colors duration-200">
+    <div className="min-h-screen bg-[#f8fafc] dark:bg-[#060911] text-slate-800 dark:text-slate-100 antialiased flex flex-col transition-colors duration-200 relative selection:bg-emerald-500/20 selection:text-emerald-700 dark:selection:text-emerald-300">
+      {/* SADE, TEMİZ, MİNİMALİST GLASSMORPHISM ARKA PLAN IŞIKLARI */}
+      <div className="fixed inset-0 pointer-events-none overflow-hidden z-0">
+        <div className="absolute -top-32 -left-32 w-[550px] h-[550px] bg-emerald-500/10 dark:bg-emerald-500/5 rounded-full blur-[130px]" />
+        <div className="absolute top-1/4 -right-32 w-[650px] h-[650px] bg-sky-500/10 dark:bg-sky-500/5 rounded-full blur-[150px]" />
+        <div className="absolute top-2/3 -left-20 w-[550px] h-[550px] bg-amber-500/10 dark:bg-amber-500/5 rounded-full blur-[130px]" />
+        <div className="absolute -bottom-32 right-1/4 w-[600px] h-[600px] bg-indigo-500/10 dark:bg-indigo-500/5 rounded-full blur-[140px]" />
+      </div>
+
       {/* ========================================================= */}
-      {/* ÜST MENÜ (TOP NAVIGATION BAR) */}
+      {/* ÜST MENÜ (TOP NAVIGATION BAR) - GLASSMORPHISM */}
       {/* ========================================================= */}
-      <header ref={topNavRef} className="sticky top-0 z-40 bg-[#0f172a] text-white border-b border-white/10 shadow-lg select-none">
+      <header
+        ref={topNavRef}
+        className="sticky top-0 z-40 bg-[#0f172a]/85 dark:bg-[#060a12]/85 backdrop-blur-2xl text-white border-b border-white/10 shadow-lg shadow-black/5 select-none transition-all duration-200"
+      >
         {/* 1. SATIR: LOGO, ANA KATEGORİ MENÜLERİ VE KULLANICI ARAÇLARI */}
         <div className="px-4 md:px-8 py-2.5 flex items-center justify-between gap-4">
           {/* Sol: Logo & Marka */}
@@ -1212,7 +1223,7 @@ export default function App() {
               </button>
 
               {activeDropdown === "tarim" && (
-                <div className="absolute top-full left-0 mt-2 w-80 bg-[#0f172a]/95 backdrop-blur-xl border border-emerald-500/30 rounded-2xl p-2 shadow-2xl z-50 animate-in fade-in zoom-in-95 duration-150">
+                <div className="absolute top-full left-0 mt-2 w-80 bg-[#0f172a]/90 dark:bg-[#080d19]/92 backdrop-blur-2xl border border-emerald-500/30 dark:border-emerald-500/20 rounded-2xl p-2 shadow-2xl shadow-black/50 z-50 animate-in fade-in zoom-in-95 duration-150">
                   <div className="px-3 py-2 border-b border-white/10 mb-1 flex items-center justify-between">
                     <span className="text-[10px] font-bold text-emerald-400 uppercase tracking-wider flex items-center gap-1.5">
                       <Sprout size={12} /> 01 Tarım & Zirai Değerleme
@@ -1270,7 +1281,7 @@ export default function App() {
               </button>
 
               {activeDropdown === "hayvancilik" && (
-                <div className="absolute top-full left-0 mt-2 w-80 bg-[#0f172a]/95 backdrop-blur-xl border border-amber-500/30 rounded-2xl p-2 shadow-2xl z-50 animate-in fade-in zoom-in-95 duration-150">
+                <div className="absolute top-full left-0 mt-2 w-80 bg-[#0f172a]/90 dark:bg-[#080d19]/92 backdrop-blur-2xl border border-amber-500/30 dark:border-amber-500/20 rounded-2xl p-2 shadow-2xl shadow-black/50 z-50 animate-in fade-in zoom-in-95 duration-150">
                   <div className="px-3 py-2 border-b border-white/10 mb-1 flex items-center justify-between">
                     <span className="text-[10px] font-bold text-amber-400 uppercase tracking-wider flex items-center gap-1.5">
                       <Beef size={12} /> 02 Hayvancılık, Yem & Mandıra
@@ -1328,7 +1339,7 @@ export default function App() {
               </button>
 
               {activeDropdown === "araclar" && (
-                <div className="absolute top-full left-0 mt-2 w-80 bg-[#0f172a]/95 backdrop-blur-xl border border-sky-500/30 rounded-2xl p-2 shadow-2xl z-50 animate-in fade-in zoom-in-95 duration-150">
+                <div className="absolute top-full left-0 mt-2 w-80 bg-[#0f172a]/90 dark:bg-[#080d19]/92 backdrop-blur-2xl border border-sky-500/30 dark:border-sky-500/20 rounded-2xl p-2 shadow-2xl shadow-black/50 z-50 animate-in fade-in zoom-in-95 duration-150">
                   <div className="px-3 py-2 border-b border-white/10 mb-1 flex items-center justify-between">
                     <span className="text-[10px] font-bold text-sky-400 uppercase tracking-wider flex items-center gap-1.5">
                       <Wrench size={12} /> AI & Hukuk Analiz Araçları
@@ -1386,7 +1397,7 @@ export default function App() {
               </button>
 
               {activeDropdown === "egitim" && (
-                <div className="absolute top-full right-0 mt-2 w-80 bg-[#0f172a]/95 backdrop-blur-xl border border-indigo-500/30 rounded-2xl p-2 shadow-2xl z-50 animate-in fade-in zoom-in-95 duration-150">
+                <div className="absolute top-full right-0 mt-2 w-80 bg-[#0f172a]/90 dark:bg-[#080d19]/92 backdrop-blur-2xl border border-indigo-500/30 dark:border-indigo-500/20 rounded-2xl p-2 shadow-2xl shadow-black/50 z-50 animate-in fade-in zoom-in-95 duration-150">
                   <div className="px-3 py-2 border-b border-white/10 mb-1 flex items-center justify-between">
                     <span className="text-[10px] font-bold text-indigo-400 uppercase tracking-wider flex items-center gap-1.5">
                       <GraduationCap size={12} /> Aday Bilirkişi Eğitim & Standartları
@@ -1516,7 +1527,7 @@ export default function App() {
         </div>
 
         {/* 2. SATIR (SUB-NAVBAR): BREADCRUMB VE AKTİF KATEGORİ HIZLI GEÇİŞ DÜĞMELERİ */}
-        <div className="bg-[#131d31] dark:bg-[#080d19] border-t border-white/10 px-4 md:px-8 py-2 flex items-center justify-between text-xs overflow-x-auto gap-3">
+        <div className="bg-[#131d31]/80 dark:bg-[#080d19]/80 backdrop-blur-xl border-t border-white/10 px-4 md:px-8 py-2 flex items-center justify-between text-xs overflow-x-auto gap-3">
           {/* Sol: Ekmek Kırıntısı (Breadcrumbs) */}
           <div className="flex items-center gap-2 text-slate-300 shrink-0 font-medium">
             <button
