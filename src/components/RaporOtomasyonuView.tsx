@@ -196,6 +196,75 @@ export default function RaporOtomasyonuView({
   const [gidaStandartDeger, setGidaStandartDeger] = useState(selectedDava.ornekVeriler.gidaStandartDeger || "Azami % 0.50 (TGK)");
 
   // -------------------------------------------------------------------
+  // FAİZ VE TEMERRÜT TAVSİYE MATRİSİ (HÂKİMİN TAKDİRİNE SUNULMAK ÜZERE)
+  // -------------------------------------------------------------------
+  const [faizHesabiAktif, setFaizHesabiAktif] = useState<boolean>(true);
+  const [faizTuru, setFaizTuru] = useState<"yasal" | "kademeli_yasal" | "ticari_avans">("yasal");
+  const [faizKurali, setFaizKurali] = useState<
+    "kamulastirma_4ay" | "donem_sonu_kademeli" | "olay_tarihi" | "temerrut_ihtar" | "dava_tarihi"
+  >("kamulastirma_4ay");
+  const [davaTarihi, setDavaTarihi] = useState<string>("2024-11-15");
+  const [olayTarihi, setOlayTarihi] = useState<string>("2024-09-10");
+  const [temerrutTarihi, setTemerrutTarihi] = useState<string>("2024-10-01");
+  const [faizOraniPct, setFaizOraniPct] = useState<number>(9);
+  const [customFaizGerekcesi, setCustomFaizGerekcesi] = useState<string>("");
+
+  const formatTrDate = (dateStr: string) => {
+    if (!dateStr) return "";
+    const parts = dateStr.split("-");
+    if (parts.length === 3) return `${parts[2]}.${parts[1]}.${parts[0]}`;
+    return dateStr;
+  };
+
+  const dortAySonrasiTarih = useMemo(() => {
+    try {
+      const parts = davaTarihi.split("-");
+      if (parts.length !== 3) return "";
+      const y = parseInt(parts[0], 10);
+      const m = parseInt(parts[1], 10) - 1;
+      const d = parseInt(parts[2], 10);
+      const dateObj = new Date(y, m + 4, d);
+      if (isNaN(dateObj.getTime())) return "";
+      const resY = dateObj.getFullYear();
+      const resM = String(dateObj.getMonth() + 1).padStart(2, "0");
+      const resD = String(dateObj.getDate()).padStart(2, "0");
+      return `${resY}-${resM}-${resD}`;
+    } catch {
+      return "";
+    }
+  }, [davaTarihi]);
+
+  const generatedFaizMetni = useMemo(() => {
+    if (customFaizGerekcesi.trim()) return customFaizGerekcesi;
+
+    const trDavaTarihi = formatTrDate(davaTarihi);
+    const tr4AyTarihi = formatTrDate(dortAySonrasiTarih);
+    const trOlayTarihi = formatTrDate(olayTarihi);
+    const trTemerrutTarihi = formatTrDate(temerrutTarihi);
+
+    if (faizKurali === "kamulastirma_4ay") {
+      return `2942 sayılı Kamulaştırma Kanunu'nun 10. maddesinin son fıkrası (6459 s.K. m.6 ile değişik) ve Anayasa Mahkemesi ile Yargıtay 5. Hukuk Dairesi'nin yerleşik ve kararlılık kazanan içtihatları uyarınca;\n\nKamulaştırma bedelinin tespiti ve tescili davalarında davanın açıldığı tarihten (${trDavaTarihi}) itibaren 4 aylık makul yargılama süresinin dolduğu tarih olan ${tr4AyTarihi} gününden karar tarihine (veya idarece tescil/ödeme tarihine) kadar tespit edilen kamulaştırma bedeline YASAL FAİZ (%${faizOraniPct}) yürütülmesi gerektiği değerlendirilmiş olup, nihai takdir Sayın Mahkemenize aittir.`;
+    } else if (faizKurali === "donem_sonu_kademeli") {
+      return `Türk Medeni Kanunu'nun 995. maddesi ve Yargıtay 8. Hukuk Dairesi ile 3. Hukuk Dairesi'nin yerleşik içtihatları uyarınca;\n\nEcrimisil (haksız işgal tazminatı) davalarında geriye dönük her bir işgal/münavebe dönemi için tahakkuk eden ecrimisil tutarlarına ilgili DÖNEM SONLARINDAN İTİBAREN KADEMELİ YASAL FAİZ (%${faizOraniPct}) işletilmesi usul ve hakkaniyet gereği teknik tavsiye olarak sunulmaktadır.`;
+    } else if (faizKurali === "olay_tarihi") {
+      return `6098 sayılı Türk Borçlar Kanunu'nun 117/2. maddesi ('Haksız fiilden doğan borçlarda fail, haksız fiilin vuku bulduğu anda temerrüde düşmüş sayılır') hükmü uyarınca;\n\nMeydana gelen haksız fiil / hasar / telef nedeniyle tespit olunan tazminat bedeline OLAY TARİHİNDEN (${trOlayTarihi}) İTİBAREN YASAL FAİZ (%${faizOraniPct}) işletilmesi gerektiği hususu teknik mütalaa olarak Sayın Mahkemenin takdirine arz olunur.`;
+    } else if (faizKurali === "temerrut_ihtar") {
+      return `6102 sayılı Türk Ticaret Kanunu'nun 9. ve 1530. maddeleri ile 3095 sayılı Kanuni Faiz ve Temerrüt Faizine İlişkin Kanun hükümleri uyarınca;\n\nTarafların tacir olduğu veya uyuşmazlığın ticari süt/yem/zirai ürün satım ve teslim sözleşmesinden kaynaklandığı dikkate alınarak, borçlunun temerrüde düşürüldüğü tarihten (${trTemerrutTarihi}) itibaren TİCARİ TEMERRÜT (AVANS) FAİZİ (%${faizOraniPct}) işletilmesi hususu Sayın Mahkemenizin yüksek takdirlerine sunulur.`;
+    } else {
+      return `Talep edilen asıl alacağa dava açılış tarihi olan ${trDavaTarihi} gününden itibaren kanuni yasal faiz (%${faizOraniPct}) yürütülmesi hususu Sayın Mahkemenin takdirine sunulur.`;
+    }
+  }, [
+    customFaizGerekcesi,
+    faizKurali,
+    faizTuru,
+    davaTarihi,
+    dortAySonrasiTarih,
+    olayTarihi,
+    temerrutTarihi,
+    faizOraniPct,
+  ]);
+
+  // -------------------------------------------------------------------
   // ADIM 5: HMK 279 KUSUR VE HUKUKİ AŞIM DENETİMİ
   // -------------------------------------------------------------------
   const [customKanaatMetni, setCustomKanaatMetni] = useState("");
@@ -286,8 +355,34 @@ export default function RaporOtomasyonuView({
 
     if (davaId === "kamulastirma_tarla" || davaId === "irtifak_hakki") {
       setRaporTuru("heyet_3");
+      setFaizKurali("kamulastirma_4ay");
+      setFaizTuru("yasal");
+      setFaizOraniPct(9);
+      setCustomFaizGerekcesi("");
+    } else if (davaId === "ecrimisil_tarim") {
+      setRaporTuru("tek");
+      setFaizKurali("donem_sonu_kademeli");
+      setFaizTuru("kademeli_yasal");
+      setFaizOraniPct(9);
+      setCustomFaizGerekcesi("");
+    } else if (davaId === "tarimsal_zarar" || davaId === "hayvan_telef") {
+      setRaporTuru("tek");
+      setFaizKurali("olay_tarihi");
+      setFaizTuru("yasal");
+      setFaizOraniPct(9);
+      setCustomFaizGerekcesi("");
+    } else if (davaId === "gida_ayip_tagsis") {
+      setRaporTuru("tek");
+      setFaizKurali("temerrut_ihtar");
+      setFaizTuru("ticari_avans");
+      setFaizOraniPct(48);
+      setCustomFaizGerekcesi("");
     } else {
       setRaporTuru("tek");
+      setFaizKurali("dava_tarihi");
+      setFaizTuru("yasal");
+      setFaizOraniPct(9);
+      setCustomFaizGerekcesi("");
     }
 
     setActiveSubTab("kokRapor");
@@ -561,12 +656,56 @@ ${
     </table>`
 }
 
-<h2>VI. HMK 279 UYUMLU SONUÇ VE KANAAT</h2>
+${
+  faizHesabiAktif
+    ? `<h2>VI. FAİZ TÜRÜ VE BAŞLANGIÇ TARİHİ TAVSİYESİ (HÂKİMİN TAKDİRİNE SUNULMAK ÜZERE)</h2>
+<table>
+  <tr><th colspan="2">TEKNİK VE USULİ FAİZ MATRİSİ</th></tr>
+  <tr><td class="bold" style="width: 35%;">Tavsiye Edilen Faiz Türü</td><td>${
+    faizTuru === "ticari_avans"
+      ? "Ticari Temerrüt (Avans) Faizi"
+      : faizTuru === "kademeli_yasal"
+      ? "Dönemsel Kademeli Yasal Faiz"
+      : "Kanuni Yasal Faiz"
+  } (%${faizOraniPct})</td></tr>
+  <tr><td class="bold">Yasal Dayanak & İçtihat</td><td>${
+    faizKurali === "kamulastirma_4ay"
+      ? "2942 s. Kamulaştırma Kanunu m. 10/son & Yargıtay 5. Hukuk Dairesi"
+      : faizKurali === "donem_sonu_kademeli"
+      ? "4721 s. TMK m. 995 & Yargıtay 8. ve 3. Hukuk Daireleri (Dönem Sonu Kademeli Faiz)"
+      : faizKurali === "olay_tarihi"
+      ? "6098 s. Türk Borçlar Kanunu m. 117/2 (Haksız Fiilde Olay Tarihinde Temerrüt)"
+      : faizKurali === "temerrut_ihtar"
+      ? "6102 s. TTK m. 9 & 1530, 3095 s.K. m. 2/2 (Ticari İşletmeler Arası Temerrüt / Avans Faizi)"
+      : "6100 s. HMK & 3095 s.K. m. 1 (Dava Tarihinden İtibaren Yasal Faiz)"
+  }</td></tr>
+  <tr><td class="bold">Tavsiye Edilen Faiz Başlangıcı</td><td>${
+    faizKurali === "kamulastirma_4ay"
+      ? `Dava tarihinden (${formatTrDate(davaTarihi)}) itibaren 4 aylık yasal sürenin dolduğu tarih: <b>${formatTrDate(dortAySonrasiTarih)}</b>`
+      : faizKurali === "donem_sonu_kademeli"
+      ? "Haksız işgalin vuku bulduğu her bir tarımsal münavebe / kira dönemi sonu itibarıyla kademeli olarak"
+      : faizKurali === "olay_tarihi"
+      ? `Haksız fiil / hasar / telef tarihi: <b>${formatTrDate(olayTarihi)}</b>`
+      : faizKurali === "temerrut_ihtar"
+      ? `İhtarname tebliği / temerrüt tarihi: <b>${formatTrDate(temerrutTarihi)}</b>`
+      : `Dava açılış tarihi: <b>${formatTrDate(davaTarihi)}</b>`
+  }</td></tr>
+</table>
+<div style="background-color: #f8fafc; border: 1px solid #cbd5e1; border-radius: 4px; padding: 10px 14px; margin: 12px 0;">
+  <p style="margin: 0; font-size: 10.5pt; color: #1e293b; white-space: pre-line; line-height: 1.5;">${generatedFaizMetni}</p>
+</div>
+<p style="font-size: 9.5pt; font-style: italic; color: #64748b; margin-top: 6px;">
+  * Not: 6100 sayılı HMK m. 279/4 uyarınca faiz yürütülmesi, türü ve başlangıç tarihi hususunda nihai hüküm kurma yetkisi münhasıran Sayın Mahkemenin takdirindedir. Bilirkişiliğimizce hazırlanan işbu matris yalnızca teknik-usuli tavsiye niteliğindedir.
+</p>`
+    : ""
+}
+
+<h2>${faizHesabiAktif ? "VII" : "VI"}. HMK 279 UYUMLU SONUÇ VE KANAAT</h2>
 <p style="white-space: pre-line;">${generatedKanaatMetni}</p>
 
 ${
   raporTuru === "heyet_3" && kararTuru === "oycoklugu"
-    ? `<h2>VII. MUHALEFET ŞERHİ (KARŞI OY GEREKÇESİ)</h2>
+    ? `<h2>${faizHesabiAktif ? "VIII" : "VII"}. MUHALEFET ŞERHİ (KARŞI OY GEREKÇESİ)</h2>
 <div style="background-color: #fffbeb; border: 1px solid #fde68a; border-left: 5px solid #d97706; padding: 12px 14px; margin: 12px 0;">
   <p style="margin: 0 0 6px 0; font-weight: bold; color: #92400e; font-size: 10.5pt;">
     MUHALİF BİLİRKİŞİ: ${muhalifBilirkisiAdi} (${muhalifBilirkisiUnvani})
@@ -585,7 +724,11 @@ ${
     : ""
 }
 
-<h2>${raporTuru === "heyet_3" && kararTuru === "oycoklugu" ? "VIII" : "VII"}. İMZA VE EKLER LİSTESİ</h2>
+<h2>${
+  raporTuru === "heyet_3" && kararTuru === "oycoklugu"
+    ? (faizHesabiAktif ? "IX" : "VIII")
+    : (faizHesabiAktif ? "VIII" : "VII")
+}. İMZA VE EKLER LİSTESİ</h2>
 <p>İşbu rapor 3 (üç) nüsha olarak tanzim edilmiş olup, bir nüshası ıslak imzalı/e-imzalı olarak dosyasında saklanmak üzere Sayın Mahkemenize saygıyla arz olunur.</p>
 
 <p><b>Ekler:</b><br>
@@ -726,6 +869,15 @@ ${
     gidaStandartDeger,
     gidaAyipOraniPct,
     toplamGidaZarari,
+    faizHesabiAktif,
+    faizTuru,
+    faizKurali,
+    davaTarihi,
+    dortAySonrasiTarih,
+    olayTarihi,
+    temerrutTarihi,
+    faizOraniPct,
+    generatedFaizMetni,
     generatedKanaatMetni,
   ]);
 
@@ -2328,6 +2480,276 @@ ${
             </div>
           )}
 
+          {/* FAİZ TÜRÜ VE BAŞLANGIÇ TARİHİ TAVSİYE MATRİSİ */}
+          <div className="bg-slate-50 dark:bg-slate-800/40 rounded-2xl border border-slate-200 dark:border-slate-800 p-5 md:p-6 space-y-5">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-slate-200 dark:border-slate-700/60 pb-4">
+              <div className="flex items-center gap-3">
+                <div className="p-2.5 rounded-xl bg-amber-500/10 text-amber-600 dark:text-amber-400 border border-amber-500/20">
+                  <Scale size={20} />
+                </div>
+                <div>
+                  <h3 className="text-sm font-bold text-slate-900 dark:text-white flex items-center gap-2">
+                    Faiz Türü ve Başlangıç Tarihi Tavsiye Matrisi
+                    <span className="text-[10px] bg-amber-100 dark:bg-amber-950/60 text-amber-700 dark:text-amber-300 px-2 py-0.5 rounded-full font-semibold">
+                      Hâkimin Takdirine
+                    </span>
+                  </h3>
+                  <p className="text-[11px] text-slate-500 dark:text-slate-400">
+                    2942 s.K. m. 10/son, TMK m. 995 ecrimisil, TBK m. 117/2 haksız fiil ve TTK m. 9 ticari avans ilkeleri
+                  </p>
+                </div>
+              </div>
+
+              <div className="flex items-center gap-2">
+                <span className="text-xs font-semibold text-slate-600 dark:text-slate-300">
+                  Rapora Faiz Tavsiyesi Ekle
+                </span>
+                <button
+                  type="button"
+                  onClick={() => setFaizHesabiAktif(!faizHesabiAktif)}
+                  className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
+                    faizHesabiAktif ? "bg-emerald-600" : "bg-slate-300 dark:bg-slate-700"
+                  }`}
+                >
+                  <span
+                    className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
+                      faizHesabiAktif ? "translate-x-6" : "translate-x-1"
+                    }`}
+                  />
+                </button>
+              </div>
+            </div>
+
+            {faizHesabiAktif && (
+              <div className="space-y-4">
+                {/* HMK 279/4 Hukuki Hatırlatma */}
+                <div className="p-3 bg-blue-50/70 dark:bg-blue-950/30 rounded-xl border border-blue-200/80 dark:border-blue-900/40 flex items-start gap-2.5 text-xs text-blue-900 dark:text-blue-300">
+                  <Info size={16} className="mt-0.5 shrink-0 text-blue-600 dark:text-blue-400" />
+                  <div className="leading-relaxed">
+                    <span className="font-bold">HMK m. 279/4 ve Yerleşik Yargıtay İçtihatları: </span>
+                    Bilirkişi faiz işletilmesi veya türü hakkında kesin hüküm tesis edemez; bu husus münhasıran Sayın Hâkimin takdirindedir. Bilirkişiliğimizce hazırlanan bu bölüm, davanın türüne göre kanunun emredici veya yerleşik içtihat hükümlerini (Kamulaştırma Kanunu m. 10/son 4 ay kuralı, Ecrimisilde dönem sonu, Haksız fiilde olay tarihi vb.) teknik bir tavsiye matrisi olarak mahkemeye sunar.
+                  </div>
+                </div>
+
+                {/* Dava Türüne Göre Kural Seçimi */}
+                <div>
+                  <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-2">
+                    Dava Türü ve Yasal Kural Şablonu:
+                  </label>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-2">
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setFaizKurali("kamulastirma_4ay");
+                        setFaizTuru("yasal");
+                        setFaizOraniPct(9);
+                        setCustomFaizGerekcesi("");
+                      }}
+                      className={`p-3 rounded-xl border text-left transition-all text-xs ${
+                        faizKurali === "kamulastirma_4ay"
+                          ? "border-emerald-500 bg-emerald-50/60 dark:bg-emerald-950/40 text-emerald-900 dark:text-emerald-200 font-bold shadow-sm"
+                          : "border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-300 hover:border-slate-300"
+                      }`}
+                    >
+                      <div className="flex items-center gap-1.5 font-bold mb-1">
+                        <span>🏛️ Kamulaştırma (2942 m. 10/son)</span>
+                      </div>
+                      <p className="text-[11px] text-slate-500 dark:text-slate-400 font-normal">
+                        Dava tarihinden 4 ay sonra başlayan yasal faiz.
+                      </p>
+                    </button>
+
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setFaizKurali("donem_sonu_kademeli");
+                        setFaizTuru("kademeli_yasal");
+                        setFaizOraniPct(9);
+                        setCustomFaizGerekcesi("");
+                      }}
+                      className={`p-3 rounded-xl border text-left transition-all text-xs ${
+                        faizKurali === "donem_sonu_kademeli"
+                          ? "border-emerald-500 bg-emerald-50/60 dark:bg-emerald-950/40 text-emerald-900 dark:text-emerald-200 font-bold shadow-sm"
+                          : "border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-300 hover:border-slate-300"
+                      }`}
+                    >
+                      <div className="flex items-center gap-1.5 font-bold mb-1">
+                        <span>🌾 Ecrimisil (TMK m. 995)</span>
+                      </div>
+                      <p className="text-[11px] text-slate-500 dark:text-slate-400 font-normal">
+                        Münavebe / dönem sonlarından itibaren kademeli faiz.
+                      </p>
+                    </button>
+
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setFaizKurali("olay_tarihi");
+                        setFaizTuru("yasal");
+                        setFaizOraniPct(9);
+                        setCustomFaizGerekcesi("");
+                      }}
+                      className={`p-3 rounded-xl border text-left transition-all text-xs ${
+                        faizKurali === "olay_tarihi"
+                          ? "border-emerald-500 bg-emerald-50/60 dark:bg-emerald-950/40 text-emerald-900 dark:text-emerald-200 font-bold shadow-sm"
+                          : "border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-300 hover:border-slate-300"
+                      }`}
+                    >
+                      <div className="flex items-center gap-1.5 font-bold mb-1">
+                        <span>⚡ Haksız Fiil & Telef (TBK 117/2)</span>
+                      </div>
+                      <p className="text-[11px] text-slate-500 dark:text-slate-400 font-normal">
+                        Olay / zarar tarihinden itibaren yasal faiz.
+                      </p>
+                    </button>
+
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setFaizKurali("temerrut_ihtar");
+                        setFaizTuru("ticari_avans");
+                        setFaizOraniPct(48);
+                        setCustomFaizGerekcesi("");
+                      }}
+                      className={`p-3 rounded-xl border text-left transition-all text-xs ${
+                        faizKurali === "temerrut_ihtar"
+                          ? "border-emerald-500 bg-emerald-50/60 dark:bg-emerald-950/40 text-emerald-900 dark:text-emerald-200 font-bold shadow-sm"
+                          : "border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-300 hover:border-slate-300"
+                      }`}
+                    >
+                      <div className="flex items-center gap-1.5 font-bold mb-1">
+                        <span>🥛 Ticari Süt/Yem (TTK 9 & 1530)</span>
+                      </div>
+                      <p className="text-[11px] text-slate-500 dark:text-slate-400 font-normal">
+                        Temerrüt / ihtar tarihinden itibaren avans faizi.
+                      </p>
+                    </button>
+                  </div>
+                </div>
+
+                {/* Parametreler: Faiz Türü, Oranı, Tarihler */}
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4 pt-2">
+                  <div>
+                    <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">
+                      Faiz Türü
+                    </label>
+                    <select
+                      value={faizTuru}
+                      onChange={(e) => setFaizTuru(e.target.value as any)}
+                      className="w-full px-3 py-2 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-xs font-medium text-slate-800 dark:text-slate-200"
+                    >
+                      <option value="yasal">Kanuni Yasal Faiz (3095 s.K. m. 1)</option>
+                      <option value="kademeli_yasal">Dönemsel Kademeli Yasal Faiz</option>
+                      <option value="ticari_avans">Ticari Temerrüt / Avans Faizi (3095 s.K. m. 2/2)</option>
+                    </select>
+                  </div>
+
+                  <div>
+                    <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">
+                      Faiz Oranı (%)
+                    </label>
+                    <div className="relative">
+                      <input
+                        type="number"
+                        value={faizOraniPct}
+                        onChange={(e) => setFaizOraniPct(Number(e.target.value))}
+                        className="w-full px-3 py-2 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-xs font-medium text-slate-800 dark:text-slate-200"
+                      />
+                      <span className="absolute right-3 top-2 text-xs text-slate-400">%</span>
+                    </div>
+                  </div>
+
+                  <div>
+                    <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">
+                      Dava Açılış Tarihi
+                    </label>
+                    <input
+                      type="date"
+                      value={davaTarihi}
+                      onChange={(e) => setDavaTarihi(e.target.value)}
+                      className="w-full px-3 py-2 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-xs font-medium text-slate-800 dark:text-slate-200"
+                    />
+                  </div>
+                </div>
+
+                {/* Koşullu Ek Tarihler ve 4 Ay Canlı Rozeti */}
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  {faizKurali === "kamulastirma_4ay" && (
+                    <div className="p-3 bg-emerald-50 dark:bg-emerald-950/40 rounded-xl border border-emerald-200 dark:border-emerald-800/60 flex items-center justify-between col-span-full">
+                      <div className="flex items-center gap-2">
+                        <Clock size={16} className="text-emerald-600 dark:text-emerald-400" />
+                        <div>
+                          <div className="text-xs font-bold text-emerald-900 dark:text-emerald-200">
+                            2942 s.K. m. 10/son Otomatik 4 Ay Bitiş Tarihi:
+                          </div>
+                          <div className="text-[11px] text-emerald-700 dark:text-emerald-400">
+                            Dava tarihi {formatTrDate(davaTarihi)} + 4 ay = Yasal faiz başlangıcı
+                          </div>
+                        </div>
+                      </div>
+                      <span className="text-sm font-extrabold text-emerald-700 dark:text-emerald-300 bg-white dark:bg-slate-900 px-3 py-1.5 rounded-lg border border-emerald-300 dark:border-emerald-700">
+                        {formatTrDate(dortAySonrasiTarih)}
+                      </span>
+                    </div>
+                  )}
+
+                  {faizKurali === "olay_tarihi" && (
+                    <div>
+                      <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">
+                        Olay / Hasar / Telef Tarihi (TBK m. 117/2)
+                      </label>
+                      <input
+                        type="date"
+                        value={olayTarihi}
+                        onChange={(e) => setOlayTarihi(e.target.value)}
+                        className="w-full px-3 py-2 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-xs font-medium text-slate-800 dark:text-slate-200"
+                      />
+                    </div>
+                  )}
+
+                  {faizKurali === "temerrut_ihtar" && (
+                    <div>
+                      <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">
+                        Temerrüt / İhtarname Tarihi (TTK m. 9 & 1530)
+                      </label>
+                      <input
+                        type="date"
+                        value={temerrutTarihi}
+                        onChange={(e) => setTemerrutTarihi(e.target.value)}
+                        className="w-full px-3 py-2 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-xs font-medium text-slate-800 dark:text-slate-200"
+                      />
+                    </div>
+                  )}
+                </div>
+
+                {/* Düzenlenebilir Bilirkişi Faiz Tavsiye Metni */}
+                <div>
+                  <div className="flex justify-between items-center mb-1.5">
+                    <label className="text-xs font-bold text-slate-700 dark:text-slate-300">
+                      Rapora Eklenecek Faiz Tavsiye ve Gerekçe Metni:
+                    </label>
+                    {customFaizGerekcesi && (
+                      <button
+                        type="button"
+                        onClick={() => setCustomFaizGerekcesi("")}
+                        className="text-[11px] text-amber-600 dark:text-amber-400 hover:underline flex items-center gap-1 font-semibold"
+                      >
+                        <RotateCcw size={12} /> Varsayılan Kanuni Metne Sıfırla
+                      </button>
+                    )}
+                  </div>
+                  <textarea
+                    rows={4}
+                    value={customFaizGerekcesi || generatedFaizMetni}
+                    onChange={(e) => setCustomFaizGerekcesi(e.target.value)}
+                    className="w-full p-3 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-xs text-slate-800 dark:text-slate-200 leading-relaxed font-sans"
+                    placeholder="Faiz gerekçesini buraya yazabilir veya varsayılan kanuni metni kullanabilirsiniz..."
+                  />
+                </div>
+              </div>
+            )}
+          </div>
+
           <div className="flex justify-between pt-4 border-t border-slate-200 dark:border-slate-800">
             <button
               onClick={() => setCurrentStep(3)}
@@ -2662,19 +3084,73 @@ ${
                 )}
               </div>
 
-              {/* Bölüm V */}
+              {/* Bölüm V: FAİZ VE TEMERRÜT TAVSİYE MATRİSİ */}
+              {faizHesabiAktif && (
+                <div className="space-y-2">
+                  <h3 className="font-bold text-xs uppercase border-b border-slate-300 pb-1 flex items-center justify-between">
+                    <span>V. FAİZ TÜRÜ VE BAŞLANGIÇ TARİHİ TAVSİYESİ (HÂKİMİN TAKDİRİNE SUNULMAK ÜZERE)</span>
+                    <span className="text-[10px] font-semibold text-emerald-800 bg-emerald-50 px-2 py-0.5 rounded border border-emerald-200">
+                      {faizTuru === "ticari_avans"
+                        ? "Ticari Temerrüt (Avans) Faizi"
+                        : faizTuru === "kademeli_yasal"
+                        ? "Dönemsel Kademeli Yasal Faiz"
+                        : "Kanuni Yasal Faiz"} (%{faizOraniPct})
+                    </span>
+                  </h3>
+                  <div className="p-3 bg-slate-50 rounded border border-slate-200 font-sans text-xs space-y-2">
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-2 text-[11px]">
+                      <div>
+                        <span className="text-slate-500 font-medium">Yasal Dayanak & İçtihat: </span>
+                        <span className="font-bold text-slate-800">
+                          {faizKurali === "kamulastirma_4ay"
+                            ? "2942 s.K. m. 10/son & Yargıtay 5. HD"
+                            : faizKurali === "donem_sonu_kademeli"
+                            ? "TMK m. 995 & Yargıtay 8. HD (Dönem Sonu Kademeli)"
+                            : faizKurali === "olay_tarihi"
+                            ? "TBK m. 117/2 (Olay Tarihinden Faiz)"
+                            : faizKurali === "temerrut_ihtar"
+                            ? "TTK m. 9 & 1530 (Ticari Temerrüt/Avans Faizi)"
+                            : "HMK & 3095 s.K. m. 1"}
+                        </span>
+                      </div>
+                      <div>
+                        <span className="text-slate-500 font-medium">Tavsiye Başlangıç Tarihi: </span>
+                        <span className="font-bold text-emerald-700">
+                          {faizKurali === "kamulastirma_4ay"
+                            ? `${formatTrDate(dortAySonrasiTarih)} (Dava + 4 Ay)`
+                            : faizKurali === "donem_sonu_kademeli"
+                            ? "Her Bir Dönem Sonu İtibarıyla Kademeli"
+                            : faizKurali === "olay_tarihi"
+                            ? `${formatTrDate(olayTarihi)} (Olay Tarihi)`
+                            : faizKurali === "temerrut_ihtar"
+                            ? `${formatTrDate(temerrutTarihi)} (Temerrüt/İhtar)`
+                            : formatTrDate(davaTarihi)}
+                        </span>
+                      </div>
+                    </div>
+                    <p className="text-slate-700 text-xs leading-relaxed whitespace-pre-line border-t border-slate-200 pt-2 font-serif">
+                      {generatedFaizMetni}
+                    </p>
+                    <p className="text-[10px] text-slate-400 italic">
+                      * Not: HMK m. 279/4 uyarınca faiz yürütülmesi, türü ve başlangıç tarihi hususunda nihai hüküm kurma yetkisi münhasıran Sayın Mahkemenin takdirindedir.
+                    </p>
+                  </div>
+                </div>
+              )}
+
+              {/* Bölüm VI */}
               <div>
                 <h3 className="font-bold text-xs uppercase border-b border-slate-300 pb-1 mb-2">
-                  V. HMK 279 UYUMLU SONUÇ VE KANAAT
+                  {faizHesabiAktif ? "VI" : "V"}. HMK 279 UYUMLU SONUÇ VE KANAAT
                 </h3>
                 <p className="whitespace-pre-line">{generatedKanaatMetni}</p>
               </div>
 
-              {/* Bölüm VI: MUHALEFET ŞERHİ (KARŞI OY) */}
+              {/* Bölüm VII: MUHALEFET ŞERHİ (KARŞI OY) */}
               {raporTuru === "heyet_3" && kararTuru === "oycoklugu" && (
                 <div className="p-3.5 rounded-xl border border-amber-300 bg-amber-50/70 text-xs space-y-1.5">
                   <h3 className="font-bold text-amber-900 uppercase tracking-wide border-b border-amber-300 pb-1 flex items-center justify-between">
-                    <span>VI. MUHALEFET ŞERHİ (KARŞI OY GEREKÇESİ)</span>
+                    <span>{faizHesabiAktif ? "VII" : "VI"}. MUHALEFET ŞERHİ (KARŞI OY GEREKÇESİ)</span>
                     <span className="text-[10px] bg-amber-200 px-2 py-0.5 rounded font-bold">
                       Muhalif: {muhalifBilirkisiAdi}
                     </span>
