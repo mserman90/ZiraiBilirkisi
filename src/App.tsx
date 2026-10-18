@@ -92,6 +92,7 @@ import YemlerBeslemeView from "./components/YemlerBeslemeView";
 import HeroView from "./components/HeroView";
 import TarimVeriArsiviView from "./components/TarimVeriArsiviView";
 import OrnekRaporlarView from "./components/OrnekRaporlarView";
+import IctihatAramaView from "./components/IctihatAramaView";
 import {
   UFE_RATES,
   ICTIHAT_DB,
@@ -1618,28 +1619,9 @@ export default function App() {
               </div>
             )}
 
-            {/* ICTIHAT */}
+            {/* AKILLI İÇTİHAT ARAMA & RESMİ SİTELER */}
             {activeTab === "ictihat" && (
-              <div className="bg-white p-6 rounded-2xl border border-slate-200 space-y-4">
-                <h3 className="font-bold flex items-center gap-2"><Gavel size={18} className="text-violet-600" /> Akıllı İçtihat Arama</h3>
-                <div className="flex gap-2">
-                  <input
-                    value={ictihatQuery}
-                    onChange={(e) => setIctihatQuery(e.target.value)}
-                    placeholder="sulu tarım KFO, ecrimisil ÜFE..."
-                    className="flex-1 p-2.5 border rounded-xl text-xs outline-none"
-                  />
-                  <button onClick={performIctihatSearch} className="px-4 py-2 bg-violet-600 text-white rounded-xl font-bold text-xs">Ara</button>
-                </div>
-                <div className="space-y-3">
-                  {(hasSearched ? ictihatResults : ICTIHAT_DB).map((c, i) => (
-                    <div key={i} className="p-4 bg-slate-50 border rounded-xl text-xs space-y-1">
-                      <p className="font-bold text-violet-900">{c.daire} • {c.esas}</p>
-                      <p className="text-slate-600">{c.metin}</p>
-                    </div>
-                  ))}
-                </div>
-              </div>
+              <IctihatAramaView showToast={showToast} />
             )}
 
             {/* TÜİK TARIM VERİ ARŞİVİ & ÇEGF & ÜFE */}
