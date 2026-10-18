@@ -13,7 +13,8 @@ export type TabId =
   | "hayvancilik"
   | "yemlerBesleme"
   | "tarimRaporlar"
-  | "hayvancilikRaporlar";
+  | "hayvancilikRaporlar"
+  | "raporOtomasyonu";
 
 export type IlkeMadde = {
   id: string;

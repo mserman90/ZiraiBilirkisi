@@ -95,6 +95,7 @@ import HeroView from "./components/HeroView";
 import TarimVeriArsiviView from "./components/TarimVeriArsiviView";
 import OrnekRaporlarView from "./components/OrnekRaporlarView";
 import IctihatAramaView from "./components/IctihatAramaView";
+import RaporOtomasyonuView from "./components/RaporOtomasyonuView";
 import {
   UFE_RATES,
   ICTIHAT_DB,
@@ -1025,6 +1026,7 @@ export default function App() {
 
   const navItems = [
     // 01 Tarım
+    { id: "raporOtomasyonu" as TabId, label: "Adım Adım Rapor Otomasyonu", icon: <FileCheck size={18} />, group: "tarim", badge: "YÖNLENDİRMELİ" },
     { id: "sihirbaz" as TabId, label: "01.05 Zirai Değerleme (Sihirbaz)", icon: <Wand2 size={18} />, group: "tarim", badge: "KFO / ODA" },
     { id: "veriarsivi" as TabId, label: "Tarım Veri Arşivi", icon: <Database size={18} />, group: "tarim" },
     { id: "tarimRaporlar" as TabId, label: "Tarım Örnek Raporları", icon: <FileText size={18} />, group: "tarim", badge: "İÇTİHATLI" },
@@ -1836,6 +1838,14 @@ export default function App() {
               <OrnekRaporlarView
                 showToast={showToast}
                 defaultCategory="hayvancilik"
+              />
+            )}
+
+            {/* ADIM ADIM REHBERLİ RAPOR OTOMASYONU */}
+            {activeTab === "raporOtomasyonu" && (
+              <RaporOtomasyonuView
+                showToast={showToast}
+                onGoToWizard={() => setActiveTab("sihirbaz")}
               />
             )}
           </div>

@@ -59,20 +59,20 @@ export default function HeroView({ onSelectTab }: HeroViewProps) {
           {/* Aksiyon Butonları */}
           <div className="flex flex-wrap items-center gap-3 pt-2">
             <button
-              onClick={() => onSelectTab("uyduParsel")}
+              onClick={() => onSelectTab("raporOtomasyonu")}
               className="flex items-center gap-2.5 px-6 py-3.5 rounded-2xl bg-gradient-to-r from-emerald-500 to-teal-500 text-slate-950 font-bold text-sm hover:from-emerald-400 hover:to-teal-400 shadow-lg shadow-emerald-500/25 transition-all transform hover:-translate-y-0.5"
             >
-              <Satellite size={18} />
-              <span>Uydu Parsel AI'ı Başlat</span>
+              <FileCheck size={18} />
+              <span>Adım Adım Rapor Otomasyonu</span>
               <ArrowRight size={16} />
             </button>
 
             <button
-              onClick={() => onSelectTab("sihirbaz")}
+              onClick={() => onSelectTab("uyduParsel")}
               className="flex items-center gap-2 px-5 py-3.5 rounded-2xl bg-white/10 hover:bg-white/15 text-white font-semibold text-sm border border-white/15 backdrop-blur-sm transition"
             >
-              <Wand2 size={16} className="text-emerald-400" />
-              <span>01.05 Zirai Değerleme</span>
+              <Satellite size={16} className="text-emerald-400" />
+              <span>Uydu Parsel AI</span>
             </button>
 
             <button
