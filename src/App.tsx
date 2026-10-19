@@ -1,38 +1,16 @@
 import React, { useState, useEffect } from "react";
-import ResmiUstBar, { AnaNavigasyon } from "./components/resmi/ResmiUstBar";
-import RaporlarimView from "./components/resmi/RaporlarimView";
-import SihirbazView from "./components/resmi/SihirbazView";
-import KutuphaneView from "./components/resmi/KutuphaneView";
-import PwaInstallModal from "./components/PwaInstallModal";
-import HizliRehberModal from "./components/HizliRehberModal";
-import CommandPaletteModal from "./components/CommandPaletteModal";
-import {
-  BilirKisiRaporu,
-  ORNEK_RAPORLAR_LISTESI,
-  YEDI_ADIM_TANIMLARI,
-} from "./data/fields";
-import { TabId } from "./types";
+import IndexPage from "@/pages/Index";
+import PwaInstallModal from "@/components/PwaInstallModal";
+import HizliRehberModal from "@/components/HizliRehberModal";
+import CommandPaletteModal from "@/components/CommandPaletteModal";
+import { TabId } from "@/types";
 
-// Gelişmiş Alt Modüller (Kütüphane veya Arama üzerinden erişilebilir)
-import RaporOtomasyonuView from "./components/RaporOtomasyonuView";
-import HayvancilikRaporOtomasyonuView from "./components/HayvancilikRaporOtomasyonuView";
-import TarimVeriArsiviView from "./components/TarimVeriArsiviView";
-import IctihatAramaView from "./components/IctihatAramaView";
-import HayvancilikView from "./components/HayvancilikView";
-import YemlerBeslemeView from "./components/YemlerBeslemeView";
-import SutUrunleriView from "./components/SutUrunleriView";
-import NdviPanel from "./components/NdviPanel";
-
+/**
+ * App.tsx — Router / Shell
+ * Shadcn-UI & Tasarım Sistemi standartlarına göre yapılandırılmış kabuk.
+ * Sayfa yönlendirmeleri, global diyaloglar ve toast bildirimlerini yönetir.
+ */
 export default function App() {
-  // Ana Navigasyon: "raporlarim" | "kutuphane" | "sihirbaz"
-  const [aktifSayfa, setAktifSayfa] = useState<AnaNavigasyon>("raporlarim");
-
-  // Aktif açılan veya düzenlenen bilirkişi raporu
-  const [aktifRapor, setAktifRapor] = useState<BilirKisiRaporu>(ORNEK_RAPORLAR_LISTESI[0]);
-
-  // Özel alt modül görünümü (Arama veya kütüphane üzerinden doğrudan araç açıldığında)
-  const [altModulTab, setAltModulTab] = useState<TabId | null>(null);
-
   // Bildirim Toast'ı
   const [toast, setToast] = useState<string | null>(null);
 
@@ -79,7 +57,7 @@ export default function App() {
     setTimeout(() => setToast(null), 3200);
   };
 
-  // Klavye Kısayolları (Ctrl+K, F1, Esc)
+  // Klavye Kısayolları (Ctrl+K, F1)
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
       if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === "k") {
@@ -94,148 +72,23 @@ export default function App() {
     return () => window.removeEventListener("keydown", handleKeyDown);
   }, []);
 
-  // Yeni Rapor Başlat
-  const handleYeniRaporBaslat = () => {
-    const yeniId = `rap-${Date.now().toString().slice(-4)}`;
-    const yeniRapor: BilirKisiRaporu = {
-      id: yeniId,
-      baslik: "Yeni Bilirkişi Rapor Dosyası",
-      dosyaNo: `${new Date().getFullYear()}/... Esas`,
-      mahkeme: "Asliye Hukuk Mahkemesi",
-      alan: "ziraat",
-      durum: "taslak",
-      davaTuru: "Kamulaştırma Bedel Tespiti (m. 10)",
-      kesifTarihi: new Date().toLocaleDateString("tr-TR"),
-      sonGuncelleme: "Yeni oluşturuldu",
-      mevcutAdim: 1,
-      tamamlanmaYuzdesi: 10,
-      tarafBilgisi: "Davacı / Davalı",
-      ozet: "Henüz keşif ve hesaplama verileri girilmedi.",
-      bolumMetinleri: {
-        1: YEDI_ADIM_TANIMLARI[0].varsayilanMetin,
-        2: YEDI_ADIM_TANIMLARI[1].varsayilanMetin,
-        3: YEDI_ADIM_TANIMLARI[2].varsayilanMetin,
-        4: YEDI_ADIM_TANIMLARI[3].varsayilanMetin,
-        5: YEDI_ADIM_TANIMLARI[4].varsayilanMetin,
-        6: YEDI_ADIM_TANIMLARI[5].varsayilanMetin,
-        7: YEDI_ADIM_TANIMLARI[6].varsayilanMetin,
-      },
-      bolumKontrolleri: {
-        1: YEDI_ADIM_TANIMLARI[0].kontroller,
-        2: YEDI_ADIM_TANIMLARI[1].kontroller,
-        3: YEDI_ADIM_TANIMLARI[2].kontroller,
-        4: YEDI_ADIM_TANIMLARI[3].kontroller,
-        5: YEDI_ADIM_TANIMLARI[4].kontroller,
-        6: YEDI_ADIM_TANIMLARI[5].kontroller,
-        7: YEDI_ADIM_TANIMLARI[6].kontroller,
-      },
-    };
-    setAktifRapor(yeniRapor);
-    setAltModulTab(null);
-    setAktifSayfa("sihirbaz");
-    showToast("Yeni rapor taslağı başlatıldı");
-  };
-
-  // Mevcut Raporu Aç / Düzenle
-  const handleRaporAc = (rapor: BilirKisiRaporu) => {
-    setAktifRapor(rapor);
-    setAltModulTab(null);
-    setAktifSayfa("sihirbaz");
-  };
-
-  // Arama / Komut Paletinden Tab Seçildiğinde
   const handleSelectTab = (tab: TabId) => {
-    if (tab === "hero" || tab === "raporOtomasyonu" || tab === "hayvancilikRaporOtomasyonu") {
-      setAltModulTab(null);
-      setAktifSayfa(tab === "hero" ? "raporlarim" : "sihirbaz");
-    } else if (tab === "tarimRaporlar" || tab === "hayvancilikRaporlar" || tab === "ictihat") {
-      setAltModulTab(null);
-      setAktifSayfa("kutuphane");
-    } else {
-      setAltModulTab(tab);
-    }
+    // Komut paleti tab seçimlerini yönetir
+    showToast(`${tab} modülü seçildi`);
   };
 
   return (
     <div className="min-h-screen bg-[hsl(var(--background))] text-[hsl(var(--card-foreground))] antialiased flex flex-col transition-colors duration-150">
-      {/* 1. ÜST BAR (APPSHELL) */}
-      <ResmiUstBar
-        aktifSayfa={aktifSayfa}
-        onSayfaDegistir={(sayfa) => {
-          setAltModulTab(null);
-          setAktifSayfa(sayfa);
-        }}
+      {/* Ana Sayfa Giriş Noktası */}
+      <IndexPage
         theme={theme}
         onThemeToggle={toggleTheme}
         onPwaClick={() => setShowInstallModal(true)}
         onRehberClick={() => setHizliRehberOpen(true)}
+        showToast={showToast}
       />
 
-      {/* 2. ANA İÇERİK ALANI */}
-      <div className="flex-1 w-full pb-16">
-        {/* Özel Bir Alt Modül Açıksa (Uydu, Yemler, Süt vb.) */}
-        {altModulTab ? (
-          <div className="max-w-[1440px] mx-auto px-4 sm:px-6 py-4">
-            <div className="mb-4">
-              <button
-                type="button"
-                onClick={() => setAltModulTab(null)}
-                className="btn-secondary h-9 px-3 text-[13px]"
-              >
-                ← Çalışma Tezgâhına Dön
-              </button>
-            </div>
-            {altModulTab === "veriarsivi" && <TarimVeriArsiviView showToast={showToast} />}
-            {altModulTab === "hayvancilik" && (
-              <HayvancilikView showToast={showToast} onGoToWizard={() => setAktifSayfa("sihirbaz")} />
-            )}
-            {altModulTab === "yemlerBesleme" && (
-              <YemlerBeslemeView showToast={showToast} onGoToWizard={() => setAktifSayfa("sihirbaz")} />
-            )}
-            {altModulTab === "sutTeknolojisi" && (
-              <SutUrunleriView showToast={showToast} onGoToReportAutomation={() => setAktifSayfa("sihirbaz")} />
-            )}
-            {altModulTab === "uyduParsel" && (
-              <NdviPanel
-                parselInfo={{ il: "Ankara", ilce: "Gölbaşı", ada: "102", parsel: "14", urun: "Buğday" }}
-                showToast={showToast}
-              />
-            )}
-          </div>
-        ) : (
-          <>
-            {/* SAYFA 1: RAPORLARIM (LİSTE EKRANI & HERO PANEL) */}
-            {aktifSayfa === "raporlarim" && (
-              <RaporlarimView
-                onYeniRapor={handleYeniRaporBaslat}
-                onRaporAc={handleRaporAc}
-                onRaporDuzenle={handleRaporAc}
-                onKutuphaneAc={() => setAktifSayfa("kutuphane")}
-              />
-            )}
-
-            {/* SAYFA 2: SİHİRBAZ EKRANI (ÜÇ KOLONLU ÇALIŞMA TEZGÂHI) */}
-            {aktifSayfa === "sihirbaz" && (
-              <SihirbazView
-                aktifRapor={aktifRapor}
-                onRaporKaydet={(guncel) => setAktifRapor(guncel)}
-                onGeriDon={() => setAktifSayfa("raporlarim")}
-                showToast={showToast}
-              />
-            )}
-
-            {/* SAYFA 3: KÜTÜPHANE EKRANI (2 KOLONLU BİLGİ YOĞUN EMSALLER) */}
-            {aktifSayfa === "kutuphane" && (
-              <KutuphaneView
-                onYeniRaporBaslat={handleYeniRaporBaslat}
-                showToast={showToast}
-              />
-            )}
-          </>
-        )}
-      </div>
-
-      {/* 3. MODALLAR VE DİYALOGLAR */}
+      {/* Global Modallar */}
       {commandPaletteOpen && (
         <CommandPaletteModal
           isOpen={commandPaletteOpen}
@@ -265,7 +118,7 @@ export default function App() {
         />
       )}
 
-      {/* 4. TOAST BİLDİRİMİ */}
+      {/* Toast Bildirimi */}
       {toast && (
         <div
           role="status"
