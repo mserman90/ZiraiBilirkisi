@@ -2,428 +2,374 @@
 
 @custom-variant dark (&:where(.dark, .dark *));
 
-/* PWA & Mobile Viewport / Notch Safe Area Utilities */
-@supports (padding-bottom: env(safe-area-inset-bottom)) {
-  .safe-area-bottom {
-    padding-bottom: calc(0.5rem + env(safe-area-inset-bottom));
-  }
-  .safe-area-top {
-    padding-top: env(safe-area-inset-top);
-  }
-  .safe-area-x {
-    padding-left: env(safe-area-inset-left);
-    padding-right: env(safe-area-inset-right);
-  }
-}
-
-/* Touch targets and tap highlight optimization */
-* {
-  -webkit-tap-highlight-color: transparent;
-}
-
-@media (max-width: 768px) {
-  .touch-target {
-    min-height: 44px;
-    min-width: 44px;
-  }
-}
-
-/* Smooth scrolling on mobile devices */
-html, body {
-  -webkit-overflow-scrolling: touch;
-  overscroll-behavior-y: none;
-}
-
-@media all and (display-mode: standalone) {
-  /* Standalone PWA adjustments */
-  body {
-    user-select: none;
-    -webkit-user-select: none;
-  }
-  input, textarea, select, [contenteditable="true"] {
-    user-select: text;
-    -webkit-user-select: text;
-  }
+@theme {
+  --font-serif: "Fraunces", Georgia, serif;
+  --font-sans: "Public Sans", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  --font-mono: "IBM Plex Mono", Menlo, Consolas, monospace;
 }
 
 /* -------------------------------------------------------------
- * SADE, TEMİZ, MİNİMALİST GLASSMORPHISM VE KONTRAST STANDARTLARI
+ * BİLİRKİŞİ RAPOR YAZMA OTOMASYONU — TASARIM SİSTEMİ TOKENS
  * ------------------------------------------------------------- */
 
-/* Temel Geçiş Efekti */
-html {
-  transition: background-color 0.25s ease, color 0.25s ease;
+:root {
+  /* Renk Sabitleri */
+  --primary: 155 61% 15%; /* #0F3D2E, orman yeşili — birincil butonlar, üst bar, dolgu paneller */
+  --primary-foreground: 44 60% 97%; /* #FBF9F4 — birincil üzerindeki metin */
+  --background: 44 33% 97%; /* #FBF9F3 — sıcak kâğıt zemini */
+  --card: 0 0% 100%; /* #FFFFFF — kart ve editör yüzeyi */
+  --card-foreground: 155 61% 15%;
+  --muted: 44 25% 93%; /* #F1ECE1 — ikincil metin, etiket arka planı */
+  --muted-foreground: 160 8% 38%; /* #5A6B63 — ikincil metin, etiket rengi */
+  --accent: 32 95% 37%; /* #B45309, amber — kenar notu, sık yapılan hata vurgusu, uyarı ikonları */
+  --accent-foreground: 44 60% 97%;
+  --border: 42 24% 87%; /* #E4DCCB */
+  --input: 42 24% 87%; /* #E4DCCB */
+  --ring: 155 61% 15%;
+  --destructive: 0 72% 45%; /* #DC2626 — yalnızca hata ve eksik bölüm */
+  --destructive-foreground: 0 0% 100%;
 }
 
-/* Gece Modu Kök Ayarları */
+.dark {
+  --primary: 155 45% 18%; /* #103427 */
+  --primary-foreground: 44 60% 97%;
+  --background: 155 30% 6%; /* #07130d */
+  --card: 155 24% 10%; /* #0f2219 */
+  --card-foreground: 44 60% 97%;
+  --muted: 155 18% 14%; /* #172a20 */
+  --muted-foreground: 155 10% 65%; /* #97aba0 */
+  --accent: 32 95% 42%; /* #c45b0a */
+  --accent-foreground: 44 60% 97%;
+  --border: 155 18% 20%; /* #233b30 */
+  --input: 155 18% 20%;
+  --ring: 155 50% 30%;
+  --destructive: 0 72% 45%;
+  --destructive-foreground: 0 0% 100%;
+}
+
+/* Temel Gövde ve Tipografi Kuralları */
+html {
+  font-family: "Public Sans", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  background-color: hsl(var(--background));
+  color: hsl(var(--primary));
+  line-height: 1.7;
+  -webkit-font-smoothing: antialiased;
+}
+
 html.dark {
   color-scheme: dark;
-}
-
-html.dark body {
-  background-color: #060911;
+  background-color: hsl(var(--background));
   color: #f1f5f9;
 }
 
-/* Glassmorphism Yardımcı Sınıfları */
-.glass-panel {
-  background: rgba(255, 255, 255, 0.78);
-  backdrop-filter: blur(16px);
-  -webkit-backdrop-filter: blur(16px);
-  border: 1px solid rgba(255, 255, 255, 0.85);
-  box-shadow: 0 4px 24px -1px rgba(0, 0, 0, 0.04), 0 2px 6px -1px rgba(0, 0, 0, 0.02);
+body {
+  background-color: hsl(var(--background));
+  color: inherit;
+  margin: 0;
+  padding: 0;
+  min-height: 100vh;
 }
 
-html.dark .glass-panel {
-  background: rgba(15, 23, 42, 0.72);
-  backdrop-filter: blur(16px);
-  -webkit-backdrop-filter: blur(16px);
-  border: 1px solid rgba(255, 255, 255, 0.08);
-  box-shadow: 0 4px 24px -1px rgba(0, 0, 0, 0.35);
+/* Başlıklar: Fraunces (serif, yüksek kontrast, resmî evrak karakteri) 600 */
+h1, .h1 {
+  font-family: "Fraunces", Georgia, serif;
+  font-weight: 600;
+  font-size: 2.5rem; /* 40px */
+  line-height: 1.15;
+  margin-top: 24px;
+  margin-bottom: 12px;
 }
 
-.glass-card {
-  background: rgba(255, 255, 255, 0.82);
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
-  border: 1px solid rgba(226, 232, 240, 0.8);
-  box-shadow: 0 4px 20px -2px rgba(0, 0, 0, 0.03);
-  transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+h2, .h2 {
+  font-family: "Fraunces", Georgia, serif;
+  font-weight: 600;
+  font-size: 1.75rem; /* 28px */
+  line-height: 1.25;
+  margin-top: 24px;
+  margin-bottom: 12px;
 }
 
-html.dark .glass-card {
-  background: rgba(15, 23, 42, 0.70);
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
-  border: 1px solid rgba(255, 255, 255, 0.08);
-  box-shadow: 0 4px 20px -2px rgba(0, 0, 0, 0.25);
+h3, .h3 {
+  font-family: "Fraunces", Georgia, serif;
+  font-weight: 600;
+  font-size: 1.25rem; /* 20px */
+  line-height: 1.35;
+  margin-top: 24px;
+  margin-bottom: 12px;
 }
 
-.glass-card:hover {
-  transform: translateY(-2px);
-  border-color: rgba(16, 185, 129, 0.4);
-  box-shadow: 0 12px 32px -4px rgba(16, 185, 129, 0.1);
+/* Monospace: IBM Plex Mono 500 — adım no, dosya no, ölçüm değerleri */
+.font-mono, .mono-data {
+  font-family: "IBM Plex Mono", Menlo, Consolas, monospace;
+  font-weight: 500;
 }
 
-html.dark .glass-card:hover {
-  border-color: rgba(16, 185, 129, 0.45);
-  box-shadow: 0 12px 32px -4px rgba(16, 185, 129, 0.18);
+/* Gövde ve Etiket Tipografi Ölçeği */
+.govde-metni {
+  font-family: "Public Sans", sans-serif;
+  font-size: 16px;
+  line-height: 1.7;
 }
 
-.glass-input {
-  background: rgba(255, 255, 255, 0.7);
-  backdrop-filter: blur(8px);
-  -webkit-backdrop-filter: blur(8px);
-  border: 1px solid rgba(226, 232, 240, 0.8);
-  transition: all 0.2s ease;
+.yardimci-metin {
+  font-family: "Public Sans", sans-serif;
+  font-size: 14px;
+  line-height: 1.6;
+  color: hsl(var(--muted-foreground));
 }
 
-html.dark .glass-input {
-  background: rgba(22, 32, 50, 0.6);
-  backdrop-filter: blur(8px);
-  -webkit-backdrop-filter: blur(8px);
-  border: 1px solid rgba(255, 255, 255, 0.1);
+.etiket-metni {
+  font-family: "Public Sans", sans-serif;
+  font-size: 12px;
+  line-height: 1.4;
+  letter-spacing: 0.02em;
+  font-weight: 500;
+  text-transform: uppercase;
 }
 
-.glass-input:focus {
-  background: rgba(255, 255, 255, 0.95);
-  border-color: #10b981;
-  box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.15);
+/* Editör Textarea: Public Sans 15px / 1.75 */
+.editor-textarea {
+  font-family: "Public Sans", sans-serif;
+  font-size: 15px;
+  line-height: 1.75;
+  min-height: 220px;
+  background-color: hsl(var(--card));
+  border: 1px solid hsl(var(--border));
+  border-radius: 8px;
+  padding: 14px;
+  width: 100%;
+  resize: vertical;
+  color: inherit;
+  transition: border-color 150ms ease-out, box-shadow 150ms ease-out;
 }
 
-html.dark .glass-input:focus {
-  background: rgba(22, 32, 50, 0.9);
-  border-color: #10b981;
-  box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.25);
-}
-
-/* Kart Yüzeyleri & Arka Plan Dönüşümleri (Glassmorphism Uyumlu) */
-html.dark .bg-white:not(.no-glass) {
-  background-color: rgba(15, 23, 42, 0.82) !important;
-  backdrop-filter: blur(14px);
-  -webkit-backdrop-filter: blur(14px);
-}
-
-html.dark .bg-\[\#f8fafc\] {
-  background-color: #060911 !important;
-}
-
-html.dark .bg-slate-50:not(.no-glass),
-html.dark .bg-slate-50\/40:not(.no-glass),
-html.dark .bg-slate-50\/50:not(.no-glass),
-html.dark .bg-slate-50\/60:not(.no-glass),
-html.dark .bg-slate-50\/70:not(.no-glass),
-html.dark .bg-slate-50\/80:not(.no-glass) {
-  background-color: rgba(19, 29, 49, 0.65) !important;
-  backdrop-filter: blur(10px);
-  -webkit-backdrop-filter: blur(10px);
-}
-
-html.dark .bg-slate-100,
-html.dark .bg-slate-100\/80,
-html.dark .bg-slate-200,
-html.dark .bg-slate-200\/70 {
-  background-color: rgba(30, 41, 59, 0.7) !important;
-}
-
-/* Kenarlıklar */
-html.dark .border-slate-200,
-html.dark .border-slate-200\/60,
-html.dark .border-slate-200\/70,
-html.dark .border-slate-200\/80,
-html.dark .border-slate-100 {
-  border-color: rgba(255, 255, 255, 0.08) !important;
-}
-
-html.dark .border-slate-300 {
-  border-color: rgba(255, 255, 255, 0.12) !important;
-}
-
-/* Metin Kontrastı ve Okunabilirlik Kuralları */
-html.dark .text-slate-950,
-html.dark .text-slate-900,
-html.dark .text-slate-800 {
-  color: #f8fafc !important;
-}
-
-html.dark .text-slate-700 {
-  color: #e2e8f0 !important;
-}
-
-html.dark .text-slate-600 {
-  color: #cbd5e1 !important;
-}
-
-html.dark .text-slate-500 {
-  color: #94a3b8 !important;
-}
-
-/* Renkli Uyarı & Rozet Metinleri için Gece Modu Aydınlatması */
-html.dark .text-emerald-950,
-html.dark .text-emerald-900,
-html.dark .text-emerald-800,
-html.dark .text-emerald-700 {
-  color: #6ee7b7 !important;
-}
-
-html.dark .text-amber-950,
-html.dark .text-amber-900,
-html.dark .text-amber-800,
-html.dark .text-amber-700 {
-  color: #fde68a !important;
-}
-
-html.dark .text-sky-950,
-html.dark .text-sky-900,
-html.dark .text-sky-800,
-html.dark .text-sky-700,
-html.dark .text-blue-950,
-html.dark .text-blue-900,
-html.dark .text-blue-800,
-html.dark .text-blue-700 {
-  color: #7dd3fc !important;
-}
-
-html.dark .text-indigo-950,
-html.dark .text-indigo-900,
-html.dark .text-indigo-800,
-html.dark .text-indigo-700 {
-  color: #a5b4fc !important;
-}
-
-html.dark .text-rose-950,
-html.dark .text-rose-900,
-html.dark .text-rose-800,
-html.dark .text-rose-700,
-html.dark .text-red-900,
-html.dark .text-red-800 {
-  color: #fda4af !important;
-}
-
-html.dark .text-lime-900,
-html.dark .text-lime-700,
-html.dark .text-green-800,
-html.dark .text-green-700 {
-  color: #bef264 !important;
-}
-
-html.dark .text-purple-900,
-html.dark .text-purple-800,
-html.dark .text-violet-800,
-html.dark .text-violet-700 {
-  color: #d8b4fe !important;
-}
-
-/* Buton İstisnaları: Parlak renkli butonların üzerindeki siyah yazılar siyah kalmalıdır */
-html.dark button.bg-emerald-500,
-html.dark button.bg-gradient-to-r,
-html.dark .bg-emerald-500.text-slate-950,
-html.dark .bg-amber-400.text-slate-950,
-html.dark [class*="from-emerald-500"][class*="text-slate-950"] {
-  color: #020617 !important;
-}
-
-/* Rozet ve Pill Arka Planlarının Gece Modu Uyarlaması */
-html.dark .bg-emerald-50,
-html.dark .bg-emerald-50\/40,
-html.dark .bg-emerald-50\/50,
-html.dark .bg-emerald-50\/60,
-html.dark .bg-emerald-50\/70,
-html.dark .bg-emerald-50\/80,
-html.dark .bg-emerald-100 {
-  background-color: rgba(6, 78, 59, 0.35) !important;
-  border-color: rgba(16, 185, 129, 0.4) !important;
-}
-
-html.dark .bg-amber-50,
-html.dark .bg-amber-50\/40,
-html.dark .bg-amber-50\/50,
-html.dark .bg-amber-50\/60,
-html.dark .bg-amber-50\/70,
-html.dark .bg-amber-100 {
-  background-color: rgba(120, 53, 15, 0.35) !important;
-  border-color: rgba(245, 158, 11, 0.4) !important;
-}
-
-html.dark .bg-sky-50,
-html.dark .bg-blue-50,
-html.dark .bg-blue-50\/40,
-html.dark .bg-blue-50\/60,
-html.dark .bg-blue-50\/70,
-html.dark .bg-blue-100 {
-  background-color: rgba(12, 74, 110, 0.35) !important;
-  border-color: rgba(14, 165, 233, 0.4) !important;
-}
-
-html.dark .bg-indigo-50,
-html.dark .bg-indigo-50\/40,
-html.dark .bg-indigo-50\/60,
-html.dark .bg-indigo-50\/70,
-html.dark .bg-indigo-100 {
-  background-color: rgba(49, 46, 129, 0.35) !important;
-  border-color: rgba(99, 102, 241, 0.4) !important;
-}
-
-html.dark .bg-rose-50,
-html.dark .bg-rose-50\/60,
-html.dark .bg-rose-50\/70,
-html.dark .bg-rose-100,
-html.dark .bg-red-50,
-html.dark .bg-red-50\/30,
-html.dark .bg-red-100 {
-  background-color: rgba(136, 19, 55, 0.35) !important;
-  border-color: rgba(244, 63, 94, 0.4) !important;
-}
-
-html.dark .bg-lime-50,
-html.dark .bg-lime-50\/40,
-html.dark .bg-lime-50\/60,
-html.dark .bg-lime-100 {
-  background-color: rgba(54, 83, 20, 0.35) !important;
-  border-color: rgba(132, 204, 22, 0.4) !important;
-}
-
-html.dark .bg-purple-50,
-html.dark .bg-purple-100,
-html.dark .bg-violet-50,
-html.dark .bg-violet-100 {
-  background-color: rgba(76, 29, 149, 0.35) !important;
-  border-color: rgba(168, 85, 247, 0.4) !important;
-}
-
-/* Form Elemanları (Inputs, Selects, Textareas) */
-html.dark input[type="text"],
-html.dark input[type="number"],
-html.dark input[type="email"],
-html.dark input[type="search"],
-html.dark select,
-html.dark textarea {
-  background-color: #162032 !important;
-  color: #f8fafc !important;
-  border-color: #334155 !important;
-}
-
-html.dark select option {
-  background-color: #0f172a !important;
-  color: #f8fafc !important;
-}
-
-html.dark input::placeholder,
-html.dark textarea::placeholder {
-  color: #64748b !important;
-}
-
-html.dark input:focus,
-html.dark select:focus,
-html.dark textarea:focus {
-  border-color: #10b981 !important;
+.editor-textarea:focus {
   outline: none;
+  border-color: #0F3D2E;
+  box-shadow: 0 0 0 2px rgba(15, 61, 46, 0.2);
 }
 
-/* Tablo Başlıkları ve Satırları */
-html.dark table thead th {
-  background-color: #131d31 !important;
-  color: #e2e8f0 !important;
-  border-color: #273549 !important;
+.dark .editor-textarea:focus {
+  border-color: #34d399;
+  box-shadow: 0 0 0 2px rgba(52, 211, 153, 0.2);
 }
 
-html.dark table tbody td {
-  border-color: #1e293b !important;
-  color: #f1f5f9 !important;
-}
-
-html.dark table tbody tr:hover {
-  background-color: rgba(255, 255, 255, 0.03) !important;
-}
-
-/* Leaflet ve Harita Kontrolleri */
-html.dark .leaflet-popup-content-wrapper,
-html.dark .leaflet-popup-tip {
-  background: #0f172a !important;
-  color: #f8fafc !important;
-  border: 1px solid #334155;
-}
-
-html.dark .leaflet-control-zoom a {
-  background: #0f172a !important;
-  color: #f8fafc !important;
-  border-color: #334155 !important;
-}
-
-/* Recharts & Grafik Öğeleri */
-html.dark .recharts-cartesian-grid line {
-  stroke: #273549 !important;
-}
-
-html.dark .recharts-text,
-html.dark .recharts-cartesian-axis-tick text {
-  fill: #94a3b8 !important;
-}
-
-html.dark .recharts-cartesian-axis-line {
-  stroke: #334155 !important;
-}
-
-html.dark .recharts-legend-item-text {
-  color: #e2e8f0 !important;
-}
-
-/* Gece Modu Scrollbar */
-html.dark ::-webkit-scrollbar {
-  width: 8px;
-  height: 8px;
-}
-
-html.dark ::-webkit-scrollbar-track {
-  background: #080c14;
-}
-
-html.dark ::-webkit-scrollbar-thumb {
-  background: #273549;
+/* -------------------------------------------------------------
+ * BELİRLEYİCİ GÖRSEL FİKİR: KANUN MADDESİ KENAR ÇİZGİSİ
+ * ------------------------------------------------------------- */
+.kenar-notu {
+  border: 1px solid hsl(var(--border));
+  border-left: 3px solid #B45309 !important;
+  background-color: hsl(var(--muted));
+  padding: 12px;
   border-radius: 4px;
 }
 
-html.dark ::-webkit-scrollbar-thumb:hover {
-  background: #334155;
+.kenar-notu-hata {
+  border: 1px solid hsl(var(--border));
+  border-left: 3px solid #DC2626 !important;
+  background-color: rgba(220, 38, 38, 0.06);
+  padding: 12px;
+  border-radius: 4px;
 }
 
+/* -------------------------------------------------------------
+ * ELEVATION, BORDER VE YARIÇAP KURALLARI
+ * ------------------------------------------------------------- */
+.resmi-kart {
+  background-color: hsl(var(--card));
+  border: 1px solid hsl(var(--border));
+  border-radius: 12px;
+  box-shadow: 0 1px 2px rgba(15, 61, 46, 0.06);
+}
+
+.resmi-ustbar {
+  background-color: #0F3D2E;
+  border-bottom: 1px solid rgba(228, 220, 203, 0.2);
+  color: #FBF9F4;
+}
+
+.resmi-hero-panel {
+  background-color: #0F3D2E;
+  color: #FBF9F4;
+  border-radius: 12px;
+  border: 1px solid rgba(228, 220, 203, 0.15);
+}
+
+/* -------------------------------------------------------------
+ * BUTONLAR VE İKONLAR
+ * ------------------------------------------------------------- */
+.btn-primary {
+  height: 40px;
+  padding: 0 16px;
+  background-color: #0F3D2E;
+  color: #FBF9F4;
+  font-family: "Public Sans", sans-serif;
+  font-weight: 600;
+  font-size: 14px;
+  border-radius: 8px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  cursor: pointer;
+  border: 1px solid transparent;
+  transition: background-color 150ms ease-out, opacity 150ms ease-out;
+}
+
+.btn-primary:hover {
+  background-color: #16533f;
+}
+
+.btn-secondary {
+  height: 40px;
+  padding: 0 16px;
+  background-color: hsl(var(--card));
+  color: hsl(var(--primary));
+  font-family: "Public Sans", sans-serif;
+  font-weight: 600;
+  font-size: 14px;
+  border-radius: 8px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  cursor: pointer;
+  border: 1px solid hsl(var(--border));
+  transition: background-color 150ms ease-out, border-color 150ms ease-out;
+}
+
+.btn-secondary:hover {
+  background-color: hsl(var(--muted));
+  border-color: #B45309;
+}
+
+.btn-icon-40 {
+  width: 40px;
+  height: 40px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 9999px; /* Tam yuvarlak */
+  cursor: pointer;
+  transition: background-color 150ms ease-out;
+}
+
+/* -------------------------------------------------------------
+ * RESMİ KARE BADGE (4px Yarıçap, 12px Metin, %12 Opaklık)
+ * ------------------------------------------------------------- */
+.alan-badge-ziraat {
+  background-color: rgba(21, 128, 61, 0.12);
+  color: #15803D;
+  border-radius: 4px;
+  font-size: 12px;
+  font-weight: 600;
+  padding: 3px 8px;
+  letter-spacing: 0.01em;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.alan-badge-gida {
+  background-color: rgba(180, 83, 9, 0.12);
+  color: #B45309;
+  border-radius: 4px;
+  font-size: 12px;
+  font-weight: 600;
+  padding: 3px 8px;
+  letter-spacing: 0.01em;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.alan-badge-hayvancilik {
+  background-color: rgba(14, 116, 144, 0.12);
+  color: #0E7490;
+  border-radius: 4px;
+  font-size: 12px;
+  font-weight: 600;
+  padding: 3px 8px;
+  letter-spacing: 0.01em;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+
+/* Durum Badge'leri */
+.durum-badge-taslak {
+  background-color: hsl(var(--muted));
+  color: hsl(var(--muted-foreground));
+  border-radius: 4px;
+  font-size: 12px;
+  font-weight: 500;
+  padding: 2px 8px;
+}
+
+.durum-badge-inceleniyor {
+  background-color: rgba(180, 83, 9, 0.12);
+  color: #B45309;
+  border-radius: 4px;
+  font-size: 12px;
+  font-weight: 600;
+  padding: 2px 8px;
+}
+
+.durum-badge-tamamlandi {
+  background-color: rgba(21, 128, 61, 0.12);
+  color: #15803D;
+  border-radius: 4px;
+  font-size: 12px;
+  font-weight: 600;
+  padding: 2px 8px;
+}
+
+.durum-badge-arsiv {
+  background-color: #E5E7EB;
+  color: #6B7280;
+  border-radius: 4px;
+  font-size: 12px;
+  font-weight: 500;
+  padding: 2px 8px;
+}
+
+/* -------------------------------------------------------------
+ * ERİŞİLEBİLİRLİK & RESPONSIVE
+ * ------------------------------------------------------------- */
+button:focus-visible, a:focus-visible, input:focus-visible, select:focus-visible, textarea:focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 2px #0F3D2E, 0 0 0 4px rgba(180, 83, 9, 0.4);
+}
+
+.dark button:focus-visible, .dark a:focus-visible, .dark input:focus-visible, .dark select:focus-visible, .dark textarea:focus-visible {
+  box-shadow: 0 0 0 2px #34d399, 0 0 0 4px rgba(245, 158, 11, 0.4);
+}
+
+/* Dokunma hedefleri min 40px */
+.touch-min {
+  min-height: 40px;
+  min-width: 40px;
+}
+
+/* Yatay kaydırma çubuğu gizleme (Adım şeridi mobilde) */
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+.no-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+/* Yükleniyor İskelet Animasyonu */
+@keyframes resmi-iskelet {
+  0% { opacity: 0.5; }
+  50% { opacity: 0.9; }
+  100% { opacity: 0.5; }
+}
+
+.iskelet-satir {
+  animation: resmi-iskelet 1.5s infinite ease-in-out;
+  background-color: hsl(var(--muted));
+  border-radius: 4px;
+}

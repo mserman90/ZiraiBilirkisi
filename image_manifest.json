@@ -1,0 +1,14 @@
+{
+  "assets": [
+    {
+      "id": "hero_saha_incelemesi",
+      "path": "hero-saha-incelemesi.jpg",
+      "relativePath": "/hero-saha-incelemesi.jpg",
+      "aspectRatio": "16:9",
+      "description": "Tarla/ürün incelemesini çağrıştıran, metin bindirmesiz, koyu yeşil tonlanmış resmi saha incelemesi fotoğrafı",
+      "placement": "Karşılama ekranı hero paneli sağ %45'lik alan",
+      "tone": "Koyu yeşil, resmi evrak uyumlu, doğal gün ışığı",
+      "createdAt": "2026-10-19T20:11:00Z"
+    }
+  ]
+}
