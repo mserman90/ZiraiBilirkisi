@@ -20,6 +20,7 @@ import {
 import RaporKarti from "./RaporKarti";
 import ResmiHeroPanel from "./ResmiHeroPanel";
 import KenarNotu from "./KenarNotu";
+import { exportReportToWord } from "../../utils/exportWord";
 
 interface RaporlarimViewProps {
   onYeniRapor: () => void;
@@ -223,6 +224,7 @@ export default function RaporlarimView({
               rapor={rapor}
               onAc={onRaporAc}
               onDuzenle={onRaporDuzenle}
+              onWordIndir={(r) => exportReportToWord(r)}
               onArsivle={handleArsivle}
               onSil={handleSil}
             />

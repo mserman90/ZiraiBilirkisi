@@ -16,6 +16,8 @@ import {
   Download,
   Printer,
   Sparkles,
+  Paperclip,
+  FileText,
 } from "lucide-react";
 import {
   BilirKisiRaporu,
@@ -23,9 +25,13 @@ import {
   AdimVerisi,
   ALAN_TANIMLARI,
   ORNEK_RAPORLAR_LISTESI,
+  RaporEki,
 } from "../../data/fields";
 import KenarNotu from "./KenarNotu";
 import AdimSeridi from "./AdimSeridi";
+import AttachmentManager from "./AttachmentManager";
+import AiDegerlendirmeModal from "./AiDegerlendirmeModal";
+import { exportReportToWord } from "../../utils/exportWord";
 
 interface SihirbazViewProps {
   aktifRapor?: BilirKisiRaporu;
@@ -45,6 +51,9 @@ export default function SihirbazView({
 
   // Rapor durumları
   const [rapor, setRapor] = useState<BilirKisiRaporu>(aktifRapor);
+
+  // AI Değerlendirme Modalı durumu
+  const [aiDegerlendirmeAcik, setAiDegerlendirmeAcik] = useState(false);
 
   // Düzenlenen metinler her adım için
   const [bolumMetinleri, setBolumMetinleri] = useState<Record<number, string>>(
@@ -71,6 +80,28 @@ export default function SihirbazView({
       7: YEDI_ADIM_TANIMLARI[6].kontroller,
     }
   );
+
+  // Ekler durumu
+  const [ekler, setEkler] = useState<RaporEki[]>(aktifRapor.ekler || [
+    {
+      id: "ek-1",
+      ad: "Keşif Günü Arazi Durumu ve Bitki Gelişimi Fotoğrafı",
+      tur: "fotograf",
+      dosyaAdi: "kesif_fotografi_01.jpg",
+      boyut: "2.4 MB",
+      yuklemeTarihi: aktifRapor.kesifTarihi || "02.05.2024",
+      aciklama: "Kuzey-Doğu cephesinden çekilen parselin genel görünümü",
+    },
+    {
+      id: "ek-2",
+      ad: "Gölbaşı İlçe Tarım ve Orman Müdürlüğü 2024 Maliyet Cetveli",
+      tur: "resmi_yazi",
+      dosyaAdi: "ilce_tarim_maliyet_2024.pdf",
+      boyut: "840 KB",
+      yuklemeTarihi: "14.04.2024",
+      aciklama: "Buğday ve mısır münavebe dekar verim ve masraf tablosu",
+    },
+  ]);
 
   // Aktif adım bilgisi
   const aktifAdimVerisi = useMemo(
@@ -121,6 +152,17 @@ export default function SihirbazView({
     showToast("Mevzuata uygun taslak metin yüklendi");
   };
 
+  // AI Değerlendirmesini Uygula
+  const handleAiRevizeUygula = (yeniMetin: string) => {
+    setBolumMetinleri((prev) => ({ ...prev, [currentStep]: yeniMetin }));
+  };
+
+  // Ekler güncellendiğinde
+  const handleEklerGuncelle = (yeniEkler: RaporEki[]) => {
+    setEkler(yeniEkler);
+    setRapor((prev) => ({ ...prev, ekler: yeniEkler }));
+  };
+
   // Kaydet
   const handleKaydet = () => {
     const guncelRapor: BilirKisiRaporu = {
@@ -128,11 +170,29 @@ export default function SihirbazView({
       mevcutAdim: currentStep,
       bolumMetinleri,
       bolumKontrolleri,
+      ekler,
       sonGuncelleme: "Az önce",
     };
     setRapor(guncelRapor);
     if (onRaporKaydet) onRaporKaydet(guncelRapor);
     showToast("Bölüm başarıyla kaydedildi");
+  };
+
+  // Word Olarak İndir
+  const handleWordIndir = () => {
+    const guncelRapor: BilirKisiRaporu = {
+      ...rapor,
+      bolumMetinleri,
+      bolumKontrolleri,
+      ekler,
+    };
+    exportReportToWord(guncelRapor);
+    showToast("Word uyumlu belge (.doc) hazırlandı ve indirildi");
+  };
+
+  // Yazdır / PDF
+  const handleYazdir = () => {
+    window.print();
   };
 
   // Adım geçişleri
@@ -153,7 +213,7 @@ export default function SihirbazView({
 
   return (
     <div className="max-w-[1440px] mx-auto px-4 sm:px-6 py-4 font-sans select-text">
-      {/* Üst Bilgi Barı: Dosya Başlığı, Geri Butonu ve Kaydet */}
+      {/* Üst Bilgi Barı: Dosya Başlığı, Dışa Aktarma Butonları ve Kaydet */}
       <div className="resmi-kart p-3 sm:p-4 mb-4 flex flex-wrap items-center justify-between gap-3">
         <div className="flex items-center gap-3">
           <button
@@ -180,7 +240,31 @@ export default function SihirbazView({
           </div>
         </div>
 
+        {/* Dışa Aktarma & Kaydet Butonları */}
         <div className="flex items-center gap-2">
+          {/* Word İndir */}
+          <button
+            type="button"
+            onClick={handleWordIndir}
+            className="btn-secondary h-10 px-3 text-[13px] flex items-center gap-1.5"
+            title="Microsoft Word / LibreOffice Uyumlu Belge (.doc)"
+          >
+            <FileText className="w-4 h-4 text-[#0F3D2E] dark:text-emerald-400" />
+            <span className="hidden sm:inline">Word İndir</span>
+          </button>
+
+          {/* Yazdır */}
+          <button
+            type="button"
+            onClick={handleYazdir}
+            className="btn-secondary h-10 px-3 text-[13px] flex items-center gap-1.5"
+            title="Yazdır veya PDF Olarak Kaydet"
+          >
+            <Printer className="w-4 h-4" />
+            <span className="hidden sm:inline">Yazdır</span>
+          </button>
+
+          {/* Kaydet */}
           <button
             type="button"
             onClick={handleKaydet}
@@ -311,7 +395,7 @@ export default function SihirbazView({
 
           {/* Editör Kartı */}
           <div className="resmi-kart p-5 space-y-4">
-            <div className="flex items-center justify-between gap-2 border-b border-[hsl(var(--border))] pb-3">
+            <div className="flex flex-wrap items-center justify-between gap-2 border-b border-[hsl(var(--border))] pb-3">
               <label
                 htmlFor="bolum-editor"
                 className="font-serif font-semibold text-[16px] text-[hsl(var(--card-foreground))]"
@@ -319,20 +403,31 @@ export default function SihirbazView({
                 Rapor Metin Girişi
               </label>
 
-              {/* Karakter Sayacı (IBM Plex Mono) */}
-              <div className="flex items-center gap-3">
-                <span className="font-mono text-[12px] text-[hsl(var(--muted-foreground))]">
+              {/* Karakter Sayacı ve AI Butonları */}
+              <div className="flex items-center gap-2">
+                <span className="font-mono text-[12px] text-[hsl(var(--muted-foreground))] mr-1">
                   {mevcutMetin.length} karakter
                 </span>
+
+                {/* AI ile Değerlendir Butonu */}
+                <button
+                  type="button"
+                  onClick={() => setAiDegerlendirmeAcik(true)}
+                  className="h-8 px-2.5 rounded-[6px] text-[12px] font-medium border border-[#0F3D2E]/40 bg-[#0F3D2E]/5 hover:bg-[#0F3D2E]/10 text-[#0F3D2E] dark:text-emerald-300 flex items-center gap-1.5 cursor-pointer transition-colors"
+                  title="Yazılan metni HMK 279 ve Yargıtay kriterlerine göre değerlendir"
+                >
+                  <Sparkles className="w-3.5 h-3.5 text-amber-500" />
+                  <span>AI Değerlendir</span>
+                </button>
 
                 {/* AI ile Taslak Oluştur İkincil Buton */}
                 <button
                   type="button"
                   onClick={handleAiTaslakOlustur}
-                  className="h-8 px-2.5 rounded-[6px] text-[12.5px] font-medium border border-[#B45309]/50 bg-amber-50/50 dark:bg-amber-950/20 text-[#B45309] hover:bg-amber-100/50 flex items-center gap-1.5 cursor-pointer transition-colors"
+                  className="h-8 px-2.5 rounded-[6px] text-[12px] font-medium border border-[#B45309]/50 bg-amber-50/50 dark:bg-amber-950/20 text-[#B45309] hover:bg-amber-100/50 flex items-center gap-1.5 cursor-pointer transition-colors"
                 >
                   <Wand2 className="w-3.5 h-3.5" />
-                  <span>AI ile Taslak Doldur</span>
+                  <span>Taslak Yükle</span>
                 </button>
               </div>
             </div>
@@ -393,6 +488,15 @@ export default function SihirbazView({
                 )}
               </div>
             </div>
+          </div>
+
+          {/* Ek Yönetimi Paneli (Rapor Ekleri & Saha Belgeleri) */}
+          <div className="resmi-kart p-5">
+            <AttachmentManager
+              ekler={ekler}
+              onEklerGuncelle={handleEklerGuncelle}
+              showToast={showToast}
+            />
           </div>
         </main>
 
@@ -479,6 +583,19 @@ export default function SihirbazView({
           </div>
         </aside>
       </div>
+
+      {/* AI Değerlendirme Modalı */}
+      {aiDegerlendirmeAcik && (
+        <AiDegerlendirmeModal
+          isOpen={aiDegerlendirmeAcik}
+          onClose={() => setAiDegerlendirmeAcik(false)}
+          bolumNo={currentStep}
+          bolumBasligi={aktifAdimVerisi.tamBaslik}
+          mevcutMetin={mevcutMetin}
+          onMetinUygula={handleAiRevizeUygula}
+          showToast={showToast}
+        />
+      )}
 
       {/* Mobil Sabit Alt Eylem Çubuğu (<768px) */}
       <div className="md:hidden fixed bottom-0 left-0 right-0 bg-[hsl(var(--card))] border-t border-[hsl(var(--border))] p-3 flex items-center justify-between gap-2 z-40 shadow-md">

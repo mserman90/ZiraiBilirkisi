@@ -3,10 +3,13 @@ import ResmiUstBar, { AnaNavigasyon } from "@/components/resmi/ResmiUstBar";
 import RaporlarimView from "@/components/resmi/RaporlarimView";
 import SihirbazView from "@/components/resmi/SihirbazView";
 import KutuphaneView from "@/components/resmi/KutuphaneView";
+import AuthModal from "@/components/resmi/AuthModal";
 import {
   BilirKisiRaporu,
   ORNEK_RAPORLAR_LISTESI,
   YEDI_ADIM_TANIMLARI,
+  BilirKisiProfili,
+  VARSAYILAN_UZMAN_PROFILI,
 } from "@/data/fields";
 import { TabId } from "@/types";
 
@@ -38,6 +41,21 @@ export default function IndexPage({
   // Aktif açılan veya düzenlenen bilirkişi raporu
   const [aktifRapor, setAktifRapor] = useState<BilirKisiRaporu>(ORNEK_RAPORLAR_LISTESI[0]);
 
+  // Bilirkişi Kullanıcı Profili (Hesap & Erişim)
+  const [profil, setProfil] = useState<BilirKisiProfili>(() => {
+    if (typeof window !== "undefined") {
+      const saved = localStorage.getItem("zirai_bilirkisi_user");
+      if (saved) {
+        try {
+          return JSON.parse(saved);
+        } catch {}
+      }
+    }
+    return VARSAYILAN_UZMAN_PROFILI;
+  });
+
+  const [authModalAcik, setAuthModalAcik] = useState(false);
+
   // Özel alt modül görünümü (Arama veya kütüphane üzerinden doğrudan araç açıldığında)
   const [altModulTab, setAltModulTab] = useState<TabId | null>(null);
 
@@ -48,8 +66,8 @@ export default function IndexPage({
       id: yeniId,
       baslik: "Yeni Bilirkişi Rapor Dosyası",
       dosyaNo: `${new Date().getFullYear()}/... Esas`,
-      mahkeme: "Asliye Hukuk Mahkemesi",
-      alan: "ziraat",
+      mahkeme: profil.adliYargiKomisyonu ? `${profil.adliYargiKomisyonu.split(" ")[0]} Asliye Hukuk Mahkemesi` : "Asliye Hukuk Mahkemesi",
+      alan: profil.uzmanlikAlani || "ziraat",
       durum: "taslak",
       davaTuru: "Kamulaştırma Bedel Tespiti (m. 10)",
       kesifTarihi: new Date().toLocaleDateString("tr-TR"),
@@ -76,6 +94,7 @@ export default function IndexPage({
         6: YEDI_ADIM_TANIMLARI[5].kontroller,
         7: YEDI_ADIM_TANIMLARI[6].kontroller,
       },
+      ekler: [],
     };
     setAktifRapor(yeniRapor);
     setAltModulTab(null);
@@ -103,6 +122,7 @@ export default function IndexPage({
         onThemeToggle={onThemeToggle}
         onPwaClick={onPwaClick}
         onRehberClick={onRehberClick}
+        onProfilClick={() => setAuthModalAcik(true)}
       />
 
       {/* 2. ANA İÇERİK ALANI */}
@@ -167,6 +187,15 @@ export default function IndexPage({
           </>
         )}
       </main>
+
+      {/* 3. BİLİRKİŞİ PROFİLİ VE YETKİLENDİRME MODALI (HESAP & ERİŞİM) */}
+      <AuthModal
+        isOpen={authModalAcik}
+        onClose={() => setAuthModalAcik(false)}
+        profil={profil}
+        onProfilKaydet={(yeni) => setProfil(yeni)}
+        showToast={showToast}
+      />
     </div>
   );
 }

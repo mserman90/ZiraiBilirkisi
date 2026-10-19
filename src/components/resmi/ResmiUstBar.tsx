@@ -23,6 +23,7 @@ interface ResmiUstBarProps {
   onThemeToggle: () => void;
   onPwaClick?: () => void;
   onRehberClick?: () => void;
+  onProfilClick?: () => void;
 }
 
 /**
@@ -39,6 +40,7 @@ export default function ResmiUstBar({
   onThemeToggle,
   onPwaClick,
   onRehberClick,
+  onProfilClick,
 }: ResmiUstBarProps) {
   const [avatarMenuAcik, setAvatarMenuAcik] = useState(false);
   const [mobilMenuAcik, setMobilMenuAcik] = useState(false);
@@ -154,6 +156,22 @@ export default function ResmiUstBar({
                     Bilirkişi Çalışma Alanı
                   </div>
                 </div>
+
+                {/* Bilirkişi Profili */}
+                {onProfilClick && (
+                  <button
+                    type="button"
+                    role="menuitem"
+                    onClick={() => {
+                      onProfilClick();
+                      setAvatarMenuAcik(false);
+                    }}
+                    className="w-full flex items-center gap-2 px-3 py-2 text-[13px] font-sans rounded-[4px] hover:bg-[hsl(var(--muted))] transition-colors cursor-pointer text-left"
+                  >
+                    <User className="w-4 h-4 text-[#0F3D2E] dark:text-emerald-400" />
+                    <span>Bilirkişi Kimlik & Sicil</span>
+                  </button>
+                )}
 
                 {/* Tema Değiştir */}
                 <button
@@ -280,6 +298,20 @@ export default function ResmiUstBar({
             <Plus className="w-4 h-4" />
             <span>Yeni Rapor</span>
           </button>
+
+          {onProfilClick && (
+            <button
+              type="button"
+              onClick={() => {
+                onProfilClick();
+                setMobilMenuAcik(false);
+              }}
+              className="w-full flex items-center gap-2.5 px-3 py-2.5 rounded-[6px] text-[14px] font-semibold text-left bg-white/10 text-white"
+            >
+              <User className="w-4 h-4 text-emerald-300" />
+              <span>Bilirkişi Kimlik & Sicil</span>
+            </button>
+          )}
         </div>
       )}
     </header>

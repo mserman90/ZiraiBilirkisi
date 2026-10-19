@@ -16,6 +16,7 @@ interface RaporKartiProps {
   rapor: BilirKisiRaporu;
   onAc: (rapor: BilirKisiRaporu) => void;
   onDuzenle: (rapor: BilirKisiRaporu) => void;
+  onWordIndir?: (rapor: BilirKisiRaporu) => void;
   onArsivle?: (raporId: string) => void;
   onSil?: (raporId: string) => void;
 }
@@ -30,6 +31,7 @@ export default function RaporKarti({
   rapor,
   onAc,
   onDuzenle,
+  onWordIndir,
   onArsivle,
   onSil,
 }: RaporKartiProps) {
@@ -129,6 +131,21 @@ export default function RaporKarti({
                 <Edit3 className="w-3.5 h-3.5 text-[#B45309]" />
                 <span>Düzenle (Sihirbaz)</span>
               </button>
+
+              {onWordIndir && (
+                <button
+                  type="button"
+                  role="menuitem"
+                  onClick={() => {
+                    setMenuAcik(false);
+                    onWordIndir(rapor);
+                  }}
+                  className="w-full flex items-center gap-2 px-3 py-2 text-left hover:bg-[hsl(var(--muted))] cursor-pointer text-[#0F3D2E] dark:text-emerald-400 font-medium"
+                >
+                  <FileText className="w-3.5 h-3.5" />
+                  <span>Word İndir (.doc)</span>
+                </button>
+              )}
 
               {onArsivle && (
                 <button

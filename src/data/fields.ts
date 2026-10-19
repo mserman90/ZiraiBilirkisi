@@ -269,6 +269,49 @@ export const YEDI_ADIM_TANIMLARI: AdimVerisi[] = [
   },
 ];
 
+export interface RaporEki {
+  id: string;
+  ad: string;
+  tur: "fotograf" | "tapu" | "kadastro" | "resmi_yazi" | "laboratuvar" | "diger";
+  dosyaAdi: string;
+  boyut: string;
+  yuklemeTarihi: string;
+  aciklama?: string;
+  url?: string;
+}
+
+export interface BilirKisiProfili {
+  adSoyad: string;
+  unvan: string;
+  uzmanlikAlani: UzmanlikAlani;
+  sicilNo: string;
+  odaSicilNo: string;
+  adliYargiKomisyonu: string;
+  eposta?: string;
+  telefon?: string;
+}
+
+export const VARSAYILAN_UZMAN_PROFILI: BilirKisiProfili = {
+  adSoyad: "Zir. Yük. Müh. Mert Bilirkişi",
+  unvan: "Ziraat Yüksek Mühendisi & Tarımsal Değerleme Uzmanı",
+  uzmanlikAlani: "ziraat",
+  sicilNo: "06-1842",
+  odaSicilNo: "TMMOB-ZMO-41920",
+  adliYargiKomisyonu: "Ankara Adli Yargı İlk Derece Mahkemesi Adalet Komisyonu",
+  eposta: "mert.bilirkisi@adalet.gov.tr",
+  telefon: "0532 000 00 00",
+};
+
+export interface AiDegerlendirmeSonucu {
+  skor: number;
+  hmkUyumlu: boolean;
+  yasakliKelimeVarMi: boolean;
+  bulunanYasakliKelimeler: string[];
+  gucluYonler: string[];
+  gelistirmeOnerileri: string[];
+  revizeOnerisi: string;
+}
+
 export interface BilirKisiRaporu {
   id: string;
   baslik: string;
@@ -285,6 +328,7 @@ export interface BilirKisiRaporu {
   ozet: string;
   bolumMetinleri: Record<number, string>;
   bolumKontrolleri: Record<number, KontrolMaddesi[]>;
+  ekler?: RaporEki[];
 }
 
 export const ORNEK_RAPORLAR_LISTESI: BilirKisiRaporu[] = [
