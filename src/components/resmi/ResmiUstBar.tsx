@@ -74,7 +74,7 @@ export default function ResmiUstBar({
             </div>
             <div className="flex flex-col">
               <span className="font-serif font-semibold text-[19px] sm:text-[20px] leading-tight text-[#FBF9F4] tracking-tight group-hover:text-amber-200 transition-colors">
-                Bilirkişi Rapor Tezgâhı
+                Bilirkişi Rapor Masası
               </span>
               <span className="text-[10.5px] font-mono uppercase text-[#FBF9F4]/60 tracking-wider hidden sm:inline">
                 T.C. HMK 279 ÇALIŞMA ORTAMI

@@ -135,7 +135,7 @@ export default function IndexPage({
                 onClick={() => setAltModulTab(null)}
                 className="btn-secondary h-9 px-3 text-[13px]"
               >
-                ← Çalışma Tezgâhına Dön
+                ← Çalışma Masasına Dön
               </button>
             </div>
             {altModulTab === "veriarsivi" && <TarimVeriArsiviView showToast={showToast} />}
@@ -167,7 +167,7 @@ export default function IndexPage({
               />
             )}
 
-            {/* SAYFA 2: SİHİRBAZ EKRANI (ÜÇ KOLONLU ÇALIŞMA TEZGÂHI: 240px / 1fr / 360px) */}
+            {/* SAYFA 2: SİHİRBAZ EKRANI (ÜÇ KOLONLU ÇALIŞMA MASASI: 240px / 1fr / 360px) */}
             {aktifSayfa === "sihirbaz" && (
               <SihirbazView
                 aktifRapor={aktifRapor}

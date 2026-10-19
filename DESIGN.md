@@ -1,7 +1,7 @@
 # DESIGN.md — Bilirkişi Rapor Yazma Otomasyonu
 
 ## Direction & Layout
-- **Amaç ve Karakter:** İlk kez bilirkişi raporu tanzim edecek ziraat mühendisi, gıda mühendisi ve veteriner hekime adım adım rehberlik eden resmî çalışma tezgâhı. Duygu: Ciddi, güvenilir, sakin, "resmî evrak" hissi; korkutucu bir hukuk yazılımı yerine öğretici bir rehber el kitabı.
+- **Amaç ve Karakter:** İlk kez bilirkişi raporu tanzim edecek ziraat mühendisi, gıda mühendisi ve veteriner hekime adım adım rehberlik eden resmî çalışma masası. Duygu: Ciddi, güvenilir, sakin, "resmî evrak" hissi; korkutucu bir hukuk yazılımı yerine öğretici bir rehber el kitabı.
 - **İlk Görsel Sinyal:** Koyu yeşil (`#0F3D2E`) dolgulu bir panel üzerinde raporun yapısını gösteren yedi adımlı şerit — ürünün "adım adım" vaadini ilk saniyede kanıtlar.
 - **Belirleyici Görsel Fikir:** Kanun maddesi kenar çizgisi. Mevzuat alıntıları ve öğretici notlar, solunda 3px kalınlığında amber (`#B45309`) dikey çizgi bulunan "resmî belge kenar notu" kutusu içinde gösterilir. Bu uygulamanın öğretici karakterini taşıyan tekrar eden görsel imzadır.
 - **Görsel Referans:** Resmî dosya + adli bilirkişilik eğitim el kitabı karakteri.

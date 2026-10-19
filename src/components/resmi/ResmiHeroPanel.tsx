@@ -34,7 +34,7 @@ export default function ResmiHeroPanel({
           {/* Başlık: Fraunces Serif 600 */}
           <div className="space-y-2">
             <h1 className="font-serif font-semibold text-2xl sm:text-3xl lg:text-[34px] leading-[1.2] text-[#FBF9F4] m-0">
-              Bilirkişi Rapor Yazma Çalışma Tezgâhı
+              Bilirkişi Rapor Yazma Çalışma Masası
             </h1>
             <p className="font-sans text-[15px] sm:text-[16px] leading-[1.65] text-[#FBF9F4]/85 max-w-2xl pt-1">
               İlk kez bilirkişi raporu tanzim edecek ziraat mühendisleri, gıda mühendisleri ve veteriner hekimler için adım adım öğretici kılavuz. Yargıtay bozma risklerini önleyen, bilimsel ve mevzuata tam uyumlu resmî evrak üretim ortamı.
