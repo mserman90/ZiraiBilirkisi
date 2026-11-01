@@ -164,7 +164,8 @@ export default function SihirbazView({
 
   // TÜİK Resmi Verisi Aktar
   const handleTuikMetinEkle = (eklenenMetin: string) => {
-    const yeni = mevcutMetin ? `${mevcutMetin}\n${eklenenMetin}` : eklenenMetin;
+    const ayirici = !mevcutMetin ? "" : mevcutMetin.endsWith("\n\n") ? "" : mevcutMetin.endsWith("\n") ? "\n" : "\n\n";
+    const yeni = mevcutMetin ? `${mevcutMetin}${ayirici}${eklenenMetin}` : eklenenMetin;
     setBolumMetinleri((prev) => ({ ...prev, [currentStep]: yeni }));
   };
 
