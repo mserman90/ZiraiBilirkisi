@@ -835,7 +835,7 @@ export const TUIK_KATEGORI_LISTESI = [
 
 // ============================================================================
 // 4. TÜİK RESMİ HAYVANCILIK, ET VE ÇİĞ SÜT İSTATİSTİKLERİ KÜTÜPHANESİ
-// Kaynak: data.tuik.gov.tr - Hayvancılık İstatistikleri & USK Referans Fiyatları
+// Kaynak: TÜİK Resmî Hayvancılık İstatistikleri & USK Referans Fiyatları
 // ============================================================================
 export interface TuikHayvancilikVerisi {
   id: string;

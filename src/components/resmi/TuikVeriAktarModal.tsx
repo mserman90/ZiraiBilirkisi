@@ -110,7 +110,7 @@ export default function TuikVeriAktarModal({
       satir += `• ${ufe.yil} Yılı (Tarım-ÜFE +%${ufe.aralikYillikArtisPct}): ${Math.round(guncel).toLocaleString("tr-TR")} TL\n`;
     }
 
-    satir += `TOPLAM ECRİMİSİL TAZMİNATI: ${Math.round(toplam).toLocaleString("tr-TR")} TL (Kaynak: TÜİK data.tuik.gov.tr)`;
+    satir += `TOPLAM ECRİMİSİL TAZMİNATI: ${Math.round(toplam).toLocaleString("tr-TR")} TL (Kaynak: TÜİK Resmî Tarım-ÜFE İstatistikleri)`;
 
     onMetinEkle(satir);
     showToast("TÜİK Tarım-ÜFE ecrimisil cetveli rapora eklendi");
@@ -128,7 +128,7 @@ export default function TuikVeriAktarModal({
             </div>
             <div>
               <h3 className="font-serif font-semibold text-lg text-white m-0">
-                TÜİK Resmi Verisi Aktar (data.tuik.gov.tr)
+                TÜİK ve Resmî Maliyet Verisi Aktar
               </h3>
               <p className="text-[12px] font-mono text-white/80 m-0">
                 Resmi ÇEGF, Hayvancılık Rayici ve Tarım-ÜFE Hesaplamasını Rapora Ekle
@@ -374,15 +374,9 @@ export default function TuikVeriAktarModal({
 
         {/* Alt Eylem Butonları */}
         <div className="p-4 border-t border-[hsl(var(--border))] flex items-center justify-between bg-[hsl(var(--muted))]/50">
-          <a
-            href="https://data.tuik.gov.tr/"
-            target="_blank"
-            rel="noopener noreferrer"
-            className="text-[12px] text-blue-600 hover:underline flex items-center gap-1 font-mono"
-          >
-            <span>data.tuik.gov.tr Portalında Ara</span>
-            <ExternalLink className="w-3 h-3" />
-          </a>
+          <span className="text-[12px] text-[hsl(var(--muted-foreground))] font-mono">
+            Doğrulanmış Resmî Veri Tabanı (TÜİK & İlçe Tarım)
+          </span>
 
           <div className="flex items-center gap-2">
             <button

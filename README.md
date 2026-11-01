@@ -73,9 +73,9 @@ Uygulama, bilirkişilik sürecinin uçtan uca tüm aşamalarını kapsayan 8 ana
   * 🧪 *Laboratuvar Analizi* (toprak, su, yem, süt tahlilleri)
 * Ekleri boyut ve tarih bilgisiyle listeleme, önizleme ve Word çıktısında otomatik numaralandırma.
 
-### 7. Mevzuat Kütüphanesi & TÜİK Veri Portalı (data.tuik.gov.tr)
+### 7. Mevzuat Kütüphanesi & Resmî TÜİK Veri Arşivi
 * **Emsal Rapor ve İçtihat Arşivi:** Yargıtay Hukuk Genel Kurulu ve ilgili daire kararları (3. HD, 5. HD, 8. HD, 11. HD), kök ve ek raporlar.
-* **TÜİK Veri Portalı & SDMX 2.1 REST API:** [data.tuik.gov.tr](https://data.tuik.gov.tr/) üzerinden Bitkisel Üretim (DF_BITKISEL_URETIM), Çiftçinin Eline Geçen Fiyatlar (DF_CEGF), Hayvancılık İstatistikleri (DF_HAYVANCILIK) ve Tarım-ÜFE (DF_TARIM_UFE) canlı SDMX sorgu paneli.
+* **TÜİK ve Resmî Bakanlık Veri Kütüphanesi:** Bitkisel Üretim, Çiftçinin Eline Geçen Fiyatlar (ÇEGF), Hayvancılık İstatistikleri ve Tarım-ÜFE doğrulanmış gösterge paneli.
 * **TÜİK Tarımsal Veri Arşivi:** 81 ilin dekar verimleri, ÇEGF fiyatları, net gelirleri ve Yargıtay KFO (%4-%5) oranları.
 * **Hayvancılık & Telef Rayici:** Büyükbaş, küçükbaş ve kanatlı için canlı ağırlık, karkas randımanı, karkas et fiyatı ve baş rayici kütüphanesi.
 * **Canlı Rapor Aktarımı:** Sihirbazda ve kütüphanede resmi TÜİK verilerini doğrudan rapor metnine aktaran `TuikVeriAktarModal`.

@@ -425,7 +425,7 @@ export default function SihirbazView({
                   type="button"
                   onClick={() => setTuikModalAcik(true)}
                   className="h-8 px-2.5 rounded-[6px] text-[12px] font-medium border border-[#0F3D2E]/40 bg-[#0F3D2E]/5 hover:bg-[#0F3D2E]/10 text-[#0F3D2E] dark:text-emerald-300 flex items-center gap-1.5 cursor-pointer transition-colors"
-                  title="data.tuik.gov.tr resmi ÇEGF, hayvancılık veya ecrimisil verisini aktar"
+                  title="TÜİK resmi ÇEGF, hayvancılık veya ecrimisil verisini aktar"
                 >
                   <Database className="w-3.5 h-3.5 text-[#B45309]" />
                   <span>TÜİK Verisi Ekle</span>

@@ -144,7 +144,7 @@ export default function KutuphaneView({
             Bilirkişi Bilgi & Mevzuat Kütüphanesi
           </h1>
           <p className="font-sans text-[14.5px] text-[hsl(var(--muted-foreground))] mt-1 max-w-3xl">
-            Yargıtay denetiminden geçmiş emsal bilirkişi gerekçeleri ile TÜİK resmi veri tabanı (data.tuik.gov.tr),
+            Yargıtay denetiminden geçmiş emsal bilirkişi gerekçeleri ile TÜİK resmi veri tabanı,
             maliyet cetvelleri ve Tarım-ÜFE serileri.
           </p>
         </div>
@@ -174,7 +174,7 @@ export default function KutuphaneView({
             }`}
           >
             <Database className="w-4 h-4 text-[#B45309]" />
-            <span>2. TÜİK Veri Portalı & ÇEGF</span>
+            <span>2. TÜİK Veri Arşivi & ÇEGF</span>
           </button>
         </div>
       </div>
@@ -195,7 +195,7 @@ export default function KutuphaneView({
               </div>
               <div>
                 <h4 className="font-serif font-semibold text-[15px] text-[hsl(var(--card-foreground))] m-0">
-                  TÜİK Resmi Veri Portalı & ÇEGF Veri Tabanı
+                  TÜİK ve Resmî Maliyet Veri Arşivi
                 </h4>
                 <p className="font-sans text-[12.5px] text-[hsl(var(--muted-foreground))] m-0">
                   81 ilin resmi bitkisel ürün verimleri, çiftçi satış fiyatları, Tarım-ÜFE ve girdi endekslerine tek tıkla ulaşın.
@@ -203,24 +203,13 @@ export default function KutuphaneView({
               </div>
             </div>
 
-            <div className="flex items-center gap-2">
-              <button
-                type="button"
-                onClick={() => setAnaSekme("tuik")}
-                className="btn-secondary h-8 px-3 text-[12px] font-semibold"
-              >
-                Veri Arşivini Aç
-              </button>
-              <a
-                href="https://data.tuik.gov.tr/"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="btn-primary h-8 px-3 text-[12px] font-semibold flex items-center gap-1"
-              >
-                <span>data.tuik.gov.tr</span>
-                <ExternalLink className="w-3 h-3" />
-              </a>
-            </div>
+            <button
+              type="button"
+              onClick={() => setAnaSekme("tuik")}
+              className="btn-primary h-8 px-3 text-[12px] font-semibold shrink-0"
+            >
+              Veri Arşivini İncele
+            </button>
           </div>
 
           {/* Arama ve Filtreleme */}

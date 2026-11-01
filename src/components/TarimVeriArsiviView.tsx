@@ -28,7 +28,6 @@ import {
   TuikHayvancilikVerisi,
   TuikUrunVerisi,
 } from "../data/tuikTarimData";
-import { TUIK_DATAFLOWS, TuikSdmxService, TuikApiSorguSonucu } from "../services/tuikSdmxService";
 import KenarNotu from "./resmi/KenarNotu";
 
 interface TarimVeriArsiviViewProps {
@@ -41,7 +40,7 @@ export default function TarimVeriArsiviView({
   onTransferToWizard,
 }: TarimVeriArsiviViewProps) {
   const [activeSubTab, setActiveSubTab] = useState<
-    "veriler" | "hayvancilik" | "tarimUfe" | "girdiler" | "apiSorgu" | "metodoloji"
+    "veriler" | "hayvancilik" | "tarimUfe" | "girdiler" | "metodoloji"
   >("veriler");
 
   // Filtre durumları - Bitkisel
@@ -58,11 +57,6 @@ export default function TarimVeriArsiviView({
   // Ecrimisil hesaplayıcı durumları
   const [ecriBaslangicYil, setEcriBaslangicYil] = useState<number>(2022);
   const [ecriBaslangicTutar, setEcriBaslangicTutar] = useState<number>(50000);
-
-  // Canlı SDMX API durumu
-  const [seciliDataflow, setSeciliDataflow] = useState<string>(TUIK_DATAFLOWS[0].id);
-  const [apiYukleniyor, setApiYukleniyor] = useState<boolean>(false);
-  const [apiSonuc, setApiSonuc] = useState<TuikApiSorguSonucu<unknown> | null>(null);
 
   // Filtrelenmiş bitkisel veriler
   const filtrelenmisVeriler = useMemo(() => {
@@ -152,20 +146,6 @@ export default function TarimVeriArsiviView({
     return sonuclar;
   }, [ecriBaslangicYil, ecriBaslangicTutar]);
 
-  // Canlı API Sorgusu
-  const handleApiSorgula = async () => {
-    setApiYukleniyor(true);
-    try {
-      const sonuc = await TuikSdmxService.queryDataflow(seciliDataflow);
-      setApiSonuc(sonuc);
-      showToast(sonuc.mesaj);
-    } catch {
-      showToast("API sorgusunda hata oluştu.");
-    } finally {
-      setApiYukleniyor(false);
-    }
-  };
-
   return (
     <div className="space-y-6 font-sans">
       {/* 1. RESMÎ HERO KARTI — Orman Yeşili (#0F3D2E) ve Fraunces Başlık */}
@@ -174,7 +154,7 @@ export default function TarimVeriArsiviView({
           <div className="space-y-3 max-w-3xl">
             <div className="inline-flex items-center gap-2 px-3 py-1 bg-white/10 text-[#FBF9F4] rounded-[4px] text-[11px] font-mono tracking-wide border border-white/10">
               <span className="w-2 h-2 rounded-full bg-[#B45309]"></span>
-              <span>TÜİK VERİ PORTALI & MERKEZİ DAĞITIM SİSTEMİ (data.tuik.gov.tr)</span>
+              <span>TÜİK VE RESMÎ BAKANLIK İSTATİSTİK ARŞİVİ</span>
             </div>
             <h2 className="font-serif font-semibold text-2xl sm:text-3xl text-white m-0">
               TÜİK Tarımsal Veri Arşivi & Resmi Göstergeler
@@ -185,7 +165,7 @@ export default function TarimVeriArsiviView({
             </p>
           </div>
 
-          {/* Sağ Tarafta Resmi Göstergeler & Doğrudan Portal Linki */}
+          {/* Sağ Tarafta Resmi Göstergeler */}
           <div className="flex flex-col sm:flex-row lg:flex-col gap-2.5 shrink-0">
             <div className="flex items-center gap-2">
               <div className="p-3 bg-white/10 rounded-[6px] border border-white/10 text-center min-w-[110px]">
@@ -198,16 +178,10 @@ export default function TarimVeriArsiviView({
               </div>
             </div>
 
-            <a
-              href="https://data.tuik.gov.tr/"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="inline-flex items-center justify-center gap-1.5 px-3 py-2 bg-[#B45309] hover:bg-amber-600 text-white rounded-[6px] text-[12px] font-sans font-semibold transition-colors"
-            >
-              <Globe className="w-3.5 h-3.5" />
-              <span>data.tuik.gov.tr Portalı</span>
-              <ExternalLink className="w-3 h-3" />
-            </a>
+            <div className="inline-flex items-center justify-center gap-1.5 px-3 py-2 bg-white/10 text-[#FBF9F4] rounded-[6px] text-[11.5px] font-mono border border-white/15">
+              <Database className="w-3.5 h-3.5 text-amber-300" />
+              <span>Doğrulanmış Resmî Veri Tabanı</span>
+            </div>
           </div>
         </div>
       </div>
@@ -219,7 +193,6 @@ export default function TarimVeriArsiviView({
           { id: "hayvancilik" as const, label: "02 Hayvancılık & Süt/Et", icon: <Beef className="w-4 h-4 text-amber-600" /> },
           { id: "tarimUfe" as const, label: "Tarım-ÜFE & Ecrimisil", icon: <TrendingUp className="w-4 h-4 text-[#0F3D2E]" /> },
           { id: "girdiler" as const, label: "Tarımsal Girdiler (Tarım-GFE)", icon: <Fuel className="w-4 h-4 text-slate-600" /> },
-          { id: "apiSorgu" as const, label: "Canlı SDMX REST API", icon: <Database className="w-4 h-4 text-blue-600" /> },
           { id: "metodoloji" as const, label: "Yargıtay Standartları", icon: <Scale className="w-4 h-4 text-stone-600" /> },
         ].map((tab) => (
           <button
@@ -676,98 +649,7 @@ export default function TarimVeriArsiviView({
       )}
 
       {/* ==================================================================== */}
-      {/* SEKME 5: CANLI TÜİK SDMX REST API ENTEGRASYONU */}
-      {/* ==================================================================== */}
-      {activeSubTab === "apiSorgu" && (
-        <div className="space-y-4">
-          <div className="resmi-kart p-5 space-y-4">
-            <div className="flex flex-col md:flex-row md:items-center justify-between gap-3 border-b border-[hsl(var(--border))] pb-3">
-              <div>
-                <h3 className="font-serif font-semibold text-[17px] text-[hsl(var(--card-foreground))] m-0 flex items-center gap-2">
-                  <Database className="w-4 h-4 text-blue-600" />
-                  <span>TÜİK SDMX 2.1 REST API & Canlı Veri Servisi</span>
-                </h3>
-                <p className="font-sans text-[13px] text-[hsl(var(--muted-foreground))] mt-1">
-                  Merkezi Dağıtım Sistemi (nsiws.tuik.gov.tr) üzerinden uluslararası SDMX standardında makine-okunabilir canlı veri sorgulama paneli.
-                </p>
-              </div>
-
-              <div className="flex items-center gap-2">
-                <button
-                  type="button"
-                  onClick={handleApiSorgula}
-                  disabled={apiYukleniyor}
-                  className="btn-primary h-9 px-3 text-[12.5px] flex items-center gap-1.5 cursor-pointer"
-                >
-                  <RefreshCw className={`w-3.5 h-3.5 ${apiYukleniyor ? "animate-spin" : ""}`} />
-                  <span>{apiYukleniyor ? "Sorgulanıyor..." : "Canlı Sorgula"}</span>
-                </button>
-              </div>
-            </div>
-
-            {/* Dataflow Seçimi */}
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
-              {TUIK_DATAFLOWS.map((df) => (
-                <div
-                  key={df.id}
-                  onClick={() => setSeciliDataflow(df.id)}
-                  className={`p-3.5 rounded-[6px] border cursor-pointer transition-all ${
-                    seciliDataflow === df.id
-                      ? "border-[#0F3D2E] bg-[#0F3D2E]/5 dark:bg-[#0F3D2E]/20"
-                      : "border-[hsl(var(--border))] bg-[hsl(var(--card))] hover:bg-[hsl(var(--muted))]"
-                  }`}
-                >
-                  <div className="flex items-center justify-between gap-2">
-                    <span className="font-mono text-[11px] font-bold text-[#B45309]">{df.kod}</span>
-                    <span className="text-[10px] font-mono bg-[hsl(var(--muted))] px-1.5 py-0.5 rounded-[3px]">
-                      {df.frekans}
-                    </span>
-                  </div>
-                  <h4 className="font-sans font-semibold text-[13.5px] text-[hsl(var(--card-foreground))] mt-1">
-                    {df.ad}
-                  </h4>
-                  <p className="font-sans text-[11.5px] text-[hsl(var(--muted-foreground))] line-clamp-2 mt-1">
-                    {df.aciklama}
-                  </p>
-                  <div className="mt-2 pt-2 border-t border-[hsl(var(--border))] flex items-center justify-between text-[11px] font-mono">
-                    <span className="text-[hsl(var(--muted-foreground))]">ID: {df.id}</span>
-                    <a
-                      href={df.portalUrl}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      onClick={(e) => e.stopPropagation()}
-                      className="text-blue-600 hover:underline inline-flex items-center gap-0.5"
-                    >
-                      Bülten <ExternalLink className="w-2.5 h-2.5" />
-                    </a>
-                  </div>
-                </div>
-              ))}
-            </div>
-
-            {/* API Sonuç Paneli */}
-            {apiSonuc && (
-              <div className="p-4 bg-[hsl(var(--muted))] rounded-[6px] border border-[hsl(var(--border))] space-y-2">
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-2">
-                    <CheckCircle2 className="w-4 h-4 text-[#15803D]" />
-                    <span className="font-semibold text-[13px]">{apiSonuc.mesaj}</span>
-                  </div>
-                  <span className="font-mono text-[11px] text-[hsl(var(--muted-foreground))]">
-                    Kaynak: {apiSonuc.kaynak === "canli_sdmx" ? "Canlı SDMX REST Web Servisi" : "Doğrulanmış Yerel Veri Tabanı"}
-                  </span>
-                </div>
-                <p className="text-[12px] font-mono text-[hsl(var(--muted-foreground))]">
-                  Seçili Akış: <strong>{apiSonuc.dataflowId}</strong> | Son Güncelleme: {apiSonuc.sonGuncelleme}
-                </p>
-              </div>
-            )}
-          </div>
-        </div>
-      )}
-
-      {/* ==================================================================== */}
-      {/* SEKME 6: YARGITAY BİLİRKİŞİLİK METODOLOJİSİ */}
+      {/* SEKME 5: YARGITAY BİLİRKİŞİLİK METODOLOJİSİ */}
       {/* ==================================================================== */}
       {activeSubTab === "metodoloji" && (
         <div className="resmi-kart p-6 space-y-5">

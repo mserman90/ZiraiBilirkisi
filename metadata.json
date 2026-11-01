@@ -1,6 +1,6 @@
 {
   "name": "Bilirkişi Rapor Yazma Çalışma Masası",
-  "description": "Ziraat, Gıda ve Hayvancılık bilirkişileri için HMK m. 279 ve Yargıtay standartlarında resmî rapor yazma otomasyonu, TÜİK veri portali (data.tuik.gov.tr) ve emsal kütüphanesi.",
+  "description": "Ziraat, Gıda ve Hayvancılık bilirkişileri için HMK m. 279 ve Yargıtay standartlarında resmî rapor yazma otomasyonu, TÜİK veri arşivi ve emsal kütüphanesi.",
   "requestFramePermissions": [],
   "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
 }
