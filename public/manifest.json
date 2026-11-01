@@ -1,14 +1,14 @@
 {
-  "name": "Zirai Bilirkişi",
-  "short_name": "Zirai Bilirkişi",
-  "description": "01 Tarım, 02 Hayvancılık, Süt Teknolojisi ve 26 Gıda bilirkişiliği için Yargıtay standartlarında resmi adli hesaplama ve rapor otomasyonu portalı.",
+  "name": "Bilirkişi Rapor Yazma Çalışma Masası",
+  "short_name": "Bilirkişi Masası",
+  "description": "Ziraat, Gıda ve Hayvancılık bilirkişileri için HMK m. 279 ve Yargıtay standartlarında resmî rapor yazma otomasyonu, TÜİK veri arşivi ve emsal kütüphanesi.",
   "start_url": "/ZiraiBilirkisi/",
   "scope": "/ZiraiBilirkisi/",
   "display": "standalone",
   "orientation": "any",
-  "background_color": "#0f172a",
-  "theme_color": "#0f172a",
-  "categories": ["business", "productivity", "utilities", "education"],
+  "background_color": "#07130D",
+  "theme_color": "#0F3D2E",
+  "categories": ["business", "productivity", "utilities", "government", "education"],
   "lang": "tr",
   "dir": "ltr",
   "icons": [
@@ -33,38 +33,24 @@
   ],
   "shortcuts": [
     {
-      "name": "Rapor Otomasyonu",
-      "short_name": "Rapor Yazıcı",
-      "description": "Adım Adım Heyet & Tek Bilirkişi Rapor Otomasyonu",
-      "url": "/ZiraiBilirkisi/?tab=raporOtomasyonu",
+      "name": "Yeni Rapor Sihirbazı",
+      "short_name": "Yeni Rapor",
+      "description": "7 Adımlı Resmî Bilirkişi Rapor Sihirbazı",
+      "url": "/ZiraiBilirkisi/?sayfa=sihirbaz",
       "icons": [{ "src": "/ZiraiBilirkisi/icon-192.png", "sizes": "192x192" }]
     },
     {
-      "name": "01.05 Zirai Değerleme",
-      "short_name": "Kamulaştırma",
-      "description": "2942 SK m.11 Net Gelir & KFO Sihirbazı",
-      "url": "/ZiraiBilirkisi/?tab=sihirbaz",
+      "name": "Kayıtlı Raporlarım",
+      "short_name": "Raporlarım",
+      "description": "Bilirkişi Dava Dosyaları ve Rapor Deposu",
+      "url": "/ZiraiBilirkisi/?sayfa=raporlarim",
       "icons": [{ "src": "/ZiraiBilirkisi/icon-192.png", "sizes": "192x192" }]
     },
     {
-      "name": "02.01 Hayvancılık",
-      "short_name": "Hayvancılık",
-      "description": "Hayvan değerleme ve telef tazminatı hesabı",
-      "url": "/ZiraiBilirkisi/?tab=hayvancilik",
-      "icons": [{ "src": "/ZiraiBilirkisi/icon-192.png", "sizes": "192x192" }]
-    },
-    {
-      "name": "02.05 Yemler & Besleme",
-      "short_name": "Rasyon",
-      "description": "TMR rasyon hesabı ve yem analiz kontrolü",
-      "url": "/ZiraiBilirkisi/?tab=yemlerBesleme",
-      "icons": [{ "src": "/ZiraiBilirkisi/icon-192.png", "sizes": "192x192" }]
-    },
-    {
-      "name": "Uydu Parsel AI",
-      "short_name": "Uydu Parsel",
-      "description": "Sentinel ve Esri 0.5m uydu parsel analizi",
-      "url": "/ZiraiBilirkisi/?tab=uyduParsel",
+      "name": "Mevzuat & TÜİK Veri Arşivi",
+      "short_name": "Kütüphane",
+      "description": "Yargıtay Emsalleri ve TÜİK ÇEGF Veri Portalı",
+      "url": "/ZiraiBilirkisi/?sayfa=kutuphane",
       "icons": [{ "src": "/ZiraiBilirkisi/icon-192.png", "sizes": "192x192" }]
     }
   ]

@@ -1,6 +1,6 @@
 {
-  "name": "Zirai Bilirkişi (01 Tarım) Portalı",
-  "description": "Meta AI destekli, Yargıtay içtihatları ve 351 sayfalık rehbere dayalı Zirai Bilirkişi (01 Tarım) Eğitim, Uydu Parsel & Asistan Portalı.",
+  "name": "Bilirkişi Rapor Yazma Çalışma Masası",
+  "description": "Ziraat, Gıda ve Hayvancılık bilirkişileri için HMK m. 279 ve Yargıtay standartlarında resmî rapor yazma otomasyonu, TÜİK veri portali (data.tuik.gov.tr) ve emsal kütüphanesi.",
   "requestFramePermissions": [],
   "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
 }
