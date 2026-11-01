@@ -73,11 +73,12 @@ Uygulama, bilirkişilik sürecinin uçtan uca tüm aşamalarını kapsayan 8 ana
   * 🧪 *Laboratuvar Analizi* (toprak, su, yem, süt tahlilleri)
 * Ekleri boyut ve tarih bilgisiyle listeleme, önizleme ve Word çıktısında otomatik numaralandırma.
 
-### 7. Mevzuat Kütüphanesi & Veri Arşivi
-* 2 kolonlu bilgi-yoğun kütüphane düzeni.
-* Emsal Bilirkişi Raporları (kök raporlar, ek raporlar, kademeli seçenekli hesap tabloları).
-* Yargıtay Hukuk Genel Kurulu ve ilgili daire kararları (3. HD, 5. HD, 8. HD, 11. HD).
-* TÜİK resmi dekar maliyetleri, kapitalizasyon faiz oranları (KFO), hayvan ırk veritabanı ve yem analiz parametreleri.
+### 7. Mevzuat Kütüphanesi & TÜİK Veri Portalı (data.tuik.gov.tr)
+* **Emsal Rapor ve İçtihat Arşivi:** Yargıtay Hukuk Genel Kurulu ve ilgili daire kararları (3. HD, 5. HD, 8. HD, 11. HD), kök ve ek raporlar.
+* **TÜİK Veri Portalı & SDMX 2.1 REST API:** [data.tuik.gov.tr](https://data.tuik.gov.tr/) üzerinden Bitkisel Üretim (DF_BITKISEL_URETIM), Çiftçinin Eline Geçen Fiyatlar (DF_CEGF), Hayvancılık İstatistikleri (DF_HAYVANCILIK) ve Tarım-ÜFE (DF_TARIM_UFE) canlı SDMX sorgu paneli.
+* **TÜİK Tarımsal Veri Arşivi:** 81 ilin dekar verimleri, ÇEGF fiyatları, net gelirleri ve Yargıtay KFO (%4-%5) oranları.
+* **Hayvancılık & Telef Rayici:** Büyükbaş, küçükbaş ve kanatlı için canlı ağırlık, karkas randımanı, karkas et fiyatı ve baş rayici kütüphanesi.
+* **Canlı Rapor Aktarımı:** Sihirbazda ve kütüphanede resmi TÜİK verilerini doğrudan rapor metnine aktaran `TuikVeriAktarModal`.
 
 ### 8. Dışa Aktarma & UYAP Uyumu
 * **Word Uyumlu Belge (.doc):** Microsoft Word, LibreOffice ve UYAP ile tam uyumlu HTML/MSO UTF-8 biçiminde dosya üretir. Mahkeme anteti, dava tarafları, 7 adımın tamamı, ekler tablosu ve resmî bilirkişi imza bloğunu içerir.

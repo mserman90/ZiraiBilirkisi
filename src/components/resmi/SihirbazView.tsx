@@ -18,6 +18,7 @@ import {
   Sparkles,
   Paperclip,
   FileText,
+  Database,
 } from "lucide-react";
 import {
   BilirKisiRaporu,
@@ -31,6 +32,7 @@ import KenarNotu from "./KenarNotu";
 import AdimSeridi from "./AdimSeridi";
 import AttachmentManager from "./AttachmentManager";
 import AiDegerlendirmeModal from "./AiDegerlendirmeModal";
+import TuikVeriAktarModal from "./TuikVeriAktarModal";
 import { exportReportToWord } from "../../utils/exportWord";
 
 interface SihirbazViewProps {
@@ -54,6 +56,9 @@ export default function SihirbazView({
 
   // AI Değerlendirme Modalı durumu
   const [aiDegerlendirmeAcik, setAiDegerlendirmeAcik] = useState(false);
+
+  // TÜİK Verisi Aktarma Modalı durumu
+  const [tuikModalAcik, setTuikModalAcik] = useState(false);
 
   // Düzenlenen metinler her adım için
   const [bolumMetinleri, setBolumMetinleri] = useState<Record<number, string>>(
@@ -155,6 +160,12 @@ export default function SihirbazView({
   // AI Değerlendirmesini Uygula
   const handleAiRevizeUygula = (yeniMetin: string) => {
     setBolumMetinleri((prev) => ({ ...prev, [currentStep]: yeniMetin }));
+  };
+
+  // TÜİK Resmi Verisi Aktar
+  const handleTuikMetinEkle = (eklenenMetin: string) => {
+    const yeni = mevcutMetin ? `${mevcutMetin}\n${eklenenMetin}` : eklenenMetin;
+    setBolumMetinleri((prev) => ({ ...prev, [currentStep]: yeni }));
   };
 
   // Ekler güncellendiğinde
@@ -409,6 +420,17 @@ export default function SihirbazView({
                   {mevcutMetin.length} karakter
                 </span>
 
+                {/* TÜİK Verisi Ekle Butonu */}
+                <button
+                  type="button"
+                  onClick={() => setTuikModalAcik(true)}
+                  className="h-8 px-2.5 rounded-[6px] text-[12px] font-medium border border-[#0F3D2E]/40 bg-[#0F3D2E]/5 hover:bg-[#0F3D2E]/10 text-[#0F3D2E] dark:text-emerald-300 flex items-center gap-1.5 cursor-pointer transition-colors"
+                  title="data.tuik.gov.tr resmi ÇEGF, hayvancılık veya ecrimisil verisini aktar"
+                >
+                  <Database className="w-3.5 h-3.5 text-[#B45309]" />
+                  <span>TÜİK Verisi Ekle</span>
+                </button>
+
                 {/* AI ile Değerlendir Butonu */}
                 <button
                   type="button"
@@ -593,6 +615,16 @@ export default function SihirbazView({
           bolumBasligi={aktifAdimVerisi.tamBaslik}
           mevcutMetin={mevcutMetin}
           onMetinUygula={handleAiRevizeUygula}
+          showToast={showToast}
+        />
+      )}
+
+      {/* TÜİK Resmi Verisi Aktarma Modalı */}
+      {tuikModalAcik && (
+        <TuikVeriAktarModal
+          isOpen={tuikModalAcik}
+          onClose={() => setTuikModalAcik(false)}
+          onMetinEkle={handleTuikMetinEkle}
           showToast={showToast}
         />
       )}

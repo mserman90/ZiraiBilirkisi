@@ -12,13 +12,17 @@ import {
   Beef,
   Milk,
   ExternalLink,
+  Database,
+  Globe,
 } from "lucide-react";
 import { ALAN_TANIMLARI, UzmanlikAlani } from "../../data/fields";
 import KenarNotu from "./KenarNotu";
+import TarimVeriArsiviView from "../TarimVeriArsiviView";
 
 interface KutuphaneViewProps {
   onYeniRaporBaslat: () => void;
   showToast: (msg: string) => void;
+  onTransferToWizard?: (data: { netGelir: number; araziTipi: "sulu" | "kuru"; urunAdi: string }) => void;
 }
 
 interface EmsalMetin {
@@ -97,7 +101,9 @@ const EMSAL_METINLER: EmsalMetin[] = [
 export default function KutuphaneView({
   onYeniRaporBaslat,
   showToast,
+  onTransferToWizard,
 }: KutuphaneViewProps) {
+  const [anaSekme, setAnaSekme] = useState<"emsaller" | "tuik">("emsaller");
   const [aramaMetni, setAramaMetni] = useState("");
   const [seciliAlan, setSeciliAlan] = useState<"hepsi" | UzmanlikAlani>("hepsi");
   const [kopyalananId, setKopyalananId] = useState<string | null>(null);
@@ -127,138 +133,216 @@ export default function KutuphaneView({
 
   return (
     <div className="max-w-[1440px] mx-auto px-4 sm:px-6 py-6 font-sans">
-      {/* Üst Başlık & Açıklama */}
-      <div className="mb-6">
-        <div className="flex items-center gap-2 text-[12px] font-mono text-[#B45309] uppercase tracking-wider mb-1">
-          <BookOpen className="w-4 h-4" />
-          <span>RETMİ EMSAL & MEVZUAT KÜTÜPHANESİ</span>
-        </div>
-        <h1 className="font-serif font-semibold text-2xl sm:text-3xl text-[hsl(var(--card-foreground))] m-0">
-          Bilirkişi Emsal Rapor ve Mevzuat Arşivi
-        </h1>
-        <p className="font-sans text-[15px] text-[hsl(var(--muted-foreground))] mt-1 max-w-3xl">
-          Ziraat, gıda ve hayvancılık alanlarında Yargıtay denetiminden geçmiş resmi bilirkişi gerekçeleri, kanun maddeleri ve emsal hesaplama modelleri. Kütüphane kartlarında görsel kullanılmaz; bilgi yoğunluğu kartın kendisidir.
-        </p>
-      </div>
-
-      {/* Arama ve Filtreleme */}
-      <div className="resmi-kart p-4 mb-6 flex flex-col md:flex-row items-stretch md:items-center justify-between gap-3">
-        {/* Arama Inputu */}
-        <div className="relative flex-1">
-          <Search className="w-4 h-4 text-[hsl(var(--muted-foreground))] absolute left-3 top-1/2 -translate-y-1/2" />
-          <input
-            type="text"
-            value={aramaMetni}
-            onChange={(e) => setAramaMetni(e.target.value)}
-            placeholder="Mevzuat maddesi, emsal karar veya anahtar kelime ara..."
-            className="w-full h-10 pl-9 pr-4 text-[14px] bg-[hsl(var(--background))] border border-[hsl(var(--border))] rounded-[8px] focus:outline-none focus:border-[#0F3D2E] text-[hsl(var(--card-foreground))]"
-          />
+      {/* Üst Başlık & Ana Sekmeler */}
+      <div className="mb-6 flex flex-col md:flex-row md:items-end justify-between gap-4">
+        <div>
+          <div className="flex items-center gap-2 text-[12px] font-mono text-[#B45309] uppercase tracking-wider mb-1">
+            <BookOpen className="w-4 h-4" />
+            <span>RESMÎ EMSAL & MEVZUAT KÜTÜPHANESİ</span>
+          </div>
+          <h1 className="font-serif font-semibold text-2xl sm:text-3xl text-[hsl(var(--card-foreground))] m-0">
+            Bilirkişi Bilgi & Mevzuat Kütüphanesi
+          </h1>
+          <p className="font-sans text-[14.5px] text-[hsl(var(--muted-foreground))] mt-1 max-w-3xl">
+            Yargıtay denetiminden geçmiş emsal bilirkişi gerekçeleri ile TÜİK resmi veri tabanı (data.tuik.gov.tr),
+            maliyet cetvelleri ve Tarım-ÜFE serileri.
+          </p>
         </div>
 
-        {/* Alan Filtre Butonları */}
-        <div className="flex flex-wrap items-center gap-1.5">
+        {/* Ana Sekme Seçici: Emsaller vs TÜİK Veri Portalı */}
+        <div className="flex items-center gap-1.5 p-1 bg-[hsl(var(--muted))] rounded-[8px] border border-[hsl(var(--border))] shrink-0 self-start md:self-auto">
           <button
             type="button"
-            onClick={() => setSeciliAlan("hepsi")}
-            className={`h-9 px-3 rounded-[6px] text-[13px] font-medium transition-colors cursor-pointer ${
-              seciliAlan === "hepsi"
-                ? "bg-[#0F3D2E] text-[#FBF9F4]"
-                : "bg-[hsl(var(--muted))] text-[hsl(var(--muted-foreground))] hover:bg-[hsl(var(--border))]"
+            onClick={() => setAnaSekme("emsaller")}
+            className={`flex items-center gap-2 px-3.5 py-2 rounded-[6px] text-[13px] font-medium transition-colors cursor-pointer ${
+              anaSekme === "emsaller"
+                ? "bg-[hsl(var(--card))] text-[hsl(var(--card-foreground))] shadow-xs font-semibold"
+                : "text-[hsl(var(--muted-foreground))] hover:text-[hsl(var(--card-foreground))]"
             }`}
           >
-            Tüm Emsaller ({EMSAL_METINLER.length})
+            <Scale className="w-4 h-4 text-[#0F3D2E] dark:text-emerald-400" />
+            <span>1. Emsal Kararlar ({EMSAL_METINLER.length})</span>
           </button>
 
-          {(["ziraat", "gida", "hayvancilik"] as UzmanlikAlani[]).map((alan) => (
-            <button
-              key={alan}
-              type="button"
-              onClick={() => setSeciliAlan(alan)}
-              className={`h-9 px-3 rounded-[6px] text-[13px] font-medium transition-colors cursor-pointer ${
-                seciliAlan === alan
-                  ? "bg-[#0F3D2E] text-[#FBF9F4]"
-                  : "bg-[hsl(var(--muted))] text-[hsl(var(--muted-foreground))] hover:bg-[hsl(var(--border))]"
-              }`}
-            >
-              {ALAN_TANIMLARI[alan].ad.split(" ")[0]}
-            </button>
-          ))}
+          <button
+            type="button"
+            onClick={() => setAnaSekme("tuik")}
+            className={`flex items-center gap-2 px-3.5 py-2 rounded-[6px] text-[13px] font-medium transition-colors cursor-pointer ${
+              anaSekme === "tuik"
+                ? "bg-[hsl(var(--card))] text-[hsl(var(--card-foreground))] shadow-xs font-semibold"
+                : "text-[hsl(var(--muted-foreground))] hover:text-[hsl(var(--card-foreground))]"
+            }`}
+          >
+            <Database className="w-4 h-4 text-[#B45309]" />
+            <span>2. TÜİK Veri Portalı & ÇEGF</span>
+          </button>
         </div>
       </div>
 
-      {/* 2 Kolonlu Kütüphane Kart Gridi (Görselsiz, Bilgi Yoğun) */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        {filtrelenmisMetinler.map((item) => {
-          const alanInfo = ALAN_TANIMLARI[item.alan];
-          const isCopied = kopyalananId === item.id;
-
-          return (
-            <article
-              key={item.id}
-              className="resmi-kart p-5 flex flex-col justify-between space-y-4 hover:border-[#0F3D2E]/40 transition-colors"
-            >
-              {/* Üst Bilgi ve Başlık */}
-              <div className="space-y-2">
-                <div className="flex items-center justify-between gap-2">
-                  <span className={`alan-badge-${item.alan}`}>
-                    {alanInfo.ad}
-                  </span>
-                  <span className="font-mono text-[11px] text-[hsl(var(--muted-foreground))] bg-[hsl(var(--muted))] px-2 py-0.5 rounded-[4px]">
-                    {item.kanun}
-                  </span>
-                </div>
-
-                <h3 className="font-serif font-semibold text-[18px] sm:text-[19px] leading-[1.3] text-[hsl(var(--card-foreground))] m-0">
-                  {item.baslik}
-                </h3>
-
-                <p className="font-sans text-[13.5px] leading-[1.6] text-[hsl(var(--muted-foreground))]">
-                  {item.ozet}
+      {/* SEKME 2 AKTİFSE: TÜİK VERİ ARŞİVİ BİLEŞENİ GÖSTERİLİR */}
+      {anaSekme === "tuik" ? (
+        <TarimVeriArsiviView
+          showToast={showToast}
+          onTransferToWizard={onTransferToWizard}
+        />
+      ) : (
+        <>
+          {/* TÜİK Doğrudan Erişim Bilgi Kartı */}
+          <div className="resmi-kart p-4 mb-6 bg-[#0F3D2E]/5 dark:bg-[#0F3D2E]/20 border-[#0F3D2E]/20 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
+            <div className="flex items-center gap-3">
+              <div className="w-9 h-9 rounded-[6px] bg-[#0F3D2E] text-white flex items-center justify-center shrink-0">
+                <Database className="w-5 h-5 text-amber-300" />
+              </div>
+              <div>
+                <h4 className="font-serif font-semibold text-[15px] text-[hsl(var(--card-foreground))] m-0">
+                  TÜİK Resmi Veri Portalı & ÇEGF Veri Tabanı
+                </h4>
+                <p className="font-sans text-[12.5px] text-[hsl(var(--muted-foreground))] m-0">
+                  81 ilin resmi bitkisel ürün verimleri, çiftçi satış fiyatları, Tarım-ÜFE ve girdi endekslerine tek tıkla ulaşın.
                 </p>
               </div>
+            </div>
 
-              {/* Kanun Maddesi Kenar Çizgisi Kutusu */}
-              <KenarNotu tip="ornek_ifade" baslik="Bilirkişi Rapor Metni">
-                <p className="italic text-[13px] leading-[1.7] text-[hsl(var(--card-foreground))]">
-                  "{item.tamMetin}"
-                </p>
-              </KenarNotu>
+            <div className="flex items-center gap-2">
+              <button
+                type="button"
+                onClick={() => setAnaSekme("tuik")}
+                className="btn-secondary h-8 px-3 text-[12px] font-semibold"
+              >
+                Veri Arşivini Aç
+              </button>
+              <a
+                href="https://data.tuik.gov.tr/"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="btn-primary h-8 px-3 text-[12px] font-semibold flex items-center gap-1"
+              >
+                <span>data.tuik.gov.tr</span>
+                <ExternalLink className="w-3 h-3" />
+              </a>
+            </div>
+          </div>
 
-              {/* Alt Etiketler & Kopyalama Eylemi */}
-              <div className="pt-3 border-t border-[hsl(var(--border))] flex items-center justify-between gap-2">
-                <div className="flex flex-wrap items-center gap-1">
-                  {item.anahtarKelimeler.map((kelime, idx) => (
-                    <span
-                      key={idx}
-                      className="text-[11px] font-mono bg-[hsl(var(--muted))] text-[hsl(var(--muted-foreground))] px-1.5 py-0.5 rounded-[3px]"
-                    >
-                      #{kelime}
-                    </span>
-                  ))}
-                </div>
+          {/* Arama ve Filtreleme */}
+          <div className="resmi-kart p-4 mb-6 flex flex-col md:flex-row items-stretch md:items-center justify-between gap-3">
+            {/* Arama Inputu */}
+            <div className="relative flex-1">
+              <Search className="w-4 h-4 text-[hsl(var(--muted-foreground))] absolute left-3 top-1/2 -translate-y-1/2" />
+              <input
+                type="text"
+                value={aramaMetni}
+                onChange={(e) => setAramaMetni(e.target.value)}
+                placeholder="Mevzuat maddesi, emsal karar veya anahtar kelime ara..."
+                className="w-full h-10 pl-9 pr-4 text-[13.5px] bg-[hsl(var(--background))] border border-[hsl(var(--border))] rounded-[6px] focus:outline-none focus:border-[#0F3D2E] text-[hsl(var(--card-foreground))]"
+              />
+            </div>
 
+            {/* Alan Filtre Butonları */}
+            <div className="flex flex-wrap items-center gap-1.5">
+              <button
+                type="button"
+                onClick={() => setSeciliAlan("hepsi")}
+                className={`h-9 px-3 rounded-[6px] text-[12.5px] font-medium transition-colors cursor-pointer ${
+                  seciliAlan === "hepsi"
+                    ? "bg-[#0F3D2E] text-[#FBF9F4]"
+                    : "bg-[hsl(var(--muted))] text-[hsl(var(--muted-foreground))] hover:bg-[hsl(var(--border))]"
+                }`}
+              >
+                Tüm Emsaller ({EMSAL_METINLER.length})
+              </button>
+
+              {(["ziraat", "gida", "hayvancilik"] as UzmanlikAlani[]).map((alan) => (
                 <button
+                  key={alan}
                   type="button"
-                  onClick={() => handleKopyala(item.id, item.tamMetin)}
-                  className="h-8 px-3 rounded-[6px] text-[12px] font-sans font-semibold border border-[hsl(var(--border))] bg-[hsl(var(--card))] hover:bg-[hsl(var(--muted))] text-[hsl(var(--card-foreground))] flex items-center gap-1.5 shrink-0 cursor-pointer transition-colors"
+                  onClick={() => setSeciliAlan(alan)}
+                  className={`h-9 px-3 rounded-[6px] text-[12.5px] font-medium transition-colors cursor-pointer ${
+                    seciliAlan === alan
+                      ? "bg-[#0F3D2E] text-[#FBF9F4]"
+                      : "bg-[hsl(var(--muted))] text-[hsl(var(--muted-foreground))] hover:bg-[hsl(var(--border))]"
+                  }`}
                 >
-                  {isCopied ? (
-                    <>
-                      <Check className="w-3.5 h-3.5 text-[#15803D]" />
-                      <span className="text-[#15803D]">Kopyalandı</span>
-                    </>
-                  ) : (
-                    <>
-                      <Copy className="w-3.5 h-3.5 text-[#B45309]" />
-                      <span>Metni Kopyala</span>
-                    </>
-                  )}
+                  {ALAN_TANIMLARI[alan].ad.split(" ")[0]}
                 </button>
-              </div>
-            </article>
-          );
-        })}
-      </div>
+              ))}
+            </div>
+          </div>
+
+          {/* 2 Kolonlu Kütüphane Kart Gridi (Görselsiz, Bilgi Yoğun) */}
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            {filtrelenmisMetinler.map((item) => {
+              const alanInfo = ALAN_TANIMLARI[item.alan];
+              const isCopied = kopyalananId === item.id;
+
+              return (
+                <article
+                  key={item.id}
+                  className="resmi-kart p-5 flex flex-col justify-between space-y-4 hover:border-[#0F3D2E]/40 transition-colors"
+                >
+                  {/* Üst Bilgi ve Başlık */}
+                  <div className="space-y-2">
+                    <div className="flex items-center justify-between gap-2">
+                      <span className={`alan-badge-${item.alan}`}>
+                        {alanInfo.ad}
+                      </span>
+                      <span className="font-mono text-[11px] text-[hsl(var(--muted-foreground))] bg-[hsl(var(--muted))] px-2 py-0.5 rounded-[4px]">
+                        {item.kanun}
+                      </span>
+                    </div>
+
+                    <h3 className="font-serif font-semibold text-[18px] sm:text-[19px] leading-[1.3] text-[hsl(var(--card-foreground))] m-0">
+                      {item.baslik}
+                    </h3>
+
+                    <p className="font-sans text-[13.5px] leading-[1.6] text-[hsl(var(--muted-foreground))]">
+                      {item.ozet}
+                    </p>
+                  </div>
+
+                  {/* Kanun Maddesi Kenar Çizgisi Kutusu */}
+                  <KenarNotu tip="ornek_ifade" baslik="Bilirkişi Rapor Metni">
+                    <p className="italic text-[13px] leading-[1.7] text-[hsl(var(--card-foreground))]">
+                      "{item.tamMetin}"
+                    </p>
+                  </KenarNotu>
+
+                  {/* Alt Etiketler & Kopyalama Eylemi */}
+                  <div className="pt-3 border-t border-[hsl(var(--border))] flex items-center justify-between gap-2">
+                    <div className="flex flex-wrap items-center gap-1">
+                      {item.anahtarKelimeler.map((kelime, idx) => (
+                        <span
+                          key={idx}
+                          className="text-[11px] font-mono bg-[hsl(var(--muted))] text-[hsl(var(--muted-foreground))] px-1.5 py-0.5 rounded-[3px]"
+                        >
+                          #{kelime}
+                        </span>
+                      ))}
+                    </div>
+
+                    <button
+                      type="button"
+                      onClick={() => handleKopyala(item.id, item.tamMetin)}
+                      className="h-8 px-3 rounded-[6px] text-[12px] font-sans font-semibold border border-[hsl(var(--border))] bg-[hsl(var(--card))] hover:bg-[hsl(var(--muted))] text-[hsl(var(--card-foreground))] flex items-center gap-1.5 shrink-0 cursor-pointer transition-colors"
+                    >
+                      {isCopied ? (
+                        <>
+                          <Check className="w-3.5 h-3.5 text-[#15803D]" />
+                          <span className="text-[#15803D]">Kopyalandı</span>
+                        </>
+                      ) : (
+                        <>
+                          <Copy className="w-3.5 h-3.5 text-[#B45309]" />
+                          <span>Metni Kopyala</span>
+                        </>
+                      )}
+                    </button>
+                  </div>
+                </article>
+              );
+            })}
+          </div>
+        </>
+      )}
     </div>
   );
 }

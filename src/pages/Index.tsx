@@ -138,7 +138,28 @@ export default function IndexPage({
                 ← Çalışma Masasına Dön
               </button>
             </div>
-            {altModulTab === "veriarsivi" && <TarimVeriArsiviView showToast={showToast} />}
+            {altModulTab === "veriarsivi" && (
+              <TarimVeriArsiviView
+                showToast={showToast}
+                onTransferToWizard={({ netGelir, araziTipi, urunAdi }) => {
+                  const kfo = araziTipi === "sulu" ? 4 : 5;
+                  const birimM2 = ((netGelir / 1000) / (kfo / 100)).toFixed(2);
+                  const paragraf = `\n\n[TÜİK VE RESMİ VERİ CETVELİ DEĞERLEMESİ]\n` +
+                    `${urunAdi} münavebe ürünü için TÜİK ve İlçe Tarım resmi cetvellerine göre tespit edilen dekar net geliri ₺${netGelir.toLocaleString("tr-TR")}/da olup, ` +
+                    `${araziTipi} tarım arazisinde %${kfo} kapitalizasyon faiz oranıyla hesaplanan çıplak toprak m² birim değeri ₺${birimM2}/m² takdir olunmuştur.`;
+                  setAktifRapor((prev) => ({
+                    ...prev,
+                    bolumMetinleri: {
+                      ...prev.bolumMetinleri,
+                      4: prev.bolumMetinleri[4] ? `${prev.bolumMetinleri[4]}\n${paragraf}` : paragraf,
+                    },
+                  }));
+                  setAltModulTab(null);
+                  setAktifSayfa("sihirbaz");
+                  showToast(`${urunAdi} net geliri Rapor Sihirbazı Adım 4'e aktarıldı`);
+                }}
+              />
+            )}
             {altModulTab === "hayvancilik" && (
               <HayvancilikView showToast={showToast} onGoToWizard={() => setAktifSayfa("sihirbaz")} />
             )}
@@ -177,11 +198,27 @@ export default function IndexPage({
               />
             )}
 
-            {/* SAYFA 3: KÜTÜPHANE EKRANI (2 KOLONLU BİLGİ YOĞUN EMSALLER) */}
+            {/* SAYFA 3: KÜTÜPHANE EKRANI (2 KOLONLU BİLGİ YOĞUN EMSALLER & TÜİK VERİ ARŞİVİ) */}
             {aktifSayfa === "kutuphane" && (
               <KutuphaneView
                 onYeniRaporBaslat={handleYeniRaporBaslat}
                 showToast={showToast}
+                onTransferToWizard={({ netGelir, araziTipi, urunAdi }) => {
+                  const kfo = araziTipi === "sulu" ? 4 : 5;
+                  const birimM2 = ((netGelir / 1000) / (kfo / 100)).toFixed(2);
+                  const paragraf = `\n\n[TÜİK VE RESMİ VERİ CETVELİ DEĞERLEMESİ]\n` +
+                    `${urunAdi} münavebe ürünü için TÜİK ve İlçe Tarım resmi cetvellerine göre tespit edilen dekar net geliri ₺${netGelir.toLocaleString("tr-TR")}/da olup, ` +
+                    `${araziTipi} tarım arazisinde %${kfo} kapitalizasyon faiz oranıyla hesaplanan çıplak toprak m² birim değeri ₺${birimM2}/m² takdir olunmuştur.`;
+                  setAktifRapor((prev) => ({
+                    ...prev,
+                    bolumMetinleri: {
+                      ...prev.bolumMetinleri,
+                      4: prev.bolumMetinleri[4] ? `${prev.bolumMetinleri[4]}\n${paragraf}` : paragraf,
+                    },
+                  }));
+                  setAktifSayfa("sihirbaz");
+                  showToast(`${urunAdi} net geliri Rapor Sihirbazı Adım 4'e aktarıldı`);
+                }}
               />
             )}
           </>
