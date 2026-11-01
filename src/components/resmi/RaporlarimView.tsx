@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from "react";
+import React, { useState, useMemo, useEffect } from "react";
 import {
   Search,
   Plus,
@@ -23,20 +23,34 @@ import KenarNotu from "./KenarNotu";
 import { exportReportToWord } from "../../utils/exportWord";
 
 interface RaporlarimViewProps {
+  raporlar?: BilirKisiRaporu[];
   onYeniRapor: () => void;
   onRaporAc: (rapor: BilirKisiRaporu) => void;
   onRaporDuzenle: (rapor: BilirKisiRaporu) => void;
   onKutuphaneAc: () => void;
+  onRaporSil?: (id: string) => void;
+  onRaporArsivle?: (id: string) => void;
 }
 
 export default function RaporlarimView({
+  raporlar: disRaporlar,
   onYeniRapor,
   onRaporAc,
   onRaporDuzenle,
   onKutuphaneAc,
+  onRaporSil,
+  onRaporArsivle,
 }: RaporlarimViewProps) {
   // Rapor listesi durumu
-  const [raporlar, setRaporlar] = useState<BilirKisiRaporu[]>(ORNEK_RAPORLAR_LISTESI);
+  const [yerelRaporlar, setYerelRaporlar] = useState<BilirKisiRaporu[]>(disRaporlar || ORNEK_RAPORLAR_LISTESI);
+
+  useEffect(() => {
+    if (disRaporlar) {
+      setYerelRaporlar(disRaporlar);
+    }
+  }, [disRaporlar]);
+
+  const raporlar = disRaporlar || yerelRaporlar;
   const [aramaMetni, setAramaMetni] = useState("");
   const [seciliAlan, setSeciliAlan] = useState<"hepsi" | UzmanlikAlani>("hepsi");
   const [seciliDurum, setSeciliDurum] = useState<string>("hepsi");
@@ -61,14 +75,22 @@ export default function RaporlarimView({
   }, [raporlar, seciliAlan, seciliDurum, aramaMetni, durumModu]);
 
   const handleArsivle = (id: string) => {
-    setRaporlar((prev) =>
-      prev.map((r) => (r.id === id ? { ...r, durum: "arsiv" as const } : r))
-    );
+    if (onRaporArsivle) {
+      onRaporArsivle(id);
+    } else {
+      setYerelRaporlar((prev) =>
+        prev.map((r) => (r.id === id ? { ...r, durum: "arsiv" as const } : r))
+      );
+    }
   };
 
   const handleSil = (id: string) => {
     if (confirm("Bu rapor taslağını silmek istediğinize emin misiniz?")) {
-      setRaporlar((prev) => prev.filter((r) => r.id !== id));
+      if (onRaporSil) {
+        onRaporSil(id);
+      } else {
+        setYerelRaporlar((prev) => prev.filter((r) => r.id !== id));
+      }
     }
   };
 

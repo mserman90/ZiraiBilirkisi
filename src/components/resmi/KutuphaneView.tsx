@@ -14,6 +14,7 @@ import {
   ExternalLink,
   Database,
   Globe,
+  ArrowRight,
 } from "lucide-react";
 import { ALAN_TANIMLARI, UzmanlikAlani } from "../../data/fields";
 import KenarNotu from "./KenarNotu";
@@ -23,6 +24,7 @@ interface KutuphaneViewProps {
   onYeniRaporBaslat: () => void;
   showToast: (msg: string) => void;
   onTransferToWizard?: (data: { netGelir: number; araziTipi: "sulu" | "kuru"; urunAdi: string }) => void;
+  onEmsalAktar?: (metin: string) => void;
 }
 
 interface EmsalMetin {
@@ -102,6 +104,7 @@ export default function KutuphaneView({
   onYeniRaporBaslat,
   showToast,
   onTransferToWizard,
+  onEmsalAktar,
 }: KutuphaneViewProps) {
   const [anaSekme, setAnaSekme] = useState<"emsaller" | "tuik">("emsaller");
   const [aramaMetni, setAramaMetni] = useState("");
@@ -308,23 +311,37 @@ export default function KutuphaneView({
                       ))}
                     </div>
 
-                    <button
-                      type="button"
-                      onClick={() => handleKopyala(item.id, item.tamMetin)}
-                      className="h-8 px-3 rounded-[6px] text-[12px] font-sans font-semibold border border-[hsl(var(--border))] bg-[hsl(var(--card))] hover:bg-[hsl(var(--muted))] text-[hsl(var(--card-foreground))] flex items-center gap-1.5 shrink-0 cursor-pointer transition-colors"
-                    >
-                      {isCopied ? (
-                        <>
-                          <Check className="w-3.5 h-3.5 text-[#15803D]" />
-                          <span className="text-[#15803D]">Kopyalandı</span>
-                        </>
-                      ) : (
-                        <>
-                          <Copy className="w-3.5 h-3.5 text-[#B45309]" />
-                          <span>Metni Kopyala</span>
-                        </>
+                    <div className="flex items-center gap-2">
+                      <button
+                        type="button"
+                        onClick={() => handleKopyala(item.id, item.tamMetin)}
+                        className="h-8 px-3 rounded-[6px] text-[12px] font-sans font-semibold border border-[hsl(var(--border))] bg-[hsl(var(--card))] hover:bg-[hsl(var(--muted))] text-[hsl(var(--card-foreground))] flex items-center gap-1.5 shrink-0 cursor-pointer transition-colors"
+                      >
+                        {isCopied ? (
+                          <>
+                            <Check className="w-3.5 h-3.5 text-[#15803D]" />
+                            <span className="text-[#15803D]">Kopyalandı</span>
+                          </>
+                        ) : (
+                          <>
+                            <Copy className="w-3.5 h-3.5 text-[#B45309]" />
+                            <span>Metni Kopyala</span>
+                          </>
+                        )}
+                      </button>
+
+                      {onEmsalAktar && (
+                        <button
+                          type="button"
+                          onClick={() => onEmsalAktar(`[EMSAL BİLİRKİŞİ RAPOR DAYANAĞI]\n${item.tamMetin}`)}
+                          className="h-8 px-3 rounded-[6px] text-[12px] font-sans font-semibold bg-[#0F3D2E] hover:bg-[#15543F] text-white flex items-center gap-1.5 shrink-0 cursor-pointer transition-colors shadow-xs"
+                          title="Bu emsal metnini aktif raporun dayanak bölümüne aktar"
+                        >
+                          <ArrowRight className="w-3.5 h-3.5 text-amber-300" />
+                          <span>Rapora Aktar</span>
+                        </button>
                       )}
-                    </button>
+                    </div>
                   </div>
                 </article>
               );

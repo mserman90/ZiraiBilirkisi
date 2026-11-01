@@ -18,6 +18,7 @@ import {
   X,
   Share2,
   Layers,
+  ArrowRight,
 } from "lucide-react";
 import {
   RESMI_ICTIHAT_PORTALLARI,
@@ -28,9 +29,10 @@ import {
 
 interface IctihatAramaViewProps {
   showToast: (msg: string) => void;
+  onTransferToWizard?: (metin: string) => void;
 }
 
-export default function IctihatAramaView({ showToast }: IctihatAramaViewProps) {
+export default function IctihatAramaView({ showToast, onTransferToWizard }: IctihatAramaViewProps) {
   const [aramaMetni, setAramaMetni] = useState<string>("");
   const [seciliDaire, setSeciliDaire] = useState<string>("Tümü");
   const [seciliKategori, setSeciliKategori] = useState<string>("Tümü");
@@ -440,6 +442,23 @@ Kaynak: Resmi Yargıtay Bilgi İşlem Merkezi (karararama.yargitay.gov.tr)
                     {kopyalananId === aktifKarar.id ? <Check size={14} className="text-emerald-600" /> : <Copy size={14} />}
                     <span>{kopyalananId === aktifKarar.id ? "Kopyalandı!" : "Kararı Metne Kopyala"}</span>
                   </button>
+
+                  {onTransferToWizard && (
+                    <button
+                      onClick={() => {
+                        const aktarim = `\n\n[EMSAL YARGITAY İÇTİHADI DAYANAĞI]\n` +
+                          `${aktifKarar.daire} - Esas: ${aktifKarar.esas}, Karar: ${aktifKarar.karar} (Karar Tarihi: ${aktifKarar.tarih})\n` +
+                          `Hukuki İlke: "${aktifKarar.ozet}"\n` +
+                          `Yasal Hüküm ve Karar Metni: ${aktifKarar.metin}`;
+                        onTransferToWizard(aktarim);
+                      }}
+                      className="flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl text-xs font-bold bg-emerald-600 hover:bg-emerald-500 text-white transition shadow-sm cursor-pointer"
+                      title="Bu içtihadı raporun Adım 5 (Mevzuat & Bilimsel Dayanaklar) bölümüne aktar"
+                    >
+                      <ArrowRight size={14} className="text-amber-300" />
+                      <span>Rapora Emsal Olarak Aktar (Adım 5)</span>
+                    </button>
+                  )}
 
                   <a
                     href={`https://www.google.com/search?q=site:karararama.yargitay.gov.tr+OR+site:yargitay.gov.tr+${encodeURIComponent(aktifKarar.daire + " " + aktifKarar.esas + " " + aktifKarar.karar)}`}

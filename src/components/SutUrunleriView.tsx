@@ -28,6 +28,7 @@ import {
   Flame,
   Activity,
   FileText,
+  ArrowRight,
 } from "lucide-react";
 import {
   TGK_CIG_SUT_NORMLARI,
@@ -42,11 +43,13 @@ import {
 interface SutUrunleriViewProps {
   showToast: (msg: string) => void;
   onGoToReportAutomation?: () => void;
+  onTransferToWizard?: (metin: string) => void;
 }
 
 export default function SutUrunleriView({
   showToast,
   onGoToReportAutomation,
+  onTransferToWizard,
 }: SutUrunleriViewProps) {
   // Aktif alt sekme
   const [activeTab, setActiveTab] = useState<
@@ -483,12 +486,23 @@ Laboratuvar analiz raporu ve fabrika ret tutanağı doğrultusunda; sütün ${co
                     <FileCheck size={15} className="text-emerald-600" />
                     Hazır Bilirkişi Rapor Metni (Mahkemeye Sunulabilir)
                   </h4>
-                  <button
-                    onClick={() => handleCopyText(kriyoskopiReportText)}
-                    className="px-3 py-1 rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-semibold flex items-center gap-1.5 transition"
-                  >
-                    <Copy size={13} /> Raporu Kopyala
-                  </button>
+                  <div className="flex items-center gap-2">
+                    <button
+                      onClick={() => handleCopyText(kriyoskopiReportText)}
+                      className="px-3 py-1 rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-semibold flex items-center gap-1.5 transition cursor-pointer"
+                    >
+                      <Copy size={13} /> Raporu Kopyala
+                    </button>
+                    {onTransferToWizard && (
+                      <button
+                        onClick={() => onTransferToWizard(kriyoskopiReportText)}
+                        className="px-3 py-1 rounded-lg bg-[#0F3D2E] hover:bg-[#15543F] text-white text-xs font-semibold flex items-center gap-1.5 transition cursor-pointer shadow-xs"
+                        title="Bu teknik değerlendirmeyi raporun Adım 4 bölümüne aktar"
+                      >
+                        <ArrowRight size={13} className="text-amber-300" /> Rapora Aktar (Adım 4)
+                      </button>
+                    )}
+                  </div>
                 </div>
                 <pre className="text-xs font-mono text-slate-800 dark:text-slate-200 bg-white dark:bg-slate-900 p-4 rounded-xl border border-slate-200 dark:border-slate-700 whitespace-pre-wrap leading-relaxed">
                   {kriyoskopiReportText}
@@ -668,12 +682,23 @@ Laboratuvar analiz raporu ve fabrika ret tutanağı doğrultusunda; sütün ${co
                     <FileCheck size={15} className="text-emerald-600" />
                     Hazır Bilirkişi Rapor Metni (Fason Üretim / Randıman Uyuşmazlığı)
                   </h4>
-                  <button
-                    onClick={() => handleCopyText(yieldReportText)}
-                    className="px-3 py-1 rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-semibold flex items-center gap-1.5 transition"
-                  >
-                    <Copy size={13} /> Raporu Kopyala
-                  </button>
+                  <div className="flex items-center gap-2">
+                    <button
+                      onClick={() => handleCopyText(yieldReportText)}
+                      className="px-3 py-1 rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-semibold flex items-center gap-1.5 transition cursor-pointer"
+                    >
+                      <Copy size={13} /> Raporu Kopyala
+                    </button>
+                    {onTransferToWizard && (
+                      <button
+                        onClick={() => onTransferToWizard(yieldReportText)}
+                        className="px-3 py-1 rounded-lg bg-[#0F3D2E] hover:bg-[#15543F] text-white text-xs font-semibold flex items-center gap-1.5 transition cursor-pointer shadow-xs"
+                        title="Bu teknik değerlendirmeyi raporun Adım 4 bölümüne aktar"
+                      >
+                        <ArrowRight size={13} className="text-amber-300" /> Rapora Aktar (Adım 4)
+                      </button>
+                    )}
+                  </div>
                 </div>
                 <pre className="text-xs font-mono text-slate-800 dark:text-slate-200 bg-white dark:bg-slate-900 p-4 rounded-xl border border-slate-200 dark:border-slate-700 whitespace-pre-wrap leading-relaxed">
                   {yieldReportText}
@@ -890,12 +915,23 @@ Laboratuvar analiz raporu ve fabrika ret tutanağı doğrultusunda; sütün ${co
                     <FileCheck size={15} className="text-emerald-600" />
                     Hazır Bilirkişi Rapor Metni (Soğuk Zincir / Tanker Arızası Davası)
                   </h4>
-                  <button
-                    onClick={() => handleCopyText(spoilReportText)}
-                    className="px-3 py-1 rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-semibold flex items-center gap-1.5 transition"
-                  >
-                    <Copy size={13} /> Raporu Kopyala
-                  </button>
+                  <div className="flex items-center gap-2">
+                    <button
+                      onClick={() => handleCopyText(spoilReportText)}
+                      className="px-3 py-1 rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-semibold flex items-center gap-1.5 transition cursor-pointer"
+                    >
+                      <Copy size={13} /> Raporu Kopyala
+                    </button>
+                    {onTransferToWizard && (
+                      <button
+                        onClick={() => onTransferToWizard(spoilReportText)}
+                        className="px-3 py-1 rounded-lg bg-[#0F3D2E] hover:bg-[#15543F] text-white text-xs font-semibold flex items-center gap-1.5 transition cursor-pointer shadow-xs"
+                        title="Bu teknik değerlendirmeyi raporun Adım 4 bölümüne aktar"
+                      >
+                        <ArrowRight size={13} className="text-amber-300" /> Rapora Aktar (Adım 4)
+                      </button>
+                    )}
+                  </div>
                 </div>
                 <pre className="text-xs font-mono text-slate-800 dark:text-slate-200 bg-white dark:bg-slate-900 p-4 rounded-xl border border-slate-200 dark:border-slate-700 whitespace-pre-wrap leading-relaxed">
                   {spoilReportText}

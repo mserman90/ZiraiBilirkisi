@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from "react";
+import React, { useState, useMemo, useEffect } from "react";
 import {
   Check,
   ChevronLeft,
@@ -157,28 +157,68 @@ export default function SihirbazView({
     showToast("Mevzuata uygun taslak metin yüklendi");
   };
 
+  // Aktif rapor dışarıdan güncellendiğinde (başka modülden veri aktarımı vb.) senkronize et
+  useEffect(() => {
+    setRapor(aktifRapor);
+    if (aktifRapor.bolumMetinleri) {
+      setBolumMetinleri(aktifRapor.bolumMetinleri);
+    }
+    if (aktifRapor.bolumKontrolleri) {
+      setBolumKontrolleri(aktifRapor.bolumKontrolleri);
+    }
+    if (aktifRapor.ekler) {
+      setEkler(aktifRapor.ekler);
+    }
+    if (aktifRapor.mevcutAdim) {
+      setCurrentStep(aktifRapor.mevcutAdim);
+    }
+  }, [aktifRapor]);
+
   // AI Değerlendirmesini Uygula
   const handleAiRevizeUygula = (yeniMetin: string) => {
-    setBolumMetinleri((prev) => ({ ...prev, [currentStep]: yeniMetin }));
+    const guncelMetinler = { ...bolumMetinleri, [currentStep]: yeniMetin };
+    setBolumMetinleri(guncelMetinler);
+    if (onRaporKaydet) {
+      onRaporKaydet({
+        ...rapor,
+        bolumMetinleri: guncelMetinler,
+        ekler,
+        sonGuncelleme: "Az önce",
+      });
+    }
   };
 
   // TÜİK Resmi Verisi Aktar
   const handleTuikMetinEkle = (eklenenMetin: string) => {
     const ayirici = !mevcutMetin ? "" : mevcutMetin.endsWith("\n\n") ? "" : mevcutMetin.endsWith("\n") ? "\n" : "\n\n";
     const yeni = mevcutMetin ? `${mevcutMetin}${ayirici}${eklenenMetin}` : eklenenMetin;
-    setBolumMetinleri((prev) => ({ ...prev, [currentStep]: yeni }));
+    const guncelMetinler = { ...bolumMetinleri, [currentStep]: yeni };
+    setBolumMetinleri(guncelMetinler);
+    if (onRaporKaydet) {
+      onRaporKaydet({
+        ...rapor,
+        bolumMetinleri: guncelMetinler,
+        ekler,
+        sonGuncelleme: "Az önce",
+      });
+    }
   };
 
   // Ekler güncellendiğinde
   const handleEklerGuncelle = (yeniEkler: RaporEki[]) => {
     setEkler(yeniEkler);
-    setRapor((prev) => ({ ...prev, ekler: yeniEkler }));
+    const guncel = { ...rapor, ekler: yeniEkler };
+    setRapor(guncel);
+    if (onRaporKaydet) onRaporKaydet(guncel);
   };
 
   // Tek ek ekle (TÜİK Denetim İzi vb.)
   const handleTekEkEkle = (yeniEk: RaporEki) => {
-    setEkler((prev) => [...prev, yeniEk]);
-    setRapor((prev) => ({ ...prev, ekler: [...(prev.ekler || []), yeniEk] }));
+    const guncelEkler = [...ekler, yeniEk];
+    setEkler(guncelEkler);
+    const guncel = { ...rapor, ekler: guncelEkler, bolumMetinleri };
+    setRapor(guncel);
+    if (onRaporKaydet) onRaporKaydet(guncel);
   };
 
   // Kaydet

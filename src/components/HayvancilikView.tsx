@@ -66,6 +66,7 @@ export interface HayvancilikViewProps {
   showToast: (msg: string) => void;
   onGoToWizard: () => void;
   onGoToReportAutomation?: () => void;
+  onTransferToWizard?: (metin: string) => void;
 }
 
 // ÜFE Artış Oranları (Telef Tarihinden Günümüze Endeksleme)
@@ -107,6 +108,7 @@ export default function HayvancilikView({
   showToast,
   onGoToWizard,
   onGoToReportAutomation,
+  onTransferToWizard,
 }: HayvancilikViewProps) {
   // Ana Alt Sekmeler
   const [altSekme, setAltSekme] = useState<"degerleme" | "telef" | "irkDB" | "rehber">("degerleme");
@@ -1102,6 +1104,28 @@ Yıllık Net Ürün Getirisi (Yem Masrafı Tenzilli): ${degerlemeSonucu.toplamYi
                 >
                   <Copy size={14} /> Rapor Metnini Kopyala
                 </button>
+                {onTransferToWizard && (
+                  <button
+                    type="button"
+                    onClick={() => {
+                      const metin = `02.01 HAYVANCILIK BİLİRKİŞİ DEĞERLEME TESPİT TUTANAĞI:
+Değerleme Konusu: ${hayvanAdet} Baş ${seciliIrkAd} (${turTipi.toUpperCase()})
+Yaş: ${hayvanYasi} Yıl | Canlı Ağırlık: ${canliAgirlik} kg | Karkas Randımanı: %${aktifIrkData.karkasRandimani}
+Damızlık Durumu: ${isDamizlik ? (damizlikDerece === "tescilli" ? "Pedigrili Tescilli Damızlık" : "İşletme Damızlığı") : "Ticari / Besi"}
+Canlı Ağırlık Birim Değeri: ${degerlemeSonucu.canliDegerBirim.toLocaleString("tr-TR")} ₺
+Karkas Et Emsal Değeri: ${degerlemeSonucu.karkasDegerBirim.toLocaleString("tr-TR")} ₺
+Yaşa Bağlı Amortisman Oranı: %${degerlemeSonucu.amortismanOrani}
+Nihai Birim Canlı Değer: ${degerlemeSonucu.netBirimDeger.toLocaleString("tr-TR")} ₺ / baş
+TOPLAM SÜRÜ / HAYVAN DEĞERİ: ${degerlemeSonucu.toplamSuruDegeri.toLocaleString("tr-TR")} ₺
+Yıllık Net Ürün Getirisi (Yem Masrafı Tenzilli): ${degerlemeSonucu.toplamYillikNetGelir.toLocaleString("tr-TR")} ₺`;
+                      onTransferToWizard(metin);
+                    }}
+                    className="py-2.5 px-3 rounded-xl bg-[#0F3D2E] hover:bg-[#15543F] text-white font-bold text-xs flex items-center gap-1.5 transition shadow-xs cursor-pointer"
+                    title="Bu değerleme tespitini raporun Adım 4 bölümüne aktar"
+                  >
+                    <ArrowRight size={14} className="text-amber-300" /> Rapora Aktar (Adım 4)
+                  </button>
+                )}
                 <button
                   type="button"
                   onClick={onGoToWizard}
@@ -1470,12 +1494,23 @@ Yıllık Net Ürün Getirisi (Yem Masrafı Tenzilli): ${degerlemeSonucu.toplamYi
                     <span className="text-xs font-bold text-slate-800 flex items-center gap-1.5">
                       <FileText size={15} className="text-rose-600" /> Gerekçeli Bilirkişi Rapor Paragrafı
                     </span>
-                    <button
-                      onClick={() => kopyalaMetin(aiGerekceMetni, "Gerekçeli rapor metni kopyalandı")}
-                      className="px-2.5 py-1 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-700 text-[11px] font-bold flex items-center gap-1 transition"
-                    >
-                      <Copy size={12} /> Kopyala
-                    </button>
+                    <div className="flex items-center gap-1.5">
+                      <button
+                        onClick={() => kopyalaMetin(aiGerekceMetni, "Gerekçeli rapor metni kopyalandı")}
+                        className="px-2.5 py-1 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-700 text-[11px] font-bold flex items-center gap-1 transition cursor-pointer"
+                      >
+                        <Copy size={12} /> Kopyala
+                      </button>
+                      {onTransferToWizard && (
+                        <button
+                          onClick={() => onTransferToWizard(aiGerekceMetni)}
+                          className="px-2.5 py-1 rounded-lg bg-[#0F3D2E] hover:bg-[#15543F] text-white text-[11px] font-bold flex items-center gap-1 transition cursor-pointer shadow-xs"
+                          title="Bu gerekçeli metni raporun Adım 4 bölümüne aktar"
+                        >
+                          <ArrowRight size={12} className="text-amber-300" /> Rapora Aktar (Adım 4)
+                        </button>
+                      )}
+                    </div>
                   </div>
                   <textarea
                     readOnly

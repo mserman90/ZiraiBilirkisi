@@ -32,6 +32,7 @@ import {
   AlertCircle,
   Clipboard,
   DollarSign,
+  ArrowRight,
 } from "lucide-react";
 import { motion, AnimatePresence } from "motion/react";
 import { jsPDF } from "jspdf";
@@ -57,6 +58,7 @@ import { sanitizeTR } from "../utils/geo";
 export interface YemlerBeslemeViewProps {
   showToast: (msg: string) => void;
   onGoToWizard: () => void;
+  onTransferToWizard?: (metin: string) => void;
 }
 
 // RFV Kalite Sınıfları (Hay Quality Standards)
@@ -117,6 +119,7 @@ const KATEGORI_ETIKETLERI: Record<string, string> = {
 export default function YemlerBeslemeView({
   showToast,
   onGoToWizard: _onGoToWizard,
+  onTransferToWizard,
 }: YemlerBeslemeViewProps) {
   // ============================================================================
   // 4 SUB-TAB YÖNETİMİ
@@ -336,7 +339,7 @@ export default function YemlerBeslemeView({
   }, [rasyonSonucu, aktifHayvan]);
 
   // Rasyonu Kopyala
-  const handleRasyonKopyala = () => {
+  const getRasyonMetni = () => {
     let metin = `========================================================\n`;
     metin += `ZİRAİ BİLİRKİŞİ RASYON VE HAYVAN BESLEME CETVELİ\n`;
     metin += `========================================================\n`;
@@ -367,7 +370,11 @@ export default function YemlerBeslemeView({
       "tr-TR"
     )} ₺ / kg KM\n`;
     metin += `========================================================\n`;
+    return metin;
+  };
 
+  const handleRasyonKopyala = () => {
+    const metin = getRasyonMetni();
     navigator.clipboard.writeText(metin).then(() => {
       showToast("Rasyon dökümü panoya kopyalandı");
     });
@@ -590,7 +597,7 @@ export default function YemlerBeslemeView({
     };
   }, [analizAdf, analizNdf, analizAfb1, analizHk, analizKm, analizYemTipi, analizPh]);
 
-  const handleAnalizRaporuKopyala = () => {
+  const getAnalizRaporMetni = () => {
     let metin = `========================================================\n`;
     metin += `YEM ANALİZ VE KALİTE KONTROL BİLİRKİŞİ DEĞERLENDİRMESİ\n`;
     metin += `========================================================\n`;
@@ -617,7 +624,11 @@ export default function YemlerBeslemeView({
     metin += `- Nispi Yem Değeri (RFV): ${kaliteSonucu.rfv} -> [${kaliteSonucu.rfvSinifObj.sinif}]\n`;
     metin += `- Açıklama: ${kaliteSonucu.rfvSinifObj.aciklama}\n`;
     metin += `========================================================\n`;
+    return metin;
+  };
 
+  const handleAnalizRaporuKopyala = () => {
+    const metin = getAnalizRaporMetni();
     navigator.clipboard.writeText(metin).then(() => {
       showToast("Yem analiz raporu panoya kopyalandı");
     });
@@ -725,8 +736,8 @@ Takdir Sayın Mahkeme'ye aittir.`;
     }, 1200);
   };
 
-  const handleZararRaporuKopyala = () => {
-    const metin = aiGerekceMetni
+  const getZararRaporMetni = () => {
+    return aiGerekceMetni
       ? aiGerekceMetni
       : `ZARAR CETVELİ ÖZETİ:
 - Hasar Türü: ${aktifHasarTuru.baslik}
@@ -738,7 +749,10 @@ Takdir Sayın Mahkeme'ye aittir.`;
 - Hurda Mahsubu: -${zararHesapSonucu.mahsupTutari.toLocaleString("tr-TR")} ₺
 - Müterafik Kusur (%${muterafikKusurPct}): -${zararHesapSonucu.kusurIndirimTutari.toLocaleString("tr-TR")} ₺
 - HÜKME ESAS NET TAZMİNAT: ${zararHesapSonucu.netTazminatTutari.toLocaleString("tr-TR")} ₺`;
+  };
 
+  const handleZararRaporuKopyala = () => {
+    const metin = getZararRaporMetni();
     navigator.clipboard.writeText(metin).then(() => {
       showToast("Zarar hesap raporu panoya kopyalandı");
     });
@@ -1323,18 +1337,28 @@ Takdir Sayın Mahkeme'ye aittir.`;
                   <button
                     type="button"
                     onClick={handleRasyonKopyala}
-                    className="py-2.5 px-3 bg-slate-800 hover:bg-slate-700 text-white rounded-xl text-xs font-bold transition flex items-center justify-center gap-1.5"
+                    className="py-2.5 px-3 bg-slate-800 hover:bg-slate-700 text-white rounded-xl text-xs font-bold transition flex items-center justify-center gap-1.5 cursor-pointer"
                   >
                     <Copy size={14} /> Rasyonu Kopyala
                   </button>
                   <button
                     type="button"
                     onClick={handleRasyonPdfIndir}
-                    className="py-2.5 px-3 bg-gradient-to-r from-lime-600 to-green-600 hover:from-lime-500 hover:to-green-500 text-white rounded-xl text-xs font-bold transition flex items-center justify-center gap-1.5 shadow-sm"
+                    className="py-2.5 px-3 bg-gradient-to-r from-lime-600 to-green-600 hover:from-lime-500 hover:to-green-500 text-white rounded-xl text-xs font-bold transition flex items-center justify-center gap-1.5 shadow-sm cursor-pointer"
                   >
                     <Download size={14} /> PDF Olarak İndir
                   </button>
                 </div>
+                {onTransferToWizard && (
+                  <button
+                    type="button"
+                    onClick={() => onTransferToWizard(getRasyonMetni())}
+                    className="w-full mt-2.5 py-2.5 px-3 bg-[#0F3D2E] hover:bg-[#15543F] text-white rounded-xl text-xs font-bold transition flex items-center justify-center gap-1.5 shadow-xs cursor-pointer border border-emerald-600/30"
+                    title="Bu rasyon dökümünü raporun Adım 4 bölümüne aktar"
+                  >
+                    <ArrowRight size={14} className="text-amber-300" /> Rasyon Cetvelini Rapora Aktar (Adım 4)
+                  </button>
+                )}
               </div>
 
               {/* Bilirkişi Rasyon Uyarısı */}
@@ -1695,14 +1719,24 @@ Takdir Sayın Mahkeme'ye aittir.`;
               </div>
 
               {/* Raporu Kopyala Butonu */}
-              <div className="pt-2 flex justify-end">
+              <div className="pt-2 flex items-center justify-end gap-2">
                 <button
                   type="button"
                   onClick={handleAnalizRaporuKopyala}
-                  className="py-2.5 px-4 bg-slate-900 hover:bg-slate-800 text-white rounded-xl text-xs font-bold transition flex items-center gap-2 shadow-sm"
+                  className="py-2.5 px-4 bg-slate-900 hover:bg-slate-800 text-white rounded-xl text-xs font-bold transition flex items-center gap-2 shadow-sm cursor-pointer"
                 >
                   <Copy size={14} /> Analiz Raporunu Kopyala
                 </button>
+                {onTransferToWizard && (
+                  <button
+                    type="button"
+                    onClick={() => onTransferToWizard(getAnalizRaporMetni())}
+                    className="py-2.5 px-4 bg-[#0F3D2E] hover:bg-[#15543F] text-white rounded-xl text-xs font-bold transition flex items-center gap-2 shadow-sm cursor-pointer border border-emerald-600/30"
+                    title="Bu analiz tespitini raporun Adım 4 bölümüne aktar"
+                  >
+                    <ArrowRight size={14} className="text-amber-300" /> Rapora Aktar (Adım 4)
+                  </button>
+                )}
               </div>
             </div>
 
@@ -2227,7 +2261,7 @@ Takdir Sayın Mahkeme'ye aittir.`;
                     type="button"
                     onClick={handleAiGerekceUret}
                     disabled={aiGenerating}
-                    className="py-2.5 px-3 bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-500 hover:to-indigo-500 text-white rounded-xl text-xs font-bold transition flex items-center justify-center gap-1.5 shadow-sm disabled:opacity-50"
+                    className="py-2.5 px-3 bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-500 hover:to-indigo-500 text-white rounded-xl text-xs font-bold transition flex items-center justify-center gap-1.5 shadow-sm disabled:opacity-50 cursor-pointer"
                   >
                     <Sparkles size={14} className={aiGenerating ? "animate-spin" : ""} />
                     {aiGenerating ? "Yazılıyor..." : "AI Gerekçe Yazıcı"}
@@ -2235,11 +2269,21 @@ Takdir Sayın Mahkeme'ye aittir.`;
                   <button
                     type="button"
                     onClick={handleZararRaporuKopyala}
-                    className="py-2.5 px-3 bg-slate-800 hover:bg-slate-700 text-white rounded-xl text-xs font-bold transition flex items-center justify-center gap-1.5"
+                    className="py-2.5 px-3 bg-slate-800 hover:bg-slate-700 text-white rounded-xl text-xs font-bold transition flex items-center justify-center gap-1.5 cursor-pointer"
                   >
                     <Copy size={14} /> Raporu Kopyala
                   </button>
                 </div>
+                {onTransferToWizard && (
+                  <button
+                    type="button"
+                    onClick={() => onTransferToWizard(getZararRaporMetni())}
+                    className="w-full mt-2.5 py-2.5 px-3 bg-[#0F3D2E] hover:bg-[#15543F] text-white rounded-xl text-xs font-bold transition flex items-center justify-center gap-1.5 shadow-xs cursor-pointer border border-emerald-600/30"
+                    title="Bu zarar cetvelini raporun Adım 4 bölümüne aktar"
+                  >
+                    <ArrowRight size={14} className="text-amber-300" /> Zarar Cetvelini Rapora Aktar (Adım 4)
+                  </button>
+                )}
               </div>
 
               {/* AI Gerekçe Yazıcı Sonuç Kutusu */}
@@ -2249,17 +2293,29 @@ Takdir Sayın Mahkeme'ye aittir.`;
                     <h5 className="text-xs font-bold text-purple-900 flex items-center gap-1.5">
                       <Sparkles size={14} className="text-purple-600" /> Mahkeme Gerekçeli Rapor Metni
                     </h5>
-                    <button
-                      type="button"
-                      onClick={() => {
-                        navigator.clipboard.writeText(aiGerekceMetni).then(() => {
-                          showToast("Gerekçe metni panoya kopyalandı");
-                        });
-                      }}
-                      className="text-xs text-purple-700 hover:text-purple-900 font-bold flex items-center gap-1"
-                    >
-                      <Copy size={12} /> Kopyala
-                    </button>
+                    <div className="flex items-center gap-2">
+                      <button
+                        type="button"
+                        onClick={() => {
+                          navigator.clipboard.writeText(aiGerekceMetni).then(() => {
+                            showToast("Gerekçe metni panoya kopyalandı");
+                          });
+                        }}
+                        className="text-xs text-purple-700 hover:text-purple-900 font-bold flex items-center gap-1 cursor-pointer"
+                      >
+                        <Copy size={12} /> Kopyala
+                      </button>
+                      {onTransferToWizard && (
+                        <button
+                          type="button"
+                          onClick={() => onTransferToWizard(aiGerekceMetni)}
+                          className="px-2.5 py-1 bg-[#0F3D2E] hover:bg-[#15543F] text-white text-[11px] font-bold rounded-lg flex items-center gap-1 transition cursor-pointer shadow-xs"
+                          title="Bu gerekçeli metni raporun Adım 4 bölümüne aktar"
+                        >
+                          <ArrowRight size={11} className="text-amber-300" /> Rapora Aktar
+                        </button>
+                      )}
+                    </div>
                   </div>
                   <pre className="text-[11px] text-slate-700 whitespace-pre-wrap font-sans leading-relaxed bg-purple-50/40 p-3 rounded-xl border border-purple-100 max-h-60 overflow-y-auto">
                     {aiGerekceMetni}

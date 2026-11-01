@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import ResmiUstBar, { AnaNavigasyon } from "@/components/resmi/ResmiUstBar";
 import RaporlarimView from "@/components/resmi/RaporlarimView";
 import SihirbazView from "@/components/resmi/SihirbazView";
@@ -19,6 +19,7 @@ import HayvancilikView from "@/components/HayvancilikView";
 import YemlerBeslemeView from "@/components/YemlerBeslemeView";
 import SutUrunleriView from "@/components/SutUrunleriView";
 import NdviPanel from "@/components/NdviPanel";
+import IctihatAramaView from "@/components/IctihatAramaView";
 
 interface IndexPageProps {
   theme: "light" | "dark";
@@ -26,6 +27,8 @@ interface IndexPageProps {
   onPwaClick?: () => void;
   onRehberClick?: () => void;
   showToast: (msg: string) => void;
+  selectedTab?: TabId | null;
+  onClearSelectedTab?: () => void;
 }
 
 export default function IndexPage({
@@ -34,12 +37,37 @@ export default function IndexPage({
   onPwaClick,
   onRehberClick,
   showToast,
+  selectedTab,
+  onClearSelectedTab,
 }: IndexPageProps) {
   // Ana Navigasyon: "raporlarim" | "kutuphane" | "sihirbaz"
   const [aktifSayfa, setAktifSayfa] = useState<AnaNavigasyon>("raporlarim");
 
+  // Raporlar Listesi (Kalıcı State - localStorage)
+  const [raporlar, setRaporlar] = useState<BilirKisiRaporu[]>(() => {
+    if (typeof window !== "undefined") {
+      const saved = localStorage.getItem("zirai_bilirkisi_raporlar");
+      if (saved) {
+        try {
+          const parsed = JSON.parse(saved);
+          if (Array.isArray(parsed) && parsed.length > 0) return parsed;
+        } catch {}
+      }
+    }
+    return ORNEK_RAPORLAR_LISTESI;
+  });
+
   // Aktif açılan veya düzenlenen bilirkişi raporu
-  const [aktifRapor, setAktifRapor] = useState<BilirKisiRaporu>(ORNEK_RAPORLAR_LISTESI[0]);
+  const [aktifRapor, setAktifRapor] = useState<BilirKisiRaporu>(() => {
+    if (typeof window !== "undefined") {
+      const savedId = localStorage.getItem("zirai_bilirkisi_aktif_id");
+      if (savedId) {
+        const found = raporlar.find((r) => r.id === savedId);
+        if (found) return found;
+      }
+    }
+    return raporlar[0] || ORNEK_RAPORLAR_LISTESI[0];
+  });
 
   // Bilirkişi Kullanıcı Profili (Hesap & Erişim)
   const [profil, setProfil] = useState<BilirKisiProfili>(() => {
@@ -56,8 +84,63 @@ export default function IndexPage({
 
   const [authModalAcik, setAuthModalAcik] = useState(false);
 
-  // Özel alt modül görünümü (Arama veya kütüphane üzerinden doğrudan araç açıldığında)
+  // Özel alt modül görünümü (Arama, komut paleti veya kütüphane üzerinden doğrudan araç açıldığında)
   const [altModulTab, setAltModulTab] = useState<TabId | null>(null);
+
+  // Dışarıdan veya CommandPalette'ten gelen sekme yönlendirmesi
+  useEffect(() => {
+    if (!selectedTab) return;
+    if (
+      selectedTab === "hero" ||
+      selectedTab === "tarimRaporlar" ||
+      selectedTab === "hayvancilikRaporlar"
+    ) {
+      setAktifSayfa("raporlarim");
+      setAltModulTab(null);
+    } else if (
+      selectedTab === "sihirbaz" ||
+      selectedTab === "raporOtomasyonu" ||
+      selectedTab === "hayvancilikRaporOtomasyonu"
+    ) {
+      setAktifSayfa("sihirbaz");
+      setAltModulTab(null);
+    } else if (selectedTab === "ilkeler" || selectedTab === "teorik") {
+      setAktifSayfa("kutuphane");
+      setAltModulTab(null);
+    } else if (
+      selectedTab === "veriarsivi" ||
+      selectedTab === "hayvancilik" ||
+      selectedTab === "yemlerBesleme" ||
+      selectedTab === "sutTeknolojisi" ||
+      selectedTab === "uyduParsel" ||
+      selectedTab === "ictihat"
+    ) {
+      setAltModulTab(selectedTab);
+    }
+    if (onClearSelectedTab) {
+      onClearSelectedTab();
+    }
+  }, [selectedTab, onClearSelectedTab]);
+
+  // Rapor Değişikliğini Kaydet ve Senkronize Et
+  const handleRaporKaydet = (guncel: BilirKisiRaporu) => {
+    setAktifRapor(guncel);
+    if (typeof window !== "undefined") {
+      try {
+        localStorage.setItem("zirai_bilirkisi_aktif_id", guncel.id);
+      } catch {}
+    }
+    setRaporlar((prev) => {
+      const exists = prev.some((r) => r.id === guncel.id);
+      const updated = exists ? prev.map((r) => (r.id === guncel.id ? guncel : r)) : [guncel, ...prev];
+      if (typeof window !== "undefined") {
+        try {
+          localStorage.setItem("zirai_bilirkisi_raporlar", JSON.stringify(updated));
+        } catch {}
+      }
+      return updated;
+    });
+  };
 
   // Yeni Rapor Başlat
   const handleYeniRaporBaslat = () => {
@@ -96,7 +179,7 @@ export default function IndexPage({
       },
       ekler: [],
     };
-    setAktifRapor(yeniRapor);
+    handleRaporKaydet(yeniRapor);
     setAltModulTab(null);
     setAktifSayfa("sihirbaz");
     showToast("Yeni rapor taslağı başlatıldı");
@@ -105,8 +188,90 @@ export default function IndexPage({
   // Mevcut Raporu Aç / Düzenle
   const handleRaporAc = (rapor: BilirKisiRaporu) => {
     setAktifRapor(rapor);
+    if (typeof window !== "undefined") {
+      try {
+        localStorage.setItem("zirai_bilirkisi_aktif_id", rapor.id);
+      } catch {}
+    }
     setAltModulTab(null);
     setAktifSayfa("sihirbaz");
+  };
+
+  // Rapor Sil
+  const handleRaporSil = (id: string) => {
+    const updated = raporlar.filter((r) => r.id !== id);
+    setRaporlar(updated);
+    if (typeof window !== "undefined") {
+      try {
+        localStorage.setItem("zirai_bilirkisi_raporlar", JSON.stringify(updated));
+      } catch {}
+    }
+    if (aktifRapor.id === id) {
+      if (updated.length > 0) {
+        setAktifRapor(updated[0]);
+      } else {
+        handleYeniRaporBaslat();
+      }
+    }
+    showToast("Rapor dosyası silindi");
+  };
+
+  // Rapor Arşivle
+  const handleRaporArsivle = (id: string) => {
+    const updated = raporlar.map((r) => (r.id === id ? { ...r, durum: "arsiv" as const } : r));
+    setRaporlar(updated);
+    if (typeof window !== "undefined") {
+      try {
+        localStorage.setItem("zirai_bilirkisi_raporlar", JSON.stringify(updated));
+      } catch {}
+    }
+    if (aktifRapor.id === id) {
+      setAktifRapor((prev) => ({ ...prev, durum: "arsiv" }));
+    }
+    showToast("Rapor arşive kaldırıldı");
+  };
+
+  // Standart Modüller Arası Metin Aktarma Fonksiyonu
+  const handleMetinAktarRaporBolumune = (
+    metin: string,
+    bolumNo: number = 4,
+    toastMsg?: string
+  ) => {
+    const formatliMetin = `\n\n${metin.trim()}`;
+    const guncelRapor: BilirKisiRaporu = {
+      ...aktifRapor,
+      bolumMetinleri: {
+        ...aktifRapor.bolumMetinleri,
+        [bolumNo]: aktifRapor.bolumMetinleri[bolumNo]
+          ? `${aktifRapor.bolumMetinleri[bolumNo]}${formatliMetin}`
+          : metin.trim(),
+      },
+      sonGuncelleme: "Yeni veri eklendi (şimdi)",
+    };
+
+    handleRaporKaydet(guncelRapor);
+    setAltModulTab(null);
+    setAktifSayfa("sihirbaz");
+    showToast(toastMsg || `Veri Bilirkişi Raporu Adım ${bolumNo}'e başarıyla aktarıldı`);
+  };
+
+  // Tarım Veri Arşivi Net Gelir Aktarımı
+  const handleTarimVeriAktar = ({
+    netGelir,
+    araziTipi,
+    urunAdi,
+  }: {
+    netGelir: number;
+    araziTipi: "sulu" | "kirac" | "kuru";
+    urunAdi: string;
+  }) => {
+    const tip = araziTipi === "kuru" ? "kıraç" : araziTipi;
+    const kfo = tip === "sulu" ? 4 : 5;
+    const birimM2 = ((netGelir / 1000) / (kfo / 100)).toFixed(2);
+    const paragraf = `[TÜİK VE RESMİ VERİ CETVELİ DEĞERLEMESİ]\n` +
+      `${urunAdi} münavebe ürünü için TÜİK ve İlçe Tarım resmi cetvellerine göre tespit edilen dekar net geliri ₺${netGelir.toLocaleString("tr-TR")}/da olup, ` +
+      `${tip} tarım arazisinde %${kfo} kapitalizasyon faiz oranıyla hesaplanan çıplak toprak m² birim değeri ₺${birimM2}/m² takdir olunmuştur.`;
+    handleMetinAktarRaporBolumune(paragraf, 4, `${urunAdi} net gelir ve arazi değeri Adım 4'e aktarıldı`);
   };
 
   return (
@@ -133,7 +298,7 @@ export default function IndexPage({
               <button
                 type="button"
                 onClick={() => setAltModulTab(null)}
-                className="btn-secondary h-9 px-3 text-[13px]"
+                className="btn-secondary h-9 px-3 text-[13px] cursor-pointer"
               >
                 ← Çalışma Masasına Dön
               </button>
@@ -141,38 +306,80 @@ export default function IndexPage({
             {altModulTab === "veriarsivi" && (
               <TarimVeriArsiviView
                 showToast={showToast}
-                onTransferToWizard={({ netGelir, araziTipi, urunAdi }) => {
-                  const kfo = araziTipi === "sulu" ? 4 : 5;
-                  const birimM2 = ((netGelir / 1000) / (kfo / 100)).toFixed(2);
-                  const paragraf = `\n\n[TÜİK VE RESMİ VERİ CETVELİ DEĞERLEMESİ]\n` +
-                    `${urunAdi} münavebe ürünü için TÜİK ve İlçe Tarım resmi cetvellerine göre tespit edilen dekar net geliri ₺${netGelir.toLocaleString("tr-TR")}/da olup, ` +
-                    `${araziTipi} tarım arazisinde %${kfo} kapitalizasyon faiz oranıyla hesaplanan çıplak toprak m² birim değeri ₺${birimM2}/m² takdir olunmuştur.`;
-                  setAktifRapor((prev) => ({
-                    ...prev,
-                    bolumMetinleri: {
-                      ...prev.bolumMetinleri,
-                      4: prev.bolumMetinleri[4] ? `${prev.bolumMetinleri[4]}\n${paragraf}` : paragraf,
-                    },
-                  }));
-                  setAltModulTab(null);
-                  setAktifSayfa("sihirbaz");
-                  showToast(`${urunAdi} net geliri Rapor Sihirbazı Adım 4'e aktarıldı`);
-                }}
+                onTransferToWizard={handleTarimVeriAktar}
               />
             )}
             {altModulTab === "hayvancilik" && (
-              <HayvancilikView showToast={showToast} onGoToWizard={() => setAktifSayfa("sihirbaz")} />
+              <HayvancilikView
+                showToast={showToast}
+                onGoToWizard={() => {
+                  setAltModulTab(null);
+                  setAktifSayfa("sihirbaz");
+                }}
+                onTransferToWizard={(metin) =>
+                  handleMetinAktarRaporBolumune(
+                    metin,
+                    4,
+                    "Hayvancılık değerleme/telef tespiti Rapor Adım 4'e aktarıldı"
+                  )
+                }
+              />
             )}
             {altModulTab === "yemlerBesleme" && (
-              <YemlerBeslemeView showToast={showToast} onGoToWizard={() => setAktifSayfa("sihirbaz")} />
+              <YemlerBeslemeView
+                showToast={showToast}
+                onGoToWizard={() => {
+                  setAltModulTab(null);
+                  setAktifSayfa("sihirbaz");
+                }}
+                onTransferToWizard={(metin) =>
+                  handleMetinAktarRaporBolumune(
+                    metin,
+                    4,
+                    "Yem analizi / rasyon dökümü Rapor Adım 4'e aktarıldı"
+                  )
+                }
+              />
             )}
             {altModulTab === "sutTeknolojisi" && (
-              <SutUrunleriView showToast={showToast} onGoToReportAutomation={() => setAktifSayfa("sihirbaz")} />
+              <SutUrunleriView
+                showToast={showToast}
+                onGoToReportAutomation={() => {
+                  setAltModulTab(null);
+                  setAktifSayfa("sihirbaz");
+                }}
+                onTransferToWizard={(metin) =>
+                  handleMetinAktarRaporBolumune(
+                    metin,
+                    4,
+                    "Süt teknolojisi / randıman tespiti Rapor Adım 4'e aktarıldı"
+                  )
+                }
+              />
             )}
             {altModulTab === "uyduParsel" && (
               <NdviPanel
                 parselInfo={{ il: "Ankara", ilce: "Gölbaşı", ada: "102", parsel: "14", urun: "Buğday" }}
                 showToast={showToast}
+                onTransferNetGelir={(net) => {
+                  const kfo = 5;
+                  const birimM2 = ((net / 1000) / (kfo / 100)).toFixed(2);
+                  const paragraf = `[UYDU / VEJETASYON NDVI İNCELEMESİ VE DEĞERLEMESİ]\n` +
+                    `Keşfe konu taşınmazın çok yıllı Sentinel-2 NDVI vejetasyon eğrisi ve tepe fotosentez verimi doğrultusunda dekar başına net gelir ₺${net.toLocaleString("tr-TR")}/da olarak modellenmiş olup, %${kfo} kapitalizasyon faiz oranıyla hesaplanan çıplak toprak birim m² değeri ₺${birimM2}/m² olarak takdir olunmuştur.`;
+                  handleMetinAktarRaporBolumune(paragraf, 4, "NDVI vejetasyon analizi Rapor Sihirbazı Adım 4'e aktarıldı");
+                }}
+              />
+            )}
+            {altModulTab === "ictihat" && (
+              <IctihatAramaView
+                showToast={showToast}
+                onTransferToWizard={(metin) =>
+                  handleMetinAktarRaporBolumune(
+                    metin,
+                    5,
+                    "Yargıtay içtihadı Adım 5 (Mevzuat ve Hukuki Dayanaklar) bölümüne aktarıldı"
+                  )
+                }
               />
             )}
           </div>
@@ -181,10 +388,13 @@ export default function IndexPage({
             {/* SAYFA 1: RAPORLARIM (LİSTE EKRANI & ASİMETRİK HERO PANEL) */}
             {aktifSayfa === "raporlarim" && (
               <RaporlarimView
+                raporlar={raporlar}
                 onYeniRapor={handleYeniRaporBaslat}
                 onRaporAc={handleRaporAc}
                 onRaporDuzenle={handleRaporAc}
                 onKutuphaneAc={() => setAktifSayfa("kutuphane")}
+                onRaporSil={handleRaporSil}
+                onRaporArsivle={handleRaporArsivle}
               />
             )}
 
@@ -192,7 +402,7 @@ export default function IndexPage({
             {aktifSayfa === "sihirbaz" && (
               <SihirbazView
                 aktifRapor={aktifRapor}
-                onRaporKaydet={(guncel) => setAktifRapor(guncel)}
+                onRaporKaydet={handleRaporKaydet}
                 onGeriDon={() => setAktifSayfa("raporlarim")}
                 showToast={showToast}
               />
@@ -203,22 +413,14 @@ export default function IndexPage({
               <KutuphaneView
                 onYeniRaporBaslat={handleYeniRaporBaslat}
                 showToast={showToast}
-                onTransferToWizard={({ netGelir, araziTipi, urunAdi }) => {
-                  const kfo = araziTipi === "sulu" ? 4 : 5;
-                  const birimM2 = ((netGelir / 1000) / (kfo / 100)).toFixed(2);
-                  const paragraf = `\n\n[TÜİK VE RESMİ VERİ CETVELİ DEĞERLEMESİ]\n` +
-                    `${urunAdi} münavebe ürünü için TÜİK ve İlçe Tarım resmi cetvellerine göre tespit edilen dekar net geliri ₺${netGelir.toLocaleString("tr-TR")}/da olup, ` +
-                    `${araziTipi} tarım arazisinde %${kfo} kapitalizasyon faiz oranıyla hesaplanan çıplak toprak m² birim değeri ₺${birimM2}/m² takdir olunmuştur.`;
-                  setAktifRapor((prev) => ({
-                    ...prev,
-                    bolumMetinleri: {
-                      ...prev.bolumMetinleri,
-                      4: prev.bolumMetinleri[4] ? `${prev.bolumMetinleri[4]}\n${paragraf}` : paragraf,
-                    },
-                  }));
-                  setAktifSayfa("sihirbaz");
-                  showToast(`${urunAdi} net geliri Rapor Sihirbazı Adım 4'e aktarıldı`);
-                }}
+                onTransferToWizard={handleTarimVeriAktar}
+                onEmsalAktar={(metin) =>
+                  handleMetinAktarRaporBolumune(
+                    metin,
+                    5,
+                    "Emsal karar metni Adım 5 (Mevzuat ve Hukuki Dayanaklar) bölümüne aktarıldı"
+                  )
+                }
               />
             )}
           </>

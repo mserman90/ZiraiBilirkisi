@@ -14,6 +14,9 @@ export default function App() {
   // Bildirim Toast'ı
   const [toast, setToast] = useState<string | null>(null);
 
+  // Komut Paletinden veya dışarıdan seçilen modül sekmesi
+  const [selectedTab, setSelectedTab] = useState<TabId | null>(null);
+
   // Modallar
   const [commandPaletteOpen, setCommandPaletteOpen] = useState<boolean>(false);
   const [hizliRehberOpen, setHizliRehberOpen] = useState<boolean>(false);
@@ -74,7 +77,9 @@ export default function App() {
 
   const handleSelectTab = (tab: TabId) => {
     // Komut paleti tab seçimlerini yönetir
-    showToast(`${tab} modülü seçildi`);
+    setSelectedTab(tab);
+    setCommandPaletteOpen(false);
+    showToast(`${tab} modülüne yönlendirildi`);
   };
 
   return (
@@ -86,6 +91,8 @@ export default function App() {
         onPwaClick={() => setShowInstallModal(true)}
         onRehberClick={() => setHizliRehberOpen(true)}
         showToast={showToast}
+        selectedTab={selectedTab}
+        onClearSelectedTab={() => setSelectedTab(null)}
       />
 
       {/* Global Modallar */}
