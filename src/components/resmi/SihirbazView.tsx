@@ -175,6 +175,12 @@ export default function SihirbazView({
     setRapor((prev) => ({ ...prev, ekler: yeniEkler }));
   };
 
+  // Tek ek ekle (TÜİK Denetim İzi vb.)
+  const handleTekEkEkle = (yeniEk: RaporEki) => {
+    setEkler((prev) => [...prev, yeniEk]);
+    setRapor((prev) => ({ ...prev, ekler: [...(prev.ekler || []), yeniEk] }));
+  };
+
   // Kaydet
   const handleKaydet = () => {
     const guncelRapor: BilirKisiRaporu = {
@@ -627,6 +633,8 @@ export default function SihirbazView({
           onClose={() => setTuikModalAcik(false)}
           onMetinEkle={handleTuikMetinEkle}
           showToast={showToast}
+          onEkEkle={handleTekEkEkle}
+          currentStep={currentStep}
         />
       )}
 
